@@ -1,6 +1,6 @@
 {
-    "name": "wechar/wecarswoole_proj",
-    "description": "your project name",
+    "name": "dev/download-center",
+    "description": "喂车下载中心",
     "type": "project",
     "require": {
         "framework/wecarswoole": "^1.0",
