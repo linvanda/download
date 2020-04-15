@@ -9,5 +9,6 @@ class Routes extends Route
     public function map()
     {
         $this->get("/v1/test", "/V1/Test/index");
+        $this->get("/v1/test/download", "/V1/Test/download");
     }
 }
