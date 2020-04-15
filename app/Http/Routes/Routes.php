@@ -8,8 +8,15 @@ class Routes extends Route
 {
     public function map()
     {
+        // -------- 测试用 --------
         $this->get("/v1/test", "/V1/Test/index");
         $this->get("/v1/test/download", "/V1/Test/download");
         $this->get("/v1/test/create", "/V1/Test/createBigFile");
+        // -------- 测试用 End --------
+
+        /**
+         * 下载数据
+         */
+        $this->get('/v1/download/{ticket}', '/V1/Download/getData');
     }
 }

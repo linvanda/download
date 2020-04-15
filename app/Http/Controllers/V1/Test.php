@@ -250,17 +250,23 @@ class Test extends Controller
         unset($spreadsheet);
     }
 
+    /**
+     * 测试创建大文件
+     */
     public function createBigFile()
     {
         set_time_limit(0);
-        $f = fopen(File::join(STORAGE_ROOT, "temp/big_file.csv"), 'r');
+        $f = fopen(File::join(STORAGE_ROOT, "temp/big_file.csv"), 'w');
         
-        for ($i = 0; $i < 7000000; $i++) {
+        for ($i = 0; $i < 6000000; $i++) {
             fputcsv($f, ["张松林","张松林","张松林","张松林","张松林","张松林","张松林","张松林","张松林","张松林","张松林","张松林","张松林",]);
         }
         fclose($f);
     }
 
+    /**
+     * 测试下载大文件
+     */
     public function download()
     {
         set_time_limit(0);
