@@ -7,7 +7,7 @@ return [
     'MAIN_SERVER' => [
         'LISTEN_ADDRESS' => '0.0.0.0',
         'PORT' => 9588,
-        'SERVER_TYPE' => EASYSWOOLE_WEB_SERVER,
+        'SERVER_TYPE' => EASYSWOOLE_WEB_SOCKET_SERVER,
         'SOCK_TYPE' => SWOOLE_TCP,
         'RUN_MODEL' => SWOOLE_PROCESS,
         'SETTING' => [

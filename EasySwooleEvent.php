@@ -30,9 +30,16 @@ class EasySwooleEvent implements Event
      */
     public static function mainServerCreate(EventRegister $register)
     {
+        $server = ServerManager::getInstance()->getSwooleServer();
+
+        // 设置 web socket 处理程序
+        $server->on("message", function ($server, $frame) {
+            //todo
+        });
+
         // 热重启(仅用在非生产环境)
         if (Core::getInstance()->isDev()) {
-            ServerManager::getInstance()->getSwooleServer()->addProcess(
+            $server->addProcess(
                 (new HotReload(
                     'HotReload',
                     [
@@ -56,7 +63,7 @@ class EasySwooleEvent implements Event
         CronTabUtil::register();
 
         // Apollo 配置变更监听程序
-        ServerManager::getInstance()->getSwooleServer()->addProcess((new ApolloWatcher())->getProcess());
+        $server->addProcess((new ApolloWatcher())->getProcess());
     }
 
     /**
