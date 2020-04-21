@@ -39,26 +39,26 @@ $baseConfig = [
      * 如果没有读写分离，则可不分 read, write，直接在里面写配置信息
      */
     'mysql' => [
-        'weicheche' => [
+        'download' => [
             // 读库使用二维数组配置，以支持多个读库
             'read' => [
                 [
-                    'host' => apollo('fw.mysql.weicheche.ro', 'weicheche_read.host'),
-                    'port' => apollo('fw.mysql.weicheche.ro', 'weicheche.port'),
-                    'user' => apollo('fw.mysql.weicheche.ro', 'weicheche_read.username'),
-                    'password' => apollo('fw.mysql.weicheche.ro', 'weicheche_read.password'),
-                    'database' => apollo('fw.mysql.weicheche.ro', 'weicheche_read.dbname'),
-                    'charset' => apollo('fw.mysql.weicheche.ro', 'weicheche_read.charset'),
+                    'host' => apollo('FW.mysql.download_center.rw', 'host'),
+                    'port' => apollo('FW.mysql.download_center.rw', 'port'),
+                    'user' => apollo('FW.mysql.download_center.rw', 'username'),
+                    'password' => apollo('FW.mysql.download_center.rw', 'password'),
+                    'database' => apollo('FW.mysql.download_center.rw', 'dbname'),
+                    'charset' => apollo('FW.mysql.download_center.rw', 'charset'),
                 ]
             ],
             // 仅支持一个写库
             'write' => [
-                'host' => apollo('fw.mysql.weicheche.rw', 'weicheche.host'),
-                'port' => apollo('fw.mysql.weicheche.rw', 'weicheche.port'),
-                'user' => apollo('fw.mysql.weicheche.rw', 'weicheche.username'),
-                'password' => apollo('fw.mysql.weicheche.rw', 'weicheche.password'),
-                'database' => apollo('fw.mysql.weicheche.rw', 'weicheche.dbname'),
-                'charset' => apollo('fw.mysql.weicheche.rw', 'weicheche.charset'),
+                'host' => apollo('FW.mysql.download_center.rw', 'host'),
+                'port' => apollo('FW.mysql.download_center.rw', 'port'),
+                'user' => apollo('FW.mysql.download_center.rw', 'username'),
+                'password' => apollo('FW.mysql.download_center.rw', 'password'),
+                'database' => apollo('FW.mysql.download_center.rw', 'dbname'),
+                'charset' => apollo('FW.mysql.download_center.rw', 'charset'),
             ],
             // 连接池配置
             'pool' => [
@@ -80,6 +80,18 @@ $baseConfig = [
             ],
         ],
         'cache' => [
+            'host' => apollo('application', 'redis_main_host'),
+            'port' => apollo('application', 'redis_main_port'),
+            'auth' => apollo('application', 'redis_main_auth'),
+            'database' => apollo('application', 'redis_main_database') ?? 0,
+            // 连接池配置
+            '__pool' => [
+                'max_object_num' => apollo('application', 'redis.pool.cache.max_num') ?? 15,
+                'min_object_num' => apollo('application', 'redis.pool.cache.min_num') ?? 1,
+                'max_idle_time' => apollo('application', 'redis.pool.cache.idle_time') ?? 300,
+            ]
+        ],
+        'queue' => [
             'host' => apollo('application', 'redis_main_host'),
             'port' => apollo('application', 'redis_main_port'),
             'auth' => apollo('application', 'redis_main_auth'),

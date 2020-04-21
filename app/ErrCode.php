@@ -12,5 +12,10 @@ use WecarSwoole\ErrCode as BaseErrCode;
  */
 class ErrCode extends BaseErrCode
 {
-    // TODO 在此处定义自己项目的错误码
+    public const EMPTY_PARAMS = 501; // 缺少参数
+    public const PROJ_NOT_EXISTS = 502; // 项目不存在
+    public const PROJ_AREADY_EXISTS = 503; // 项目已存在
+    public const GROUP_NOT_EXISTS = 504; // 项目组不存在
+    public const GROUP_AREADY_EXISTS = 505; // 项目组已经存在
+    public const FILE_TYPE_ERR = 506; // 文件类型错误
 }

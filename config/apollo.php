@@ -17,5 +17,6 @@ return [
         'fw.appids',
         'fw.modules',
         'fw.mail',
+        'FW.mysql.download_center.rw',
     ]
 ];

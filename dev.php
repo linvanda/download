@@ -11,15 +11,16 @@ return [
         'SOCK_TYPE' => SWOOLE_TCP,
         'RUN_MODEL' => SWOOLE_PROCESS,
         'SETTING' => [
-            'worker_num' => 2,
+            'worker_num' => 1,
             'task_worker_num' => 4,
-            'reload_async' => true,
+            'reload_async' => false,
             'max_wait_time' => 5,
             'max_request' => 10000,
             'task_enable_coroutine' => true,
             'task_max_request' => 5000,
             'dispatch_mode' => 1,
             'enable_reuse_port' => 1,
+            'log_level' => SWOOLE_LOG_ERROR,
             'pid_file' => File::join(STORAGE_ROOT, 'temp/master.pid')
         ],
     ],
