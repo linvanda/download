@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Task;
+namespace App\Domain\File;
 
 /**
  * 目标文件：CSV

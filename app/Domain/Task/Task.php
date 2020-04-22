@@ -2,6 +2,9 @@
 
 namespace App\Domain\Task;
 
+use App\Domain\File\CSV;
+use App\Domain\File\Excel;
+use App\Domain\File\ObjectFile;
 use App\Domain\Project\IProjectRepository;
 use App\Domain\Project\Project;
 use App\ErrCode;

@@ -82,4 +82,55 @@ class Task extends Controller
 
         return $this->return($data);
     }
+
+    public function test()
+    {
+        // 标准二维数组
+        $a = [
+            [
+                'wx_micropay' => 130,
+                'wx_pay' => 150,
+                'ali_micropay' => 100,
+                'ali_pay' => 200,
+            ],
+            [
+                'wx_micropay' => 30,
+                'wx_pay' => 23,
+                'ali_micropay' => 111,
+                'ali_pay' => 56,
+            ],
+        ];
+
+        // 三维数组
+        $b = [
+            'self_screen' => [
+                [
+                    'wx_micropay' => 130,
+                    'wx_pay' => 150,
+                    'ali_micropay' => 100,
+                    'ali_pay' => 200,
+                ],
+                [
+                    'wx_micropay' => '20%',
+                    'wx_pay' => '10%',
+                    'ali_micropay' => '30%',
+                    'ali_pay' => '40%',
+                ],
+            ],
+            'pos' => [
+                [
+                    'wx_micropay' => 130,
+                    'wx_pay' => 150,
+                    'ali_micropay' => 100,
+                    'ali_pay' => 200,
+                ],
+                [
+                    'wx_micropay' => '20%',
+                    'wx_pay' => '10%',
+                    'ali_micropay' => '30%',
+                    'ali_pay' => '40%',
+                ],
+            ],
+        ];
+    }
 }
