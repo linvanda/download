@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Domain\Task\ITaskRepository;
+use App\Domain\Task\TaskService;
+use App\ErrCode;
+use App\Foundation\DTO\TaskDTO;
+use WecarSwoole\Container;
 use WecarSwoole\Http\Controller;
 
 class Task extends Controller
@@ -14,9 +19,8 @@ class Task extends Controller
                 'name' => ['required', 'lengthMin' => 2, 'lengthMax' => 60],
                 'project_id' => ['required', 'lengthMax' => 40],
                 'file_name' => ['lengthMax' => 120],
-                'type' => ['inArray' => ['csv', 'excel']],
-                'callback' => ['url', 'lengthMax' => 300],
-                'step' => ['integer', 'between' => [100, 1000]],
+                'type' => ['inArray' => [null, 'csv', 'excel']],
+                'callback' => ['lengthMax' => 300],
                 'operator_id' => ['lengthMax' => 120],
                 'template' => ['lengthMax' => 8000],
                 'title' => ['lengthMax' => 200],
@@ -27,6 +31,8 @@ class Task extends Controller
             ],
             'list' => [
                 'project_id' => ['required', 'lengthMax' => 100],
+                'page' => ['integer', 'min' => 0],
+                'page_size' => ['integer', 'max' => 50],
             ],
         ];
     }
@@ -37,7 +43,9 @@ class Task extends Controller
      */
     public function deliver()
     {
-
+        $taskDTO = new TaskDTO($this->params());
+        $task = Container::get(TaskService::class)->deliver($taskDTO);
+        $this->return(['task_id' => $task->id()]);
     }
 
     /**
@@ -45,7 +53,11 @@ class Task extends Controller
      */
     public function one()
     {
+        if (!$taskDTO = Container::get(ITaskRepository::class)->getTaskDTOById($this->params('task_id'))) {
+            return $this->return([], ErrCode::TASK_NOT_EXISTS, '任务不存在');
+        }
 
+        return $this->return($taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary']));
     }
 
     /**
@@ -53,6 +65,21 @@ class Task extends Controller
      */
     public function list()
     {
+        $data = Container::get(ITaskRepository::class)->getTaskDTOsByProjId(
+            $this->params('project_id'),
+            $this->params('page'),
+            $this->params('page_size'),
+            $this->params('status') ?: 0,
+        );
 
+        if (!$data['total']) {
+            return $this->return($data);
+        }
+
+        $data['data'] = array_map(function (TaskDTO $taskDTO) {
+            return $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary']);
+        }, $data['data']);
+
+        return $this->return($data);
     }
 }

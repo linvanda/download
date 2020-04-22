@@ -53,8 +53,6 @@ class AuthAPI extends Route
 
         /**
          * 根据项目查询任务列表
-         * params:
-         *      project_id string 必填。项目编号，由下载中心分配
          */
         $this->get('/v1/tasks', '/V1/Task/list');
 

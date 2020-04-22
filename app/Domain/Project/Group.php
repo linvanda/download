@@ -2,8 +2,9 @@
 
 namespace App\Domain\Project;
 
-use EasySwoole\Utility\Random;
+use WecarSwoole\Container;
 use WecarSwoole\Entity;
+use WecarSwoole\ID\IIDGenerator;
 
 /**
  * 项目组
@@ -15,7 +16,7 @@ class Group extends Entity
 
     public function __construct($name)
     {
-        $this->id = Random::makeUUIDV4();
+        $this->id = Container::get(IIDGenerator::class)->id();
         $this->name = $name;
     }
 

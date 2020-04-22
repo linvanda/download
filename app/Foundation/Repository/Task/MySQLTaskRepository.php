@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Foundation\Repository\Project;
+namespace App\Foundation\Repository\Task;
 
 use App\Domain\Project\IProjectRepository;
 use App\Domain\Task\Excel;
@@ -39,7 +39,10 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'ftime' => $task->finishedTime,
         ];
 
-        $extra = ['template' => $task->objectFile()->template()];
+        $extra = [];
+        if ($task->objectFile()->template()) {
+            $extra['template'] = $task->objectFile()->template();
+        }
         $objectFile = $task->objectFile();
         if ($objectFile instanceof Excel) {
             $extra['title'] = $objectFile->title();
@@ -61,29 +64,64 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             return null;
         }
 
+        $task = Task::buildTask($this->buildTaskDTO($info), Container::get(IProjectRepository::class));
+
+        return $task;
+    }
+
+    public function getTaskDTOById(string $id): ?TaskDTO
+    {
+        if (!$info = $this->query->select('*')->from('task')->where(['id' => $id, 'is_deleted' => 0])->one()) {
+            return null;
+        }
+
+        return $this->buildTaskDTO($info);
+    }
+
+    public function getTaskDTOsByProjId(string $projectId, int $page, int $pageSize = 20, int $status = 0): Array
+    {
+        // 安全起见，一次最多允许查询 200 个
+        $pageSize = $pageSize > 200 ? 200 : $pageSize;
+
+        $builder = $this->query
+        ->select('*')
+        ->from('task')->where(['project_id' => $projectId, 'is_deleted' => 0])
+        ->orderBy("incr_id desc")->limit($pageSize, $page);
+
+        if ($status) {
+            $builder->where(['status' => $status]);
+        }
+
+        $list = $builder->page();
+        if (!$list['total']) {
+            return $list;
+        }
+
+        // 转成 DTO
+        $list['data'] = array_map(function (array $item) {
+            return $this->buildTaskDTO($item);
+        }, $list['data']);
+
+
+        return $list;
+    }
+
+    protected function buildTaskDTO(array $info): ?TaskDTO
+    {
         $extra = $info['extra'] ? json_decode($info['extra'], true) : [];
 
         $taskDTO = new TaskDTO(
             array_merge(
                 $info,
                 [
-                    'template' => $extra['template'],
+                    'template' => $extra['template'] ?? [],
                     'title' => $extra['title'] ?? '',
                     'summary' => $extra['summary'] ?? '',
+                    'type' => array_flip(self::FILE_TYPE_MAP)[$info['type']],
                 ]
             )
         );
 
-        $task = Task::buildTask($taskDTO, Container::get(IProjectRepository::class));
-
-        // 这些属性需要单独设置
-        $task->id = $info['id'];
-        $task->createTime = $info['ctime'];
-        $task->lastExecTime = $info['etime'];
-        $task->finishedTime = $info['ftime'];
-        $task->status = $info['status'];
-        $task->execNum = $info['exec_num'];
-
-        return $task;
+        return $taskDTO;
     }
 }

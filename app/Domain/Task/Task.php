@@ -6,9 +6,10 @@ use App\Domain\Project\IProjectRepository;
 use App\Domain\Project\Project;
 use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
-use EasySwoole\Utility\Random;
+use WecarSwoole\Container;
 use WecarSwoole\Entity;
 use WecarSwoole\Exceptions\Exception;
+use WecarSwoole\ID\IIDGenerator;
 
 class Task extends Entity
 {
@@ -46,7 +47,11 @@ class Task extends Entity
     // 任务执行次数
     protected $execNum;
 
-    public function __construct(
+    /**
+     * 外界必须通过工厂方法来创建
+     */
+    protected function __construct(
+        string $id,
         string $name,
         Project $project,
         Source $source,
@@ -54,19 +59,13 @@ class Task extends Entity
         URI $callback = null,
         string $operator = ''
     ) {
-        $this->id = $this->generateId();
+        $this->id = $id;
         $this->name = $name;
         $this->project = $project;
         $this->source = $source;
         $this->objectFile = $objectFile;
         $this->callback = $callback;
         $this->operator = $operator;
-
-        $this->createTime = time();
-        $this->lastExecTime = 0;
-        $this->finishedTime = 0;
-        $this->execNum = 0;
-        $this->status = self::STATUS_TODO;
     }
 
     public function id(): string
@@ -108,27 +107,31 @@ class Task extends Entity
             throw new Exception("创建任务失败：项目不存在", ErrCode::PROJ_NOT_EXISTS);
         }
 
-        $source = new Source(new URI($taskDTO->sourceUrl), $taskDTO->step);
+        $id = $taskDTO->id ?? Container::get(IIDGenerator::class)->id();
+        $source = new Source(new URI($taskDTO->sourceUrl), intval($taskDTO->step) ?: Source::STEP_DEFAULT);
         $objectFile = self::buildObjectFile($taskDTO);
-        $callback = new URI($taskDTO->callback);
+        $callback = new URI($taskDTO->callback ?: '');
 
-        return new Task($taskDTO->name, $project, $source, $objectFile, $callback, $taskDTO->operatorId);
+        $task = new Task($id, $taskDTO->name, $project, $source, $objectFile, $callback, $taskDTO->operatorId ?: '');
+        // 其他属性设置
+        $task->createTime = $taskDTO->ctime ?: time();
+        $task->lastExecTime = $taskDTO->etime ?: 0;
+        $task->finishedTime = $taskDTO->ftime ?: 0;
+        $task->status = $taskDTO->status ?: Task::STATUS_TODO;
+        $task->execNum = $taskDTO->execNum ?: 0;
+
+        return $task;
     }
 
     protected static function buildObjectFile(TaskDTO $taskDTO): ObjectFile
     {
-        switch ($taskDTO->type) {
+        switch ($taskDTO->type ?: ObjectFile::TYPE_CSV) {
             case ObjectFile::TYPE_CSV:
-                return new CSV($taskDTO->fileName, $taskDTO->template);
+                return new CSV($taskDTO->fileName ?: '', $taskDTO->template ?: []);
             case ObjectFile::TYPE_EXCEL:
-                return new Excel($taskDTO->fileName, $taskDTO->template, $taskDTO->title, $taskDTO->summary);
+                return new Excel($taskDTO->fileName ?: '', $taskDTO->template ?: [], $taskDTO->title ?: '', $taskDTO->summary ?: '');
             default:
                 throw new Exception("不支持的文件类型", ErrCode::FILE_TYPE_ERR);
         }
-    }
-
-    protected function generateId(): string
-    {
-        return Random::makeUUIDV4();
     }
 }

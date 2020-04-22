@@ -2,9 +2,6 @@
 
 namespace App\Domain\Task;
 
-use App\ErrCode;
-use WecarSwoole\Exceptions\Exception;
-
 /**
  * 数据源
  */
@@ -12,6 +9,7 @@ class Source
 {
     public const STEP_MIN = 100;
     public const STEP_MAX = 1000;
+    public const STEP_DEFAULT = 500;
 
     protected $uri;
     protected $step;
@@ -35,7 +33,7 @@ class Source
     protected function setStep(int $step)
     {
         if ($step < self::STEP_MIN || $step > self::STEP_MAX) {
-            throw new Exception("step范围不合法", ErrCode::PARAM_VALIDATE_FAIL);
+            $step = self::STEP_DEFAULT;
         }
 
         $this->step = $step;

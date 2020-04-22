@@ -18,4 +18,5 @@ class ErrCode extends BaseErrCode
     public const GROUP_NOT_EXISTS = 504; // 项目组不存在
     public const GROUP_AREADY_EXISTS = 505; // 项目组已经存在
     public const FILE_TYPE_ERR = 506; // 文件类型错误
+    public const TASK_NOT_EXISTS = 507; // 任务不存在
 }
