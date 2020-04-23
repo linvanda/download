@@ -101,6 +101,27 @@ class Task extends Entity
         return $this->callback;
     }
 
+    public function status(): int
+    {
+        return $this->status;
+    }
+
+    /**
+     * 更改任务状态
+     */
+    public function switchStatus(int $newStatus)
+    {
+        if (!in_array($newStatus, [self::STATUS_TODO, self::STATUS_DOING, self::STATUS_SUC, self::STATUS_FAILED])) {
+            throw new Exception("非法的任务状态：{$newStatus}", ErrCode::INVALID_STATUS_OP);
+        }
+
+        if (!$this->isStatusValid($newStatus)) {
+            throw new Exception("非法的状态切换：{$this->status} -> {$newStatus}", ErrCode::INVALID_STATUS_OP);
+        }
+
+        $this->status = $newStatus;
+    }
+
     /**
      * 工厂方法：创建 task 对象
      */
@@ -111,10 +132,12 @@ class Task extends Entity
         }
 
         $id = $taskDTO->id ?? Container::get(IIDGenerator::class)->id();
+        
         $source = new Source(new URI($taskDTO->sourceUrl), intval($taskDTO->step) ?: Source::STEP_DEFAULT);
         $objectFile = self::buildObjectFile($taskDTO);
         $callback = new URI($taskDTO->callback ?: '');
 
+        // 基于 DTO 创建 Task 对象
         $task = new Task($id, $taskDTO->name, $project, $source, $objectFile, $callback, $taskDTO->operatorId ?: '');
         // 其他属性设置
         $task->createTime = $taskDTO->ctime ?: time();
@@ -130,11 +153,28 @@ class Task extends Entity
     {
         switch ($taskDTO->type ?: ObjectFile::TYPE_CSV) {
             case ObjectFile::TYPE_CSV:
-                return new CSV($taskDTO->fileName ?: '', $taskDTO->template ?: []);
+                return new CSV($taskDTO->fileName ?: '', $taskDTO->template ?: null);
             case ObjectFile::TYPE_EXCEL:
-                return new Excel($taskDTO->fileName ?: '', $taskDTO->template ?: [], $taskDTO->title ?: '', $taskDTO->summary ?: '');
+                return new Excel($taskDTO->fileName ?: '', $taskDTO->template ?: null, $taskDTO->title ?: '', $taskDTO->summary ?: '');
             default:
                 throw new Exception("不支持的文件类型", ErrCode::FILE_TYPE_ERR);
         }
+    }
+
+    /**
+     * 检测状态切换是否合法
+     */
+    private function isStatusValid(int $newStatus): bool
+    {
+        if (
+            $newStatus == self::STATUS_TODO && $this->status != self::STATUS_FAILED
+            || $newStatus == self::STATUS_DOING && $this->status != self::STATUS_TODO
+            || $newStatus == self::STATUS_SUC && $this->status != self::STATUS_DOING
+            || $newStatus == self::STATUS_FAILED && $this->status != self::STATUS_DOING
+        ) {
+                return false;
+        }
+
+        return true;
     }
 }

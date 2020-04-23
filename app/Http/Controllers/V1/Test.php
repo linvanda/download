@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Domain\Processor\Ticket;
 use WecarSwoole\Http\Controller;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -11,9 +12,20 @@ class Test extends Controller
 {
     public function index()
     {
-        ini_set("memory_limit", "1024M"); 
+        go(function(){
+            for ($i = 0; $i < 30; $i++) {
+                Ticket::get("test");
+                echo "ticket get {$i}\n";
+            }
+        });
 
-        $spreadsheet = new Spreadsheet();
+        swoole_timer_tick(2000, function () {
+            Ticket::done('test');
+        });
+        echo "over\n";
+        // ini_set("memory_limit", "1024M"); 
+
+        // $spreadsheet = new Spreadsheet();
 
         // 使用列缓存
         // $cache = new MyCustomPsr16Implementation();
@@ -166,22 +178,22 @@ class Test extends Controller
         // $spreadsheet->getActiveSheet()->getDefaultRowDimension()->setRowHeight(15);
 
         // 条件样式
-        $conditional1 = new \PhpOffice\PhpSpreadsheet\Style\Conditional();
-        $conditional1->setConditionType(\PhpOffice\PhpSpreadsheet\Style\Conditional::CONDITION_CELLIS);
-        $conditional1->setOperatorType(\PhpOffice\PhpSpreadsheet\Style\Conditional::OPERATOR_LESSTHAN);
-        $conditional1->addCondition('0');
-        $conditional1->getStyle()->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED);
-        $conditional1->getStyle()->getFont()->setBold(true);
-        $conditional2 = new \PhpOffice\PhpSpreadsheet\Style\Conditional();
-        $conditional2->setConditionType(\PhpOffice\PhpSpreadsheet\Style\Conditional::CONDITION_CELLIS);
-        $conditional2->setOperatorType(\PhpOffice\PhpSpreadsheet\Style\Conditional::OPERATOR_GREATERTHANOREQUAL);
-        $conditional2->addCondition('0');
-        $conditional2->getStyle()->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_GREEN);
-        $conditional2->getStyle()->getFont()->setBold(true);
-        $conditionalStyles = $spreadsheet->getActiveSheet()->getStyle('B2')->getConditionalStyles();
-        $conditionalStyles[] = $conditional1;
-        $conditionalStyles[] = $conditional2;
-        $spreadsheet->getActiveSheet()->getStyle('B2')->setConditionalStyles($conditionalStyles);
+        // $conditional1 = new \PhpOffice\PhpSpreadsheet\Style\Conditional();
+        // $conditional1->setConditionType(\PhpOffice\PhpSpreadsheet\Style\Conditional::CONDITION_CELLIS);
+        // $conditional1->setOperatorType(\PhpOffice\PhpSpreadsheet\Style\Conditional::OPERATOR_LESSTHAN);
+        // $conditional1->addCondition('0');
+        // $conditional1->getStyle()->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED);
+        // $conditional1->getStyle()->getFont()->setBold(true);
+        // $conditional2 = new \PhpOffice\PhpSpreadsheet\Style\Conditional();
+        // $conditional2->setConditionType(\PhpOffice\PhpSpreadsheet\Style\Conditional::CONDITION_CELLIS);
+        // $conditional2->setOperatorType(\PhpOffice\PhpSpreadsheet\Style\Conditional::OPERATOR_GREATERTHANOREQUAL);
+        // $conditional2->addCondition('0');
+        // $conditional2->getStyle()->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_GREEN);
+        // $conditional2->getStyle()->getFont()->setBold(true);
+        // $conditionalStyles = $spreadsheet->getActiveSheet()->getStyle('B2')->getConditionalStyles();
+        // $conditionalStyles[] = $conditional1;
+        // $conditionalStyles[] = $conditional2;
+        // $spreadsheet->getActiveSheet()->getStyle('B2')->setConditionalStyles($conditionalStyles);
 
         // 重用样式
         // $spreadsheet->getActiveSheet()
@@ -205,49 +217,49 @@ class Test extends Controller
 
         // 添加图片
         //  Use GD to create an in-memory image
-        $gdImage = @imagecreatetruecolor(120, 20) or die('Cannot Initialize new GD image stream');
-        $textColor = imagecolorallocate($gdImage, 255, 255, 255);
-        imagestring($gdImage, 1, 5, 5,  'Created with PhpSpreadsheet', $textColor);
-        //  Add the In-Memory image to a worksheet
-        $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
-        $drawing->setName('In-Memory image 1');
-        $drawing->setDescription('In-Memory image 1');
-        $drawing->setCoordinates('G10');
-        $drawing->setImageResource($gdImage);
-        $drawing->setRenderingFunction(
-            \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::RENDERING_JPEG
-        );
-        $drawing->setMimeType(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_DEFAULT);
-        $drawing->setHeight(36);
-        $drawing->setWorksheet($spreadsheet->getActiveSheet());
+        // $gdImage = @imagecreatetruecolor(120, 20) or die('Cannot Initialize new GD image stream');
+        // $textColor = imagecolorallocate($gdImage, 255, 255, 255);
+        // imagestring($gdImage, 1, 5, 5,  'Created with PhpSpreadsheet', $textColor);
+        // //  Add the In-Memory image to a worksheet
+        // $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing();
+        // $drawing->setName('In-Memory image 1');
+        // $drawing->setDescription('In-Memory image 1');
+        // $drawing->setCoordinates('G10');
+        // $drawing->setImageResource($gdImage);
+        // $drawing->setRenderingFunction(
+        //     \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::RENDERING_JPEG
+        // );
+        // $drawing->setMimeType(\PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_DEFAULT);
+        // $drawing->setHeight(36);
+        // $drawing->setWorksheet($spreadsheet->getActiveSheet());
 
 
-        // 数据格式化
-        $spreadsheet->getActiveSheet()->getStyle('A1')->getNumberFormat()
-        ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        // // 数据格式化
+        // $spreadsheet->getActiveSheet()->getStyle('A1')->getNumberFormat()
+        // ->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
-        // Set value binder
-        \PhpOffice\PhpSpreadsheet\Cell\Cell::setValueBinder( new \PhpOffice\PhpSpreadsheet\Cell\AdvancedValueBinder() );
+        // // Set value binder
+        // \PhpOffice\PhpSpreadsheet\Cell\Cell::setValueBinder( new \PhpOffice\PhpSpreadsheet\Cell\AdvancedValueBinder() );
 
-        // Create new Spreadsheet object
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        // // Create new Spreadsheet object
+        // $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
-        for ($i = 1; $i < 400; $i++) {
-            $spreadsheet->getActiveSheet()->setCellValue("A{$i}", 'hello word');
-            $spreadsheet->getActiveSheet()->setCellValue("B{$i}", 'hello word');
-            $spreadsheet->getActiveSheet()->setCellValue("C{$i}", 'hello word');
-            $spreadsheet->getActiveSheet()->setCellValue("D{$i}", 'hello word');
-            $spreadsheet->getActiveSheet()->setCellValue("E{$i}", 'hello word');
-            $spreadsheet->getActiveSheet()->setCellValue("F{$i}", 'hello word');
-        }
+        // for ($i = 1; $i < 400; $i++) {
+        //     $spreadsheet->getActiveSheet()->setCellValue("A{$i}", 'hello word');
+        //     $spreadsheet->getActiveSheet()->setCellValue("B{$i}", 'hello word');
+        //     $spreadsheet->getActiveSheet()->setCellValue("C{$i}", 'hello word');
+        //     $spreadsheet->getActiveSheet()->setCellValue("D{$i}", 'hello word');
+        //     $spreadsheet->getActiveSheet()->setCellValue("E{$i}", 'hello word');
+        //     $spreadsheet->getActiveSheet()->setCellValue("F{$i}", 'hello word');
+        // }
 
 
 
-        $writer = new Xlsx($spreadsheet);
-        $writer->save(File::join(STORAGE_ROOT, 'temp/hello world.xlsx'));
+        // $writer = new Xlsx($spreadsheet);
+        // $writer->save(File::join(STORAGE_ROOT, 'temp/hello world.xlsx'));
 
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet);
+        // $spreadsheet->disconnectWorksheets();
+        // unset($spreadsheet);
     }
 
     /**

@@ -22,13 +22,15 @@ class RedisDriver implements QueueDriverInterface
     
     public function push(Job $job): bool
     {
-        return $this->redis->lPush($this->redisKey(), $job->_toString());
+        return $this->redis->lPush($this->redisKey(), json_encode($job->getJobData()));
     }
 
     public function pop(float $timeout = 3.0): ?Job
     {
         if ($data = json_decode($this->redis->rPop($this->redisKey()), true)) {
-            return new Job($data);
+            $job = new Job();
+            $job->setJobData($data);
+            return $job;
         }
 
         return null;

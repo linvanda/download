@@ -17,6 +17,5 @@ class Bootstrap extends BaseBootstrap
     public static function boot()
     {
         parent::boot();
-        // 可以在此处添加自己项目的 boot 脚本
     }
 }

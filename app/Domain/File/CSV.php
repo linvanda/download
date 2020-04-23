@@ -7,8 +7,8 @@ namespace App\Domain\File;
  */
 class CSV extends ObjectFile
 {
-    public function __construct(string $fileName = '', array $tplCfg = [])
+    public function __construct(string $fileName = '', $tpl)
     {
-        parent::__construct($fileName, self::TYPE_CSV, $tplCfg);
+        parent::__construct($fileName, self::TYPE_CSV, $tpl);
     }
 }

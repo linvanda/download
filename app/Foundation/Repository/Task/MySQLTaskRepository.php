@@ -35,13 +35,14 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'status' => $task->status,
             'exec_num' => $task->execNum,
             'ctime' => $task->createTime,
+            'utime' => $task->createTime,
             'etime' => $task->lastExecTime,
             'ftime' => $task->finishedTime,
         ];
 
         $extra = [];
         if ($task->objectFile()->template()) {
-            $extra['template'] = $task->objectFile()->template();
+            $extra['template'] = serialize($task->objectFile()->template());
         }
         $objectFile = $task->objectFile();
         if ($objectFile instanceof Excel) {
@@ -106,6 +107,17 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         return $list;
     }
 
+    public function changeTaskStatus(string $taskId, int $newStatus, int $oldStatus): bool
+    {
+        $this->query
+        ->update('task')
+        ->set(['status' => $newStatus, 'utime' => time()])
+        ->where(['id' => $taskId, 'status' => $oldStatus])
+        ->execute();
+
+        return $this->query->affectedRows() > 0;
+    }
+
     protected function buildTaskDTO(array $info): ?TaskDTO
     {
         $extra = $info['extra'] ? json_decode($info['extra'], true) : [];
@@ -114,7 +126,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             array_merge(
                 $info,
                 [
-                    'template' => $extra['template'] ?? [],
+                    'template' => $extra['template'] ? unserialize($extra['template']) : null,
                     'title' => $extra['title'] ?? '',
                     'summary' => $extra['summary'] ?? '',
                     'type' => array_flip(self::FILE_TYPE_MAP)[$info['type']],

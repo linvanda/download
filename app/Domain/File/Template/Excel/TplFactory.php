@@ -7,33 +7,44 @@ use WecarSwoole\Exceptions\Exception;
 
 class TplFactory
 {
-    public static function build(array $tplCfg): Tpl
+    /**
+     * @param array|string $tplCfg 模板配置
+     */
+    public static function build($tplCfg): ?Tpl
     {
-        if (!isset($tplCfg['col']) && $tplCfg['row']) {
+        if ($tplCfg && is_string($tplCfg)) {
+            $tplCfg = json_decode($tplCfg, true);
+        }
+
+        if (!$tplCfg) {
+            return null;
+        }
+
+        if (!isset($tplCfg['col']) && isset($tplCfg['row'])) {
             throw new Exception("模板格式不合法", ErrCode::TPL_FMT_ERR);
         }
 
         $rowCfg = $tplCfg['row'] ?? [];
         $colCfg = $tplCfg['col'] ?? $tplCfg;
 
-        return new Tpl(self::buildCol($colCfg), self::buildRow($rowCfg));
+        return new Tpl(self::buildColHead($colCfg), self::buildRowHead($rowCfg));
     }
 
-    private static function buildRow(array $rowCfg): ?Row
+    private static function buildRowHead(array $rowCfg): ?RowHead
     {
         if (!$rowCfg) {
             return null;
         }
 
-
+        return RowHeadParser::getInstance()->parse($rowCfg);
     }
 
-    private static function buildCol(array $colCfg): Column
+    private static function buildColHead(array $colCfg): ColHead
     {
         if (!$colCfg) {
             throw new Exception("模板格式错误：缺少列标题配置", ErrCode::TPL_FMT_ERR);
         }
 
-        
+        return ColHeadParser::getInstance()->parse($colCfg);
     }
 }

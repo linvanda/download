@@ -2,6 +2,8 @@
 
 namespace App\Domain\File;
 
+use App\Domain\File\Template\Excel\Tpl;
+use App\Domain\File\Template\Excel\TplFactory;
 use App\ErrCode;
 use WecarSwoole\Exceptions\Exception;
 
@@ -20,13 +22,16 @@ class ObjectFile
 
     protected $fileName;
     protected $type;
-    protected $tplCfg;
+    /**
+     * @var Tpl
+     */
+    protected $tpl;
 
-    public function __construct(string $fileName = '', string $type = 'csv', array $tplCfg = [])
+    public function __construct(string $fileName = '', string $type = 'csv', $tpl = null)
     {
         $this->setType($type);
         $this->setFileName($fileName);
-        $this->tplCfg = $tplCfg;
+        $this->tpl = $tpl === null || $tpl instanceof Tpl ? $tpl : TplFactory::build($tpl);
     }
 
     public function fileName(): string
@@ -39,9 +44,9 @@ class ObjectFile
         return $this->type;
     }
 
-    public function template(): array
+    public function template(): ?Tpl
     {
-        return $this->tplCfg;
+        return $this->tpl;
     }
 
     protected function setType(string $type)

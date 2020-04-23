@@ -6,6 +6,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use EasySwoole\Component\Di;
+use EasySwoole\Queue\Queue;
 use WecarSwoole\ID\IIDGenerator;
 use WecarSwoole\ID\UUIDGenerator;
 use WecarSwoole\CacheFactory;

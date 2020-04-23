@@ -8,17 +8,27 @@ namespace App\Domain\File\Template\Excel;
 class Tpl
 {
     /**
-     * @var Column 列标题
+     * @var ColHead 列标头
      */
-    private $colHeader;
+    private $col;
     /**
-     * @var Row 行标题
+     * @var RowHead 行标头
      */
-    private $rowHeader;
+    private $row;
 
-    public function __construct(Column $col, Row $row = null)
+    public function __construct(ColHead $colHead, RowHead $rowHead = null)
     {
-        $this->colHeader = $col;
-        $this->rowHeader = $row;
+        $this->col = $colHead;
+        $this->row = $rowHead;
+    }
+
+    public function colHead(): ColHead
+    {
+        return $this->col;
+    }
+
+    public function rowHead(): ?RowHead
+    {
+        return $this->row;
     }
 }

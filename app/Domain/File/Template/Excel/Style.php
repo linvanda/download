@@ -4,15 +4,19 @@ namespace App\Domain\File\Template\Excel;
 
 use App\ErrCode;
 use WecarSwoole\Exceptions\Exception;
+use WecarSwoole\OTA\IExtractable;
+use WecarSwoole\OTA\ObjectToArray;
 
 /**
  * 单元格样式
  */
-class Style
+class Style implements IExtractable
 {
-    protected const ALIGN_LEFT = 'left';
-    protected const ALIGN_CENTER = 'center';
-    protected const ALIGN_RIGHT = 'right';
+    use ObjectToArray;
+    
+    public const ALIGN_LEFT = 'left';
+    public const ALIGN_CENTER = 'center';
+    public const ALIGN_RIGHT = 'right';
     private const COLOR_LITERAL = ['black', 'white', 'red', 'green', 'blue', 'yellow', 'cyan'];
 
     // 单元格宽度，默认 0（自适应）
@@ -117,7 +121,7 @@ class Style
     private static function resolveColor(string $color): string
     {
         if (!$color) {
-            $this->color = '';
+            return '';
         }
 
         if (in_array($color, self::COLOR_LITERAL)) {

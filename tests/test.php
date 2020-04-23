@@ -1,11 +1,12 @@
 <?php
 
+use App\Domain\Processor\Ticket;
 use WecarSwoole\Util\File;
 
 include './base.php';
 
-$fileName = "ceshi.ext";
-if ($dotPos = strrpos($fileName, '.')) {
-    $ext = substr($fileName, $dotPos + 1);
+for ($i = 0; $i < 30; $i++) {
+    Ticket::get("test");
+    echo "ticket get {$i}\n";
 }
-echo $ext;
+echo "over\n";

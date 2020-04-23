@@ -10,7 +10,7 @@ class Excel extends ObjectFile
     protected $title;
     protected $summary;
 
-    public function __construct(string $fileName = '', array $tplCfg = [], string $title = '', string $summary = '')
+    public function __construct(string $fileName = '', $tplCfg = null, string $title = '', string $summary = '')
     {
         parent::__construct($fileName, self::TYPE_EXCEL, $tplCfg);
 

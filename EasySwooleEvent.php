@@ -3,6 +3,7 @@
 namespace EasySwoole\EasySwoole;
 
 use App\Bootstrap;
+use App\Foundation\Queue\Listener;
 use WecarSwoole\CronTabUtil;
 use EasySwoole\EasySwoole\Swoole\EventRegister;
 use EasySwoole\EasySwoole\AbstractInterface\Event;
@@ -57,6 +58,9 @@ class EasySwooleEvent implements Event
         // worker 进程启动脚本
         $register->add(EventRegister::onWorkerStart, function () {
             Bootstrap::boot();
+
+            // 启动队列监听
+            Listener::listen();
         });
 
         // 定时任务

@@ -20,4 +20,5 @@ class ErrCode extends BaseErrCode
     public const FILE_TYPE_ERR = 506; // 文件类型错误
     public const TASK_NOT_EXISTS = 507; // 任务不存在
     public const TPL_FMT_ERR = 508; // 模板格式不合法
+    public const INVALID_STATUS_OP = 509; // 非法的状态切换
 }

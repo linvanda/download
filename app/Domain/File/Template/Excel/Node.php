@@ -6,7 +6,13 @@ class Node
 {
     protected $name;
     protected $title;
+    /**
+     * @var Style
+     */
     protected $style;
+    /**
+     * @var array
+     */
     protected $children;
 
     public function __construct(string $name = '', string $title = '', Style $style = null)

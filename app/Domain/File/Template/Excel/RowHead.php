@@ -3,9 +3,8 @@
 namespace App\Domain\File\Template\Excel;
 
 /**
- * 行标题
+ * 行标头
  */
-class Row extends Node
+class RowHead extends Node
 {
-
 }

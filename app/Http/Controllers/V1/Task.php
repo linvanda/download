@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Domain\Processor\TaskManager;
 use App\Domain\Task\ITaskRepository;
+use App\Domain\Task\TaskJob;
 use App\Domain\Task\TaskService;
 use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
+use App\Foundation\Queue\Queue;
+use EasySwoole\Queue\Job;
 use WecarSwoole\Container;
 use WecarSwoole\Http\Controller;
 
@@ -43,8 +47,11 @@ class Task extends Controller
      */
     public function deliver()
     {
-        $taskDTO = new TaskDTO($this->params());
-        $task = Container::get(TaskService::class)->deliver($taskDTO);
+        // 创建新任务
+        $task = Container::get(TaskService::class)->create(new TaskDTO($this->params()));
+        // 投递
+        TaskManager::getInstance()->deliver($task);
+
         $this->return(['task_id' => $task->id()]);
     }
 

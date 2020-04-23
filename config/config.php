@@ -115,6 +115,8 @@ $baseConfig = [
     // 最低记录级别：debug, info, warning, error, critical, off
     'log_level' => apollo('application', 'log_level') ?: 'info',
     'base_url' => apollo('application', 'base_url'),
+    'task_queue' => 'tasks', 
+    'task_concurrent_limit' => apollo('application', 'task_concurrent_limit') ?: 15,
 ];
 
 return array_merge(
