@@ -5,6 +5,7 @@ namespace App\Processor;
 use EasySwoole\EasySwoole\Config;
 use EasySwoole\Queue\Job;
 use App\Foundation\Queue\Queue;
+use App\Processor\WorkFlow\WorkFlow;
 
 /**
  * 队列监听
@@ -24,7 +25,7 @@ class QueueListener
             }
 
             // 交给任务处理器
-            TaskManager::getInstance()->schedule($data['task_id']);
+            TaskManager::getInstance()->notify($data['task_id'], WorkFlow::WF_TODO);
         }, 0.1);
     }
 }

@@ -26,7 +26,7 @@ class TaskService
      */
     public function create(TaskDTO $taskDTO): Task
     {
-        $task = Task::buildTask($taskDTO, Container::get(IProjectRepository::class));
+        $task = TaskFactory::create($taskDTO, Container::get(IProjectRepository::class));
 
         // 存储到数据库
         $this->taskRepository->addTask($task);
@@ -37,17 +37,13 @@ class TaskService
     /**
      * 切换任务状态
      */
-    public function switchStatus(string $taskId, int $newStatus)
+    public function switchStatus(Task $task, int $newStatus)
     {
-        if (!$task = $this->taskRepository->getTaskById($taskId)) {
-            throw new Exception("任务不存在：{$taskId}", ErrCode::TASK_NOT_EXISTS);
-        }
-
         $oldStatus = $task->status();
         $task->switchStatus($newStatus);
         
-        if (!$this->taskRepository->changeTaskStatus($taskId, $newStatus, $oldStatus)) {
-            throw new Exception("修改任务状态失败：存储失败。{$taskId}：{$oldStatus} -> {$newStatus}", ErrCode::INVALID_STATUS_OP);
+        if (!$this->taskRepository->changeTaskStatus($$task->id(), $newStatus, $oldStatus)) {
+            throw new Exception("修改任务状态失败：存储失败。{$task->id()}：{$oldStatus} -> {$newStatus}", ErrCode::INVALID_STATUS_OP);
         }
     }
 }

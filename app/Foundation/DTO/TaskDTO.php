@@ -22,7 +22,7 @@ class TaskDTO extends DTO
     public $etime;// 最后执行时间
     public $ftime;// 执行完成时间
     public $status;// 状态
-    public $execNum;// 执行次数
+    public $retryNum;// 重试次数
 
     public function __construct(array $data = [])
     {

@@ -7,6 +7,7 @@ use App\Domain\Project\IProjectRepository;
 use WecarSwoole\Repository\MySQLRepository;
 use App\Domain\Task\ITaskRepository;
 use App\Domain\Task\Task;
+use App\Domain\Task\TaskFactory;
 use App\Foundation\DTO\TaskDTO;
 use Exception;
 use WecarSwoole\Container;
@@ -33,7 +34,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'callback' => $task->callbackURI()->url(),
             'step' => $task->source()->step(),
             'status' => $task->status,
-            'exec_num' => $task->execNum,
+            'retry_num' => 0,
             'ctime' => $task->createTime,
             'utime' => $task->createTime,
             'etime' => $task->lastExecTime,
@@ -65,7 +66,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             return null;
         }
 
-        $task = Task::buildTask($this->buildTaskDTO($info), Container::get(IProjectRepository::class));
+        $task = TaskFactory::create($this->buildTaskDTO($info), Container::get(IProjectRepository::class));
 
         return $task;
     }

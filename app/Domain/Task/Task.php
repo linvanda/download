@@ -2,17 +2,11 @@
 
 namespace App\Domain\Task;
 
-use App\Domain\File\CSV;
-use App\Domain\File\Excel;
 use App\Domain\File\ObjectFile;
-use App\Domain\Project\IProjectRepository;
 use App\Domain\Project\Project;
 use App\ErrCode;
-use App\Foundation\DTO\TaskDTO;
-use WecarSwoole\Container;
 use WecarSwoole\Entity;
 use WecarSwoole\Exceptions\Exception;
-use WecarSwoole\ID\IIDGenerator;
 
 class Task extends Entity
 {
@@ -22,8 +16,24 @@ class Task extends Entity
     public const STATUS_DOING = 2;
     // 处理成功
     public const STATUS_SUC = 3;
-    // 处理失败
+    // 处理失败（该失败可重试，重试次数超限则会转入 STATUS_ERR）
     public const STATUS_FAILED = 4;
+    // 处理失败，该失败不可重试
+    public const STATUS_ERR = 5;
+
+    /**
+     * 状态转换表（状态机的查找表实现）
+     * 二维数组的第一维的 key 表示当前状态，第二维的 key 表示新状态，第二维的 value 表示是否允许该状态转换
+     * (注意状态的值是从 1 开始，而数组下标是从 0 开始，即将状态值 - 1)
+     * （自己到自己如状态 a -> a 被认为是允许的，实际是没有任何转换）
+     */
+    private const STATUS_TRANS_MAP = [
+        [true, true, false, false, false],
+        [false, true, true, true, true],
+        [false, false, true, false, false],
+        [true, false, false, true, true],
+        [false, false, false, false, true]
+    ];
 
     // 任务 id
     protected $id;
@@ -47,13 +57,13 @@ class Task extends Entity
     protected $finishedTime;
     // 任务状态
     protected $status;
-    // 任务执行次数
-    protected $execNum;
+    // 重试次数
+    protected $retryNum;
 
     /**
      * 外界必须通过工厂方法来创建
      */
-    protected function __construct(
+    public function __construct(
         string $id,
         string $name,
         Project $project,
@@ -111,70 +121,15 @@ class Task extends Entity
      */
     public function switchStatus(int $newStatus)
     {
-        if (!in_array($newStatus, [self::STATUS_TODO, self::STATUS_DOING, self::STATUS_SUC, self::STATUS_FAILED])) {
-            throw new Exception("非法的任务状态：{$newStatus}", ErrCode::INVALID_STATUS_OP);
-        }
+        // 查找表数组下表从 0 开始，要用状态值 - 1
+        $newPos = $newStatus - 1;
+        $oldPos = $this->status - 1;
+        $canTrans = self::STATUS_TRANS_MAP[$oldPos][$newPos];
 
-        if (!$this->isStatusValid($newStatus)) {
+        if (!$canTrans) {
             throw new Exception("非法的状态切换：{$this->status} -> {$newStatus}", ErrCode::INVALID_STATUS_OP);
         }
 
         $this->status = $newStatus;
-    }
-
-    /**
-     * 工厂方法：创建 task 对象
-     */
-    public static function buildTask(TaskDTO $taskDTO, IProjectRepository $projectRepository): Task
-    {
-        if (!$project = $projectRepository->getProjectById($taskDTO->projectId)) {
-            throw new Exception("创建任务失败：项目不存在", ErrCode::PROJ_NOT_EXISTS);
-        }
-
-        $id = $taskDTO->id ?? Container::get(IIDGenerator::class)->id();
-        
-        $source = new Source(new URI($taskDTO->sourceUrl), intval($taskDTO->step) ?: Source::STEP_DEFAULT);
-        $objectFile = self::buildObjectFile($taskDTO);
-        $callback = new URI($taskDTO->callback ?: '');
-
-        // 基于 DTO 创建 Task 对象
-        $task = new Task($id, $taskDTO->name, $project, $source, $objectFile, $callback, $taskDTO->operatorId ?: '');
-        // 其他属性设置
-        $task->createTime = $taskDTO->ctime ?: time();
-        $task->lastExecTime = $taskDTO->etime ?: 0;
-        $task->finishedTime = $taskDTO->ftime ?: 0;
-        $task->status = $taskDTO->status ?: Task::STATUS_TODO;
-        $task->execNum = $taskDTO->execNum ?: 0;
-
-        return $task;
-    }
-
-    protected static function buildObjectFile(TaskDTO $taskDTO): ObjectFile
-    {
-        switch ($taskDTO->type ?: ObjectFile::TYPE_CSV) {
-            case ObjectFile::TYPE_CSV:
-                return new CSV($taskDTO->fileName ?: '', $taskDTO->template ?: null);
-            case ObjectFile::TYPE_EXCEL:
-                return new Excel($taskDTO->fileName ?: '', $taskDTO->template ?: null, $taskDTO->title ?: '', $taskDTO->summary ?: '');
-            default:
-                throw new Exception("不支持的文件类型", ErrCode::FILE_TYPE_ERR);
-        }
-    }
-
-    /**
-     * 检测状态切换是否合法
-     */
-    private function isStatusValid(int $newStatus): bool
-    {
-        if (
-            $newStatus == self::STATUS_TODO && $this->status != self::STATUS_FAILED
-            || $newStatus == self::STATUS_DOING && $this->status != self::STATUS_TODO
-            || $newStatus == self::STATUS_SUC && $this->status != self::STATUS_DOING
-            || $newStatus == self::STATUS_FAILED && $this->status != self::STATUS_DOING
-        ) {
-                return false;
-        }
-
-        return true;
     }
 }
