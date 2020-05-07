@@ -14,6 +14,10 @@ use WecarSwoole\Container;
 
 class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
 {
+    public function __construct()
+    {
+        parent::__construct();
+    }
     protected function dbAlias(): string
     {
         return 'download';
@@ -121,13 +125,13 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
 
     protected function buildTaskDTO(array $info): ?TaskDTO
     {
-        $extra = $info['extra'] ? json_decode($info['extra'], true) : [];
+        $extra = isset($info['extra']) ? json_decode($info['extra'], true) : [];
 
         $taskDTO = new TaskDTO(
             array_merge(
                 $info,
                 [
-                    'template' => $extra['template'] ? unserialize($extra['template']) : null,
+                    'template' => isset($extra['template']) ? unserialize($extra['template']) : null,
                     'title' => $extra['title'] ?? '',
                     'summary' => $extra['summary'] ?? '',
                     'type' => array_flip(self::FILE_TYPE_MAP)[$info['type']],

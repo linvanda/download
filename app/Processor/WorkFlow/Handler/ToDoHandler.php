@@ -10,7 +10,7 @@ use App\Processor\WorkFlow\WorkFlow;
  */
 class ToDoHandler extends WorkHandler
 {
-    protected function handleStatus(): int
+    public function handleStatus(): int
     {
         return WorkFlow::WF_TODO;
     }
@@ -20,12 +20,13 @@ class ToDoHandler extends WorkHandler
      */
     protected function exec()
     {
-        Ticket::get("task_source");
+        // Ticket::get("task_source");
 
-        go(function () {
-            // TODO 拉取源数据
+        // go(function () {
+        //     // TODO 拉取源数据
 
-            Ticket::done("task_source");
-        });
+        //     Ticket::done("task_source");
+        // });
+        $this->notify(WorkFlow::WF_SOURCE_READY);
     }
 }

@@ -9,7 +9,7 @@ use App\Processor\WorkFlow\WorkFlow;
  */
 class SourceReadyHandler extends WorkHandler
 {
-    protected function handleStatus(): int
+    public function handleStatus(): int
     {
         return WorkFlow::WF_SOURCE_READY;
     }
@@ -19,6 +19,6 @@ class SourceReadyHandler extends WorkHandler
      */
     protected function exec()
     {
-        
+        $this->notify(WorkFlow::WF_OBJECT_READY);
     }
 }

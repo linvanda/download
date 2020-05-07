@@ -2,6 +2,7 @@
 
 namespace App\Processor\WorkFlow\Handler;
 
+use App\Domain\Task\Task;
 use App\Processor\WorkFlow\WorkFlow;
 
 /**
@@ -38,7 +39,7 @@ abstract class WorkHandler
      * 处理逻辑
      * @param int $workStatus 工作流执行状态
      */
-    function handle(int $workStatus)
+    public function handle(int $workStatus)
     {
         if ($this->handleStatus() !== $workStatus) {
             // 本处理程序不需要处理，交给下游
@@ -47,6 +48,7 @@ abstract class WorkHandler
         }
 
         // 自己能处理，则处理掉，同时不再传递给下游
+        echo "处理任务{$this->workFlow->task()->id()}的状态{$workStatus}\n";
         $this->exec();
     }
 
@@ -54,7 +56,17 @@ abstract class WorkHandler
      * 每个处理程序负责处理的工作流节点状态
      * 只有符合自己状态的处理请求到来时才会处理
      */
-    abstract protected function handleStatus(): int;
+    abstract public function handleStatus(): int;
+
+    protected function notify(int $status)
+    {
+        $this->workFlow->notify($status);
+    }
+
+    protected function task(): Task
+    {
+        return $this->workFlow->task();
+    }
 
     /**
      * 每个处理程序具体的处理逻辑

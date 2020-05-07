@@ -3,13 +3,11 @@
 namespace App\Processor\WorkFlow;
 
 use App\Domain\Task\Task;
-use App\Processor\WorkFlow\Handler\ObjectFailedHandler;
+use App\Processor\TaskManager;
 use App\Processor\WorkFlow\Handler\ObjectReadyHandler;
 use App\Processor\WorkFlow\Handler\ReDoHandler;
-use App\Processor\WorkFlow\Handler\SourceFailedHandler;
 use App\Processor\WorkFlow\Handler\SourceReadyHandler;
 use App\Processor\WorkFlow\Handler\ToDoHandler;
-use App\Processor\WorkFlow\Handler\UploadFailedHandler;
 use App\Processor\WorkFlow\Handler\UploadSuccessHandler;
 use App\Processor\WorkFlow\Handler\WorkHandler;
 use EasySwoole\Component\Singleton;
@@ -44,11 +42,10 @@ class WorkFlow
     public const WF_UPLOAD_FAILED = 8;
     // 重试
     public const WF_REDO = 9;
-
-    // 工作流的这些状态视为完成状态（没有后续节点需要执行了）
-    private const WF_FIN_STATUS = [
-
-    ];
+    // 通知客户端完成
+    public const WF_NOTIFY_DONE = 10;
+    // 通用的执行完成状态，该状态没有处理程序处理，一般用来结束工作流
+    public const WF_DONE = 100;
 
     // 工作流第一个执行节点
     private $firstStatus = self::WF_TODO;
@@ -69,8 +66,10 @@ class WorkFlow
      * @var int 工作流当前执行状态
      */
     private $currentStatus;
+    // 该工作流能够处理的状态（节点）列表
+    private $handleStatus = [];
 
-    private function __constructor(Task $task)
+    private function __construct(Task $task)
     {
         $this->task = $task;
         $this->currentStatus = self::WF_INIT;
@@ -81,7 +80,15 @@ class WorkFlow
      */
     public function task(): Task
     {
-        return $this->taskId;
+        return $this->task;
+    }
+
+    /**
+     * 工作流当前状态
+     */
+    public function status(): int
+    {
+        return $this->currentStatus;
     }
 
     /**
@@ -98,6 +105,13 @@ class WorkFlow
      */
     public function notify(int $workStatus)
     {
+        $this->currentStatus = $workStatus;
+        if (!in_array($workStatus, $this->handleStatus)) {
+            // 没有处理程序处理该状态，结束工作流
+            TaskManager::getInstance()->finish($this->task);
+            return;
+        }
+
         $this->handle($workStatus);
     }
 
@@ -109,14 +123,11 @@ class WorkFlow
         $workFlow = new self($task);
 
         // 添加节点处理程序
-        $this->addHandler(new ToDoHandler($this))
-             ->addHandler(new SourceReadyHandler($this))
-             ->addHandler(new SourceFailedHandler($this))
-             ->addHandler(new ObjectReadyHandler($this))
-             ->addHandler(new ObjectFailedHandler($this))
-             ->addHandler(new UploadSuccessHandler($this))
-             ->addHandler(new UploadFailedHandler($this))
-             ->addHandler(new ReDoHandler($this));
+        $workFlow->addHandler(new ToDoHandler($workFlow))
+             ->addHandler(new SourceReadyHandler($workFlow))
+             ->addHandler(new ObjectReadyHandler($workFlow))
+             ->addHandler(new UploadSuccessHandler($workFlow))
+             ->addHandler(new ReDoHandler($workFlow));
 
         return $workFlow;
     }
@@ -134,12 +145,18 @@ class WorkFlow
      */
     private function addHandler(WorkHandler $workHandler): WorkFlow
     {
+        if (in_array($workHandler->handleStatus(), $this->handleStatus)) {
+            return $this;
+        }
+
         if (!$this->head) {
             $this->head = $workHandler;
         } else {
             $this->tail->setSuccessor($workHandler);
         }
         $this->tail = $workHandler;
+
+        $this->handleStatus[] = $workHandler->handleStatus();
 
         return $this;
     }

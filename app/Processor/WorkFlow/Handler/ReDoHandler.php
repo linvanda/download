@@ -9,7 +9,7 @@ use App\Processor\WorkFlow\WorkFlow;
  */
 class ReDoHandler extends WorkHandler
 {
-    protected function handleStatus(): int
+    public function handleStatus(): int
     {
         return WorkFlow::WF_REDO;
     }

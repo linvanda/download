@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\Domain\Task\ITaskRepository;
+use App\Domain\Task\TaskService;
 use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
 use App\Processor\TaskManager;
@@ -39,11 +40,11 @@ class Task extends Controller
 
     /**
      * 投递任务
-     * 插入数据库 -> 投递到队列中
      */
     public function deliver()
     {
-        $task = TaskManager::getInstance()->newTask(new TaskDTO($this->params()));
+        $task = Container::get(TaskService::class)->create(new TaskDTO($this->params()));
+        TaskManager::getInstance()->deliver($task);
         $this->return(['task_id' => $task->id()]);
     }
 
@@ -68,7 +69,7 @@ class Task extends Controller
             $this->params('project_id'),
             $this->params('page'),
             $this->params('page_size'),
-            $this->params('status') ?: 0,
+            $this->params('status') ?: 0
         );
 
         if (!$data['total']) {

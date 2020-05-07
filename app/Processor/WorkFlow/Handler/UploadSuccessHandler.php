@@ -9,7 +9,7 @@ use App\Processor\WorkFlow\WorkFlow;
  */
 class UploadSuccessHandler extends WorkHandler
 {
-    protected function handleStatus(): int
+    public function handleStatus(): int
     {
         return WorkFlow::WF_UPLOAD_SUC;
     }
@@ -19,6 +19,6 @@ class UploadSuccessHandler extends WorkHandler
      */
     protected function exec()
     {
-        
+        $this->notify(WorkFlow::WF_NOTIFY_DONE);
     }
 }

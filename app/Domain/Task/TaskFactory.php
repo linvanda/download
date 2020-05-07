@@ -34,11 +34,11 @@ class TaskFactory
         // 基于 DTO 创建 Task 对象
         $task = new Task($id, $taskDTO->name, $project, $source, $objectFile, $callback, $taskDTO->operatorId ?: '');
         // 其他属性设置
-        $task->createTime = $taskDTO->ctime ?: time();
-        $task->lastExecTime = $taskDTO->etime ?: 0;
-        $task->finishedTime = $taskDTO->ftime ?: 0;
-        $task->status = $taskDTO->status ?: Task::STATUS_TODO;
-        $task->execNum = $taskDTO->execNum ?: 0;
+        $task->createTime = $taskDTO->ctime ?? time();
+        $task->lastExecTime = $taskDTO->etime ?? 0;
+        $task->finishedTime = $taskDTO->ftime ?? 0;
+        $task->status = $taskDTO->status ?? Task::STATUS_TODO;
+        $task->retryNum = $taskDTO->retryNum ?? 0;
 
         return $task;
     }

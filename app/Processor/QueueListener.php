@@ -2,10 +2,12 @@
 
 namespace App\Processor;
 
+use App\Domain\Task\ITaskRepository;
 use EasySwoole\EasySwoole\Config;
 use EasySwoole\Queue\Job;
 use App\Foundation\Queue\Queue;
-use App\Processor\WorkFlow\WorkFlow;
+use Psr\Log\LoggerInterface;
+use WecarSwoole\Container;
 
 /**
  * 队列监听
@@ -24,8 +26,13 @@ class QueueListener
                 return;
             }
 
-            // 交给任务处理器
-            TaskManager::getInstance()->notify($data['task_id'], WorkFlow::WF_TODO);
+            if (!$task = Container::get(ITaskRepository::class)->getTaskById($data['task_id'])) {
+                Container::get(LoggerInterface::class)->error("处理任务失败：任务不存在：{$data['task_id']}");
+                return;
+            }
+
+            // 交给任务管理器处理
+            TaskManager::getInstance()->process($task);
         }, 0.1);
     }
 }
