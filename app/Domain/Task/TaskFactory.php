@@ -6,6 +6,8 @@ use App\Domain\Object\CSV;
 use App\Domain\Object\Excel;
 use App\Domain\Object\ObjectFile;
 use App\Domain\Project\IProjectRepository;
+use App\Domain\Source\Source;
+use App\Domain\URI;
 use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
 use WecarSwoole\Container;

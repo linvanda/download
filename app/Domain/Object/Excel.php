@@ -9,6 +9,10 @@ class Excel extends ObjectFile
 {
     protected $title;
     protected $summary;
+    // 表头
+    protected $header = [];
+    // 表尾
+    protected $footer = [];
 
     public function __construct(string $fileName = '', $tplCfg = null, string $title = '', string $summary = '')
     {
@@ -32,5 +36,25 @@ class Excel extends ObjectFile
     public function summary(): string
     {
         return $this->summary;
+    }
+
+    public function setHeader(array $header)
+    {
+        $this->header = $header;
+    }
+
+    public function header(): array
+    {
+        return $this->header;
+    }
+
+    public function setFooter(array $footer)
+    {
+        $this->footer = $footer;
+    }
+
+    public function footer(): array
+    {
+        return $this->footer;
     }
 }

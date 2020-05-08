@@ -3,18 +3,22 @@
 namespace App\Domain\Source;
 
 use App\Domain\Task\Task;
+use App\Foundation\Client\API;
 
 /**
  * 源数据服务
  */
 class SourceDataService
 {
-    /**
-     * 从源服务器拉取数据并存储到本地临时文件中
-     */
-    public function fetchSourceData(Task $task)
+    public function fetch(Task $task)
     {
-        // 获取动态元数据信息
-        
+        // 获取元数据
+        (new MetaData($task, new API($task->source()->uri()->url())))->fetch();
+        // 获取数据
+        (new SourceData(
+            new API($task->source()->uri()->url()),
+            
+            $task->source()->step()
+        ))->fetch();
     }
 }

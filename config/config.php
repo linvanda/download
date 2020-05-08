@@ -117,6 +117,7 @@ $baseConfig = [
     'base_url' => apollo('application', 'base_url'),
     'task_queue' => 'tasks', 
     'task_concurrent_limit' => apollo('application', 'task_concurrent_limit') ?: 15,
+    'local_file_base_dir' => File::join(EASYSWOOLE_ROOT, 'storage/data'),
 ];
 
 return array_merge(

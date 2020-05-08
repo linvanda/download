@@ -31,7 +31,7 @@ class ObjectFile
     {
         $this->setType($type);
         $this->setFileName($fileName);
-        $this->tpl = $tpl === null || $tpl instanceof Tpl ? $tpl : TplFactory::build($tpl);
+        $this->setTemplate($tpl);
     }
 
     public function fileName(): string
@@ -47,6 +47,11 @@ class ObjectFile
     public function template(): ?Tpl
     {
         return $this->tpl;
+    }
+
+    public function setTemplate($tpl)
+    {
+        $this->tpl = $tpl === null || $tpl instanceof Tpl ? $tpl : TplFactory::build($tpl);
     }
 
     protected function setType(string $type)

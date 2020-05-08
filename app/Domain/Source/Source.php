@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Domain\Task;
+namespace App\Domain\Source;
+
+use App\Domain\URI;
 
 /**
  * 数据源

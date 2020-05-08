@@ -4,6 +4,8 @@ namespace App\Domain\Task;
 
 use App\Domain\Object\ObjectFile;
 use App\Domain\Project\Project;
+use App\Domain\Source\Source;
+use App\Domain\URI;
 use App\ErrCode;
 use WecarSwoole\Entity;
 use WecarSwoole\Exceptions\Exception;
