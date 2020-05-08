@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Domain\File;
+namespace App\Domain\Object;
 
-use App\Domain\File\Template\Excel\Tpl;
-use App\Domain\File\Template\Excel\TplFactory;
+use App\Domain\Object\Template\Excel\Tpl;
+use App\Domain\Object\Template\Excel\TplFactory;
 use App\ErrCode;
 use WecarSwoole\Exceptions\Exception;
 

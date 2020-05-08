@@ -2,7 +2,7 @@
 
 namespace App\Foundation\Repository\Task;
 
-use App\Domain\File\Excel;
+use App\Domain\Object\Excel;
 use App\Domain\Project\IProjectRepository;
 use WecarSwoole\Repository\MySQLRepository;
 use App\Domain\Task\ITaskRepository;

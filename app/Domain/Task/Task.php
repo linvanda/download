@@ -2,7 +2,7 @@
 
 namespace App\Domain\Task;
 
-use App\Domain\File\ObjectFile;
+use App\Domain\Object\ObjectFile;
 use App\Domain\Project\Project;
 use App\ErrCode;
 use WecarSwoole\Entity;

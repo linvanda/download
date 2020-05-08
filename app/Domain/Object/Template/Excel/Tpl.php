@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\File\Template\Excel;
+namespace App\Domain\Object\Template\Excel;
 
 /**
  * Excel 模板

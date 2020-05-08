@@ -20,13 +20,14 @@ class ToDoHandler extends WorkHandler
      */
     protected function exec()
     {
-        // Ticket::get("task_source");
+        // 获取票据（用于限制并发量）
+        Ticket::get("task_source");
 
-        // go(function () {
-        //     // TODO 拉取源数据
+        go(function () {
+            // TODO 拉取源数据
+            
 
-        //     Ticket::done("task_source");
-        // });
-        $this->notify(WorkFlow::WF_SOURCE_READY);
+            Ticket::done("task_source");
+        });
     }
 }
