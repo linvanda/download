@@ -13,10 +13,19 @@ use WecarSwoole\Util\File;
 class LocalFile
 {
     protected $taskId;
+    protected $file;
 
     public function __construct(string $taskId)
     {
-        $this->taskId = $taskId;    
+        $this->taskId = $taskId;
+        $this->openFile('w+'); 
+    }
+
+    public function __destruct()
+    {
+        if ($this->file) {
+            fclose($this->file);
+        }
     }
 
     protected function baseDir(): string
@@ -37,7 +46,7 @@ class LocalFile
             throw new FileException("打开文件失败:{$fileName}", ErrCode::FETCH_SOURCE_FAILED);
         }
 
-        return $file;
+        $this->file = $file;
     }
 
     /**

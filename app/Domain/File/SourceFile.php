@@ -11,17 +11,9 @@ use WecarSwoole\Util\File;
  */
 class SourceFile extends LocalFile
 {
-    private $file;
-
-    public function __construct(string $taskId)
-    {
-        parent::__construct($taskId);
-
-        $this->file = $this->openFile('w');
-    }
-
     /**
-     * 存储文件
+     * 存储数据到文件
+     * 存为 csv 格式
      * @param array $dataList 一维或二维数组
      */
     public function saveData(array $dataList)

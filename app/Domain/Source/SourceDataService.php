@@ -2,6 +2,7 @@
 
 namespace App\Domain\Source;
 
+use App\Domain\File\SourceFile;
 use App\Domain\Task\Task;
 use App\Foundation\Client\API;
 
@@ -17,7 +18,7 @@ class SourceDataService
         // 获取数据
         (new SourceData(
             new API($task->source()->uri()->url()),
-            
+            new SourceFile($task->id()),
             $task->source()->step()
         ))->fetch();
     }

@@ -2,8 +2,10 @@
 
 namespace App\Processor\WorkFlow\Handler;
 
+use App\Domain\Source\SourceDataService;
 use App\Processor\Ticket;
 use App\Processor\WorkFlow\WorkFlow;
+use WecarSwoole\Container;
 
 /**
  * 待处理处理程序
@@ -24,10 +26,17 @@ class ToDoHandler extends WorkHandler
         Ticket::get("task_source");
 
         go(function () {
-            // TODO 拉取源数据
-            
+            try {
+                Container::get(SourceDataService::class)->fetch($this->task());
+                // 获取源数据成功
+                $this->notify(WorkFlow::WF_SOURCE_READY);
+            } catch (\Exception $e) {
+                // 获取源数据失败，更新 task 状态
 
-            Ticket::done("task_source");
+                $this->notify(WorkFlow::WF_SOURCE_FAILED);
+            } finally {
+                Ticket::done("task_source");
+            }
         });
     }
 }
