@@ -39,6 +39,7 @@ class TaskFactory
         $task->createTime = $taskDTO->ctime ?? time();
         $task->lastExecTime = $taskDTO->etime ?? 0;
         $task->finishedTime = $taskDTO->ftime ?? 0;
+        $task->lastChangeStatusTime = $taskDTO->stime ?? 0;
         $task->status = $taskDTO->status ?? Task::STATUS_TODO;
         $task->retryNum = $taskDTO->retryNum ?? 0;
 

@@ -3,10 +3,12 @@
 namespace App\Foundation\Client;
 
 use App\ErrCode;
+use Psr\Log\LoggerInterface;
 use WecarSwoole\Client\API as BaseAPI;
 use WecarSwoole\Client\Response;
 use WecarSwoole\Exceptions\Exception;
 use Swoole\Coroutine as Co;
+use WecarSwoole\Container;
 
 class API
 {
@@ -53,6 +55,7 @@ class API
             $this->lastErrMsg = $result->getMessage();
 
             Co::sleep($this->calcIntervalTime());
+            Container::get(LoggerInterface::class)->warning("第{$this->retryNum}次重试{$this->url}，原因：{$this->lastErrMsg}");
         }
 
         return $result;

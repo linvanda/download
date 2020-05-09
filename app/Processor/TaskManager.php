@@ -3,6 +3,7 @@
 namespace App\Processor;
 
 use App\Domain\Task\Task;
+use App\Domain\Task\TaskService;
 use App\Foundation\Queue\Queue;
 use App\Processor\WorkFlow\WorkFlow;
 use EasySwoole\Component\Singleton;
@@ -48,6 +49,8 @@ class TaskManager
      */
     public function process(Task $task)
     {
+        // 将任务状态改成正在执行中
+        Container::get(TaskService::class)->switchStatus($task, Task::STATUS_DOING);
         try {
             /**
              * 启动工作流后有可能一直阻塞在这里直到工作流执行结束（同步模式），也有可能工作流内部
@@ -62,12 +65,19 @@ class TaskManager
     }
 
     /**
-     * 任务处理结束
+     * 结束任务
+     * @param Task $task
+     * @param int $result 处理结果：1 成功，2 失败
+     * @param string $msg 失败的情况下，失败原因
      */
-    public function finish(Task $task)
+    public function finish(Task $task, int $result = 1, string $msg = '')
     {
-        $this->logger->info("任务处理结束：{$task->id()}，任务状态：{$task->status()}");
+        // 修改任务状态
+        Container::get(TaskService::class)->switchStatus($task, $result == 1 ? Task::STATUS_SUC : Task::STATUS_FAILED);
+        // 清理工作流
         $this->clear($task);
+        
+        $this->logger->info("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}");
     }
 
     /**

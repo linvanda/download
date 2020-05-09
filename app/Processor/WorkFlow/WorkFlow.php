@@ -48,7 +48,14 @@ class WorkFlow
     public const WF_DONE = 100;
 
     // 工作流第一个执行节点
-    private $firstStatus = self::WF_TODO;
+    private const FIRST_STATUS = self::WF_TODO;
+
+    // 哪些状态表示工作流执行失败
+    private const FAILED_ENDS = [
+        self::WF_SOURCE_FAILED,
+        self::WF_OBJECT_FAILED,
+        self::WF_UPLOAD_FAILED,
+    ];
 
     /**
      * @var WorkHandler 工作流头节点处理程序，用来启动职责链的调用
@@ -96,20 +103,19 @@ class WorkFlow
      */
     public function start()
     {
-        $this->notify($this->firstStatus);
+        $this->notify(self::FIRST_STATUS);
     }
 
     /**
      * 通知工作流执行
      * 由于有些步骤可能是在单独的子协程或者 task 进程中执行的，只能通过调用此方法异步通知来告知工作流引擎当前是什么进度
      */
-    public function notify(int $workStatus)
+    public function notify(int $workStatus, string $msg = '')
     {
         $this->currentStatus = $workStatus;
         if (!in_array($workStatus, $this->handleStatus)) {
             // 没有处理程序处理该状态，结束工作流
-            TaskManager::getInstance()->finish($this->task);
-            return;
+            return $this->finishWorkFlow($workStatus, $msg);
         }
 
         $this->handle($workStatus);
@@ -130,6 +136,11 @@ class WorkFlow
              ->addHandler(new ReDoHandler($workFlow));
 
         return $workFlow;
+    }
+
+    protected function finishWorkFlow(int $status, string $msg)
+    {
+        TaskManager::getInstance()->finish($this->task, in_array($status, self::FAILED_ENDS) ? 2 : 1, $msg);
     }
 
     /**

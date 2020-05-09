@@ -29,5 +29,5 @@ interface ITaskRepository
      * 修改任务状态
      * @return bool 是否修改成功
      */
-    public function changeTaskStatus(string $taskId, int $newStatus, int $oldStatus): bool;
+    public function changeTaskStatus(Task $task, int $oldStatus): bool;
 }

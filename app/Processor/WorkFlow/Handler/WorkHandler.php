@@ -58,9 +58,9 @@ abstract class WorkHandler
      */
     abstract public function handleStatus(): int;
 
-    protected function notify(int $status)
+    protected function notify(int $status, string $msg = '')
     {
-        $this->workFlow->notify($status);
+        $this->workFlow->notify($status, $msg);
     }
 
     protected function task(): Task

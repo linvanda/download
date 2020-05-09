@@ -14,10 +14,6 @@ use WecarSwoole\Container;
 
 class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
     protected function dbAlias(): string
     {
         return 'download';
@@ -43,6 +39,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'utime' => $task->createTime,
             'etime' => $task->lastExecTime,
             'ftime' => $task->finishedTime,
+            'stime' => $task->lastChangeStatusTime,
         ];
 
         $extra = [];
@@ -112,12 +109,20 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         return $list;
     }
 
-    public function changeTaskStatus(string $taskId, int $newStatus, int $oldStatus): bool
+    public function changeTaskStatus(Task $task, int $oldStatus): bool
     {
+        // 注意 where 条件要加上 old status 判断，做乐观锁控制（防止并发修改导致数据错误）
         $this->query
         ->update('task')
-        ->set(['status' => $newStatus, 'utime' => time()])
-        ->where(['id' => $taskId, 'status' => $oldStatus])
+        ->set([
+            'status' => $task->status(),
+            'utime' => time(),
+            'etime' => $task->lastExecTime,
+            'ftime' => $task->finishedTime,
+            'stime' => $task->lastChangeStatusTime,
+            'retry_num' => $task->retryNum,
+        ])
+        ->where(['id' => $task->id(), 'status' => $oldStatus])
         ->execute();
 
         return $this->query->affectedRows() > 0;

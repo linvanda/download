@@ -28,12 +28,9 @@ class ToDoHandler extends WorkHandler
         go(function () {
             try {
                 Container::get(SourceDataService::class)->fetch($this->task());
-                // 获取源数据成功
                 $this->notify(WorkFlow::WF_SOURCE_READY);
             } catch (\Exception $e) {
-                // 获取源数据失败，更新 task 状态
-
-                $this->notify(WorkFlow::WF_SOURCE_FAILED);
+                $this->notify(WorkFlow::WF_SOURCE_FAILED, $e->getMessage());
             } finally {
                 Ticket::done("task_source");
             }

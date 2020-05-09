@@ -22,6 +22,8 @@ class Task extends Entity
     public const STATUS_FAILED = 4;
     // 处理失败，该失败不可重试
     public const STATUS_ERR = 5;
+    // 最大处理次数
+    public const MAX_RETRY_NUM = 4;
 
     /**
      * 状态转换表（状态机的查找表实现）
@@ -55,11 +57,13 @@ class Task extends Entity
     protected $createTime;
     // 任务最后处理时间
     protected $lastExecTime;
-    // 任务完成时间
+    // 任务执行成功的时间
     protected $finishedTime;
+    // 最后状态修改时间
+    protected $lastChangeStatusTime;
     // 任务状态
     protected $status;
-    // 重试次数
+    // 处理次数（包括第一次处理）
     protected $retryNum;
 
     /**
@@ -123,15 +127,41 @@ class Task extends Entity
      */
     public function switchStatus(int $newStatus)
     {
+        // 如果新状态是可重试失败，则要检查重试次数是否已经用完，如用完，则将状态改为不可重试的失败
+        if ($newStatus === self::STATUS_FAILED && $this->retryNum >= self::MAX_RETRY_NUM) {
+            $newStatus = self::STATUS_ERR;
+        }
+
+        $this->validateStatusChange($newStatus);
+
+        $time = time();
+        $this->status = $newStatus;
+        $this->lastChangeStatusTime = $time;
+
+        if ($newStatus == self::STATUS_SUC) {
+            $this->finishedTime = $time;
+        }
+
+        if ($newStatus == self::STATUS_DOING) {
+            $this->retryNum++;
+            $this->lastExecTime = $time;
+        }
+    }
+
+    private function validateStatusChange(int $newStatus)
+    {
         // 查找表数组下表从 0 开始，要用状态值 - 1
         $newPos = $newStatus - 1;
         $oldPos = $this->status - 1;
+
+        if (!isset(self::STATUS_TRANS_MAP[$oldPos][$newPos])) {
+            throw new Exception("非法的状态值：{$newStatus}", ErrCode::INVALID_STATUS_OP);
+        }
+
         $canTrans = self::STATUS_TRANS_MAP[$oldPos][$newPos];
 
         if (!$canTrans) {
             throw new Exception("非法的状态切换：{$this->status} -> {$newStatus}", ErrCode::INVALID_STATUS_OP);
         }
-
-        $this->status = $newStatus;
     }
 }

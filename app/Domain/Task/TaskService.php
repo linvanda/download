@@ -42,7 +42,7 @@ class TaskService
         $oldStatus = $task->status();
         $task->switchStatus($newStatus);
         
-        if (!$this->taskRepository->changeTaskStatus($$task->id(), $newStatus, $oldStatus)) {
+        if (!$this->taskRepository->changeTaskStatus($task, $oldStatus)) {
             throw new Exception("修改任务状态失败：存储失败。{$task->id()}：{$oldStatus} -> {$newStatus}", ErrCode::INVALID_STATUS_OP);
         }
     }
