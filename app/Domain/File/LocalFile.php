@@ -10,7 +10,7 @@ use WecarSwoole\Util\File;
 /**
  * 本地文件（源文件、目标文件）的操作类
  */
-class LocalFile
+abstract class LocalFile
 {
     protected $taskId;
     protected $file;
@@ -36,9 +36,9 @@ class LocalFile
     protected function openFile(string $mode)
     {
         $fileName = $this->fullFileName();
-        $dir = basename($fileName);
+        $dir = dirname($fileName);
         if (!file_exists($dir)) {
-            mkdir($dir, 0644, true);
+            mkdir($dir, 0744, true);
         }
 
         $file = fopen($fileName, $mode);

@@ -12,17 +12,6 @@ class Test extends Controller
 {
     public function index()
     {
-        go(function(){
-            for ($i = 0; $i < 30; $i++) {
-                Ticket::get("test");
-                echo "ticket get {$i}\n";
-            }
-        });
-
-        swoole_timer_tick(2000, function () {
-            Ticket::done('test');
-        });
-        echo "over\n";
         // ini_set("memory_limit", "1024M"); 
 
         // $spreadsheet = new Spreadsheet();
@@ -260,6 +249,11 @@ class Test extends Controller
 
         // $spreadsheet->disconnectWorksheets();
         // unset($spreadsheet);
+    }
+
+    public function sourceData()
+    {
+        $this->return([], 303, "error ocu");
     }
 
     /**

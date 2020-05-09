@@ -33,27 +33,32 @@ class SourceData
      */
     public function fetch()
     {
-        $page = 0;
-        $n = 0;
+        $page = $n = $cnt = $total = 0;
         
         while ($n++ < 1000000) {
             $result = $this->invoker->invoke(['page' => $page, 'page_size' => $this->step]);
             
             if (!$result || !isset($result['status']) || $result['status'] !== 200 || !isset($result['data']['data'])) {
-                throw new SourceException("获取源数据失败，返回错误：" . print_r($result, true), ErrCode::FETCH_SOURCE_FAILED);
+                throw new SourceException(
+                    "获取源数据失败，返回：" . print_r($result, true) . "。请求错误：",
+                    ErrCode::FETCH_SOURCE_FAILED
+                );
             }
 
             $data = $result['data']['data'];
+            $cnt += count($data);
 
             // 第一次获取数据时将 key 写入
             if ($n == 1 && count($data)) {
+                $total = $result['data']['total'];
                 $this->sourceFile->saveData(array_keys($data[0]));
             }
 
             // 存储数据
             $this->sourceFile->saveData($data);
 
-            if (count($data) < $this->step) {
+            // 为了健壮性，此处做了两方面的检测，防止对方接口有 bug 导致一直拉取数据
+            if (count($data) < $this->step || $cnt >= $total) {
                 break;
             }
 

@@ -1,7 +1,7 @@
 <?php
 
 use WecarSwoole\Client\Http\Component\DefaultHttpRequestAssembler;
-use WecarSwoole\Client\Http\Component\DefaultResponseParser;
+use WecarSwoole\Client\Http\Component\JsonResponseParser;
 use WecarSwoole\Client\Http\Middleware\LogRequestMiddleware;
 use WecarSwoole\Client\Http\Middleware\MockRequestMiddleware;
 
@@ -19,7 +19,7 @@ return [
             // 请求参数组装器
             'request_assembler' => DefaultHttpRequestAssembler::class,
             // 响应参数解析器
-            'response_parser' => DefaultResponseParser::class,
+            'response_parser' => JsonResponseParser::class,
             // 请求中间件，必须实现 \WecarSwoole\Client\Http\Middleware\IRequestMiddleware 接口
             'middlewares' => [
                 LogRequestMiddleware::class,
