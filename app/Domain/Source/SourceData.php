@@ -38,9 +38,16 @@ class SourceData
         while ($n++ < 1000000) {
             $result = $this->invoker->invoke(['page' => $page, 'page_size' => $this->step]);
             
-            if (!$result || !isset($result['status']) || $result['status'] !== 200 || !isset($result['data']['data'])) {
+            if (!$result || !isset($result['status']) || $result['status'] !== 200) {
                 throw new SourceException(
-                    "获取源数据失败，返回：" . print_r($result, true) . "。请求错误：",
+                    "获取源数据失败：返回：" . print_r($result, true),
+                    ErrCode::FETCH_SOURCE_FAILED
+                );
+            }
+
+            if (!isset($result['data']['data']) || !isset($result['data']['total'])) {
+                throw new SourceException(
+                    "获取源数据失败：数据格式错误：" . print_r($result, true),
                     ErrCode::FETCH_SOURCE_FAILED
                 );
             }

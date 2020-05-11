@@ -20,7 +20,7 @@ class ColHeadParser
     public function parse(array $config): ColHead
     {
         // 创建顶层节点
-        $top = new ColHead('', '', null, 'auto');
+        $top = new ColHead('', '', null, ColHead::DT_STR);
         foreach ($config as $colCfg) {
             $top->appendChild($this->parseNode($colCfg));
         }
@@ -42,7 +42,7 @@ class ColHeadParser
         ];
         $style = new Style($styleCfg);
 
-        $col = new ColHead($colCfg['name'] ?? '', $colCfg['title'] ?? '', $style, $colCfg['type'] ?? ColHead::DT_AUTO);
+        $col = new ColHead($colCfg['name'] ?? '', $colCfg['title'] ?? '', $style, $colCfg['type'] ?? ColHead::DT_STR);
 
         if (isset($colCfg['children']) && $colCfg['children']) {
             foreach ($colCfg['children'] as $subColCfg) {

@@ -38,8 +38,16 @@ class TableTpl
      */
     public static function getDefaultTplFromData(array $data): array
     {
-        return array_map(function ($title) {
-            return ['name' => $title, 'title' => $title];
-        }, array_keys($data));
+        $cfg = [];
+
+        foreach ($data as $key => $val) {
+            $cfg[] = [
+                'name' => $key,
+                'title' => $key,
+                'type' => is_int($val) || is_float($val) ? ColHead::DT_NUM : ColHead::DT_STR,
+            ];
+        }
+
+        return $cfg;
     }
 }

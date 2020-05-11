@@ -39,7 +39,7 @@ class Excel extends Obj
         $this->tableTpl = $tableTpl === null || $tableTpl instanceof TableTpl ? $tableTpl : TableTplFactory::build($tableTpl);
     }
 
-    public function tableTpl(): TableTpl
+    public function tableTpl(): ?TableTpl
     {
         return $this->tableTpl;
     }

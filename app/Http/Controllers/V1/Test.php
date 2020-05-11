@@ -253,7 +253,35 @@ class Test extends Controller
 
     public function sourceData()
     {
-        $this->return([], 303, "error ocu");
+        $data = [];
+
+        for ($i = 0; $i < 10; $i++) {
+            $data[] = ['name' => '三', 'age' => mt_rand(10, 100), 'city' => ['深圳', '上海'][mt_rand(0,1)]];
+        }
+
+        $this->return([
+            'data' => $data,
+            'total' => 10000,
+            'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d H:i:s')],
+            'footer' => ['负责人' => '松林', '签名' => ''],
+            'template' => [
+                [
+                    'name' => 'name',
+                    'title' => '姓名',
+                    'type' => 'string',
+                    'color' => 'red',
+                ],
+                [
+                    'name' => 'age',
+                    'title' => '年龄',
+                    'type' => 'number',
+                ],
+                [
+                    'name' => 'city',
+                    'title' => '城市'
+                ]
+            ]
+        ]);
     }
 
     /**
