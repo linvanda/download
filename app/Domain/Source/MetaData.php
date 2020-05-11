@@ -3,7 +3,7 @@
 namespace App\Domain\Source;
 
 use App\Domain\Object\Excel;
-use App\Domain\Object\Object;
+use App\Domain\Object\Obj;
 use App\Domain\Object\Template\Excel\TableTpl;
 use App\Domain\Task\Task;
 use App\ErrCode;
@@ -57,7 +57,7 @@ class MetaData
     private function setMetaData(array $info)
     {
         switch ($this->task->object()->type()) {
-            case Object::TYPE_EXCEL:
+            case Obj::TYPE_EXCEL:
                 $this->setExcelMetaData($info['data'] ?? [], $info['template'] ?? [], $info['header'] ?? [], $info['footer'] ?? []);
                 break;
         }

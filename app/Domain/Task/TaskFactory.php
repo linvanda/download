@@ -4,7 +4,7 @@ namespace App\Domain\Task;
 
 use App\Domain\Object\CSV;
 use App\Domain\Object\Excel;
-use App\Domain\Object\Object;
+use App\Domain\Object\Obj;
 use App\Domain\Project\IProjectRepository;
 use App\Domain\Source\Source;
 use App\Domain\URI;
@@ -48,10 +48,10 @@ class TaskFactory
 
     protected static function buildObject(TaskDTO $taskDTO): Object
     {
-        switch ($taskDTO->type ?: Object::TYPE_CSV) {
-            case Object::TYPE_CSV:
+        switch ($taskDTO->type ?: Obj::TYPE_CSV) {
+            case Obj::TYPE_CSV:
                 return new CSV($taskDTO->fileName ?: '', $taskDTO->template ?: null);
-            case Object::TYPE_EXCEL:
+            case Obj::TYPE_EXCEL:
                 return new Excel($taskDTO->fileName ?: '', $taskDTO->template ?: null, $taskDTO->title ?: '', $taskDTO->summary ?: '');
             default:
                 throw new Exception("不支持的文件类型", ErrCode::FILE_TYPE_ERR);

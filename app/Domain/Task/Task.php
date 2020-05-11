@@ -2,7 +2,7 @@
 
 namespace App\Domain\Task;
 
-use App\Domain\Object\Object;
+use App\Domain\Object\Obj;
 use App\Domain\Project\Project;
 use App\Domain\Source\Source;
 use App\Domain\URI;
@@ -74,7 +74,7 @@ class Task extends Entity
         string $name,
         Project $project,
         Source $source,
-        Object $object,
+        Obj $object,
         URI $callback = null,
         string $operator = ''
     ) {
@@ -107,7 +107,7 @@ class Task extends Entity
         return $this->source;
     }
 
-    public function object(): Object
+    public function object(): Obj
     {
         return $this->object;
     }

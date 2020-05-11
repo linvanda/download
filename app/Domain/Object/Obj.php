@@ -2,15 +2,13 @@
 
 namespace App\Domain\Object;
 
-use App\Domain\Object\Template\Excel\TableTpl;
-use App\Domain\Object\Template\Excel\TableTplFactory;
 use App\ErrCode;
 use WecarSwoole\Exceptions\Exception;
 
 /**
  * 目标文件
  */
-class Object
+class Obj
 {
     public const TYPE_CSV = 'csv';
     public const TYPE_EXCEL = 'excel';

@@ -5,7 +5,7 @@ namespace App\Domain\Object;
 /**
  * 目标文件：CSV
  */
-class CSV extends Object
+class CSV extends Obj
 {
     public function __construct(string $fileName = '')
     {

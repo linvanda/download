@@ -8,7 +8,7 @@ use App\Domain\Object\Template\Excel\TableTpl;
 /**
  * 目标文件：Excel
  */
-class Excel extends Object
+class Excel extends Obj
 {
     protected $title;
     protected $summary;
