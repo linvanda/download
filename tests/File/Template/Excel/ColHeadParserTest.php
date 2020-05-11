@@ -14,7 +14,7 @@ class ColHeadParserTest extends TestCase
 {
     public function testParse()
     {
-        $cfgStr = '{
+        $cfgStr = '[{
             "name": "money",
             "title": "标题1",
             "type": "auto",
@@ -70,7 +70,7 @@ class ColHeadParserTest extends TestCase
                     }]
                 }
             ]
-        }';
+        }]';
         $cfg = json_decode($cfgStr, true);
         /**
          * @var ColHead

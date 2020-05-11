@@ -7,8 +7,8 @@ namespace App\Domain\Object;
  */
 class CSV extends Object
 {
-    public function __construct(string $fileName = '', $tpl)
+    public function __construct(string $fileName = '')
     {
-        parent::__construct($fileName, self::TYPE_CSV, $tpl);
+        parent::__construct($fileName, self::TYPE_CSV);
     }
 }

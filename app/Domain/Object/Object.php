@@ -2,8 +2,8 @@
 
 namespace App\Domain\Object;
 
-use App\Domain\Object\Template\Excel\Tpl;
-use App\Domain\Object\Template\Excel\TplFactory;
+use App\Domain\Object\Template\Excel\TableTpl;
+use App\Domain\Object\Template\Excel\TableTplFactory;
 use App\ErrCode;
 use WecarSwoole\Exceptions\Exception;
 
@@ -22,16 +22,11 @@ class Object
 
     protected $fileName;
     protected $type;
-    /**
-     * @var Tpl
-     */
-    protected $tpl;
 
-    public function __construct(string $fileName = '', string $type = 'csv', $tpl = null)
+    public function __construct(string $fileName = '', string $type = 'csv')
     {
         $this->setType($type);
         $this->setFileName($fileName);
-        $this->setTemplate($tpl);
     }
 
     public function fileName(): string
@@ -42,16 +37,6 @@ class Object
     public function type(): string
     {
         return $this->type;
-    }
-
-    public function template(): ?Tpl
-    {
-        return $this->tpl;
-    }
-
-    public function setTemplate($tpl)
-    {
-        $this->tpl = $tpl === null || $tpl instanceof Tpl ? $tpl : TplFactory::build($tpl);
     }
 
     protected function setType(string $type)

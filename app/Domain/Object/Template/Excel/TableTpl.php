@@ -3,9 +3,9 @@
 namespace App\Domain\Object\Template\Excel;
 
 /**
- * Excel 模板
+ * Excel 表格模板
  */
-class Tpl
+class TableTpl
 {
     /**
      * @var ColHead 列标头
@@ -30,5 +30,16 @@ class Tpl
     public function rowHead(): ?RowHead
     {
         return $this->row;
+    }
+
+    /**
+     * 从数据中解析默认模板
+     * @param array $data 一维数组，如 ["name" => "张三", "age" => 89]
+     */
+    public static function getDefaultTplFromData(array $data): array
+    {
+        return array_map(function ($title) {
+            return ['name' => $title, 'title' => $title];
+        }, array_keys($data));
     }
 }

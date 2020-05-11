@@ -5,12 +5,15 @@ namespace App\Domain\Object\Template\Excel;
 use App\ErrCode;
 use WecarSwoole\Exceptions\Exception;
 
-class TplFactory
+/**
+ * 表格模板工厂
+ */
+class TableTplFactory
 {
     /**
      * @param array|string $tplCfg 模板配置
      */
-    public static function build($tplCfg): ?Tpl
+    public static function build($tplCfg): ?TableTpl
     {
         if ($tplCfg && is_string($tplCfg)) {
             $tplCfg = json_decode($tplCfg, true);
@@ -27,7 +30,7 @@ class TplFactory
         $rowCfg = $tplCfg['row'] ?? [];
         $colCfg = $tplCfg['col'] ?? $tplCfg;
 
-        return new Tpl(self::buildColHead($colCfg), self::buildRowHead($rowCfg));
+        return new TableTpl(self::buildColHead($colCfg), self::buildRowHead($rowCfg));
     }
 
     private static function buildRowHead(array $rowCfg): ?RowHead

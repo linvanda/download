@@ -17,7 +17,18 @@ class ColHeadParser
     {
     }
 
-    public function parse(array $colCfg): ColHead
+    public function parse(array $config): ColHead
+    {
+        // 创建顶层节点
+        $top = new ColHead('', '', null, 'auto');
+        foreach ($config as $colCfg) {
+            $top->appendChild($this->parseNode($colCfg));
+        }
+
+        return $top;
+    }
+
+    private function parseNode(array $colCfg): ColHead
     {
         $this->validate($colCfg);
 

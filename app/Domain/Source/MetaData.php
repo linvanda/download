@@ -2,8 +2,9 @@
 
 namespace App\Domain\Source;
 
-use App\Domain\Object\Object;
 use App\Domain\Object\Excel;
+use App\Domain\Object\Object;
+use App\Domain\Object\Template\Excel\TableTpl;
 use App\Domain\Task\Task;
 use App\ErrCode;
 use App\Foundation\Client\API;
@@ -47,27 +48,41 @@ class MetaData
             throw new Exception("获取元数据失败，返回错误：" . print_r($data, true), ErrCode::FETCH_SOURCE_FAILED);
         }
 
-        $info = $data['data'];
+        $this->setMetaData($data['data']);
+    }
 
-        /**
-         * 设置元数据
-         */
+    /**
+     * 设置元数据
+     */
+    private function setMetaData(array $info)
+    {
+        switch ($this->task->object()->type()) {
+            case Object::TYPE_EXCEL:
+                $this->setExcelMetaData($info['data'] ?? [], $info['template'] ?? [], $info['header'] ?? [], $info['footer'] ?? []);
+                break;
+        }
+    }
+
+    private function setExcelMetaData(array $data, array $tableTpl = [], array $header = [], array $footer = [])
+    {
         $object = $this->task->object();
-        if (isset($info['template']) && is_array($info['template'])) {
-            $object->setTemplate($info['template']);            
-        } else {
-            // 如果没有设置动态模板，而且之前也没有提供静态模板，则需要计算默认模板
+        if (!$object instanceof Excel) {
+            return;
         }
 
-        // 表格
-        if ($object->type() === Object::TYPE_EXCEL && $object instanceof Excel) {
-            if (isset($info['header'])) {
-                $object->setHeader($info['header']);
-            }
-    
-            if (isset($info['footer'])) {
-                $object->setFooter($info['footer']);
-            }
+        if ($tableTpl) {
+            $object->setTableTpl($tableTpl);            
+        } elseif ($object->tableTpl() === null && $data) {
+            // 如果没有设置动态模板，而且之前也没有提供静态模板，则需要计算默认模板
+            $object->setTableTpl(TableTpl::getDefaultTplFromData($data[0]));
+        }
+
+        if ($header) {
+            $object->setHeader($header);
+        }
+
+        if ($footer) {
+            $object->setFooter($footer);
         }
     }
 }

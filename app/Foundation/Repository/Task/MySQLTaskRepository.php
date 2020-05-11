@@ -43,13 +43,14 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         ];
 
         $extra = [];
-        if ($task->object()->template()) {
-            $extra['template'] = serialize($task->object()->template());
-        }
         $object = $task->object();
         if ($object instanceof Excel) {
             $extra['title'] = $object->title();
             $extra['summary'] = $object->summary();
+
+            if ($task->object()->tableTpl()) {
+                $extra['template'] = serialize($task->object()->tableTpl());
+            }
         }
 
         $info['extra'] = json_encode($extra);

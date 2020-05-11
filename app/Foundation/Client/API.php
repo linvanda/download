@@ -27,7 +27,7 @@ class API
     }
 
     /**
-     * 如果调用失败，则最多重试 5 次，每次重试间隔逐渐拉长
+     * 如果调用失败，则最多重试 3 次，每次重试间隔逐渐拉长
      * 注意：此处的重试对于当前协程来说是阻塞的，会发生协程切换
      * @return array
      */
@@ -61,7 +61,7 @@ class API
 
             $this->lastErrNo = $result->getStatus();
             $this->lastErrMsg = $result->getMessage();
-            
+
             Co::sleep($this->calcIntervalTime());
             Container::get(LoggerInterface::class)->warning("第{$this->retryNum}次重试{$this->url}，原因：{$this->lastErrMsg}");
         }

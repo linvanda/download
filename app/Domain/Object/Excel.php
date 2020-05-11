@@ -2,6 +2,9 @@
 
 namespace App\Domain\Object;
 
+use App\Domain\Object\Template\Excel\TableTplFactory;
+use App\Domain\Object\Template\Excel\TableTpl;
+
 /**
  * 目标文件：Excel
  */
@@ -13,13 +16,32 @@ class Excel extends Object
     protected $header = [];
     // 表尾
     protected $footer = [];
+    /**
+     * 表格模板
+     * @var TableTpl
+     */
+    protected $tableTpl;
 
-    public function __construct(string $fileName = '', $tplCfg = null, string $title = '', string $summary = '')
+    public function __construct(string $fileName = '', $tableTpl = null, string $title = '', string $summary = '')
     {
-        parent::__construct($fileName, self::TYPE_EXCEL, $tplCfg);
+        parent::__construct($fileName, self::TYPE_EXCEL);
 
         $this->title = $title;
         $this->summary = $summary;
+        $this->setTableTpl($tableTpl);
+    }
+
+    /**
+     * 表格模板
+     */
+    public function setTableTpl($tableTpl)
+    {
+        $this->tableTpl = $tableTpl === null || $tableTpl instanceof TableTpl ? $tableTpl : TableTplFactory::build($tableTpl);
+    }
+
+    public function tableTpl(): TableTpl
+    {
+        return $this->tableTpl;
     }
 
     /**
