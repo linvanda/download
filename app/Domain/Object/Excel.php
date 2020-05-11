@@ -5,7 +5,7 @@ namespace App\Domain\Object;
 /**
  * 目标文件：Excel
  */
-class Excel extends ObjectFile
+class Excel extends Object
 {
     protected $title;
     protected $summary;

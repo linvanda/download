@@ -2,7 +2,7 @@
 
 namespace App\Domain\Source;
 
-use App\Domain\Object\ObjectFile;
+use App\Domain\Object\Object;
 use App\Domain\Object\Excel;
 use App\Domain\Task\Task;
 use App\ErrCode;
@@ -52,21 +52,21 @@ class MetaData
         /**
          * 设置元数据
          */
-        $objectFile = $this->task->objectFile();
+        $object = $this->task->object();
         if (isset($info['template']) && is_array($info['template'])) {
-            $objectFile->setTemplate($info['template']);            
+            $object->setTemplate($info['template']);            
         } else {
             // 如果没有设置动态模板，而且之前也没有提供静态模板，则需要计算默认模板
         }
 
         // 表格
-        if ($objectFile->type() === ObjectFile::TYPE_EXCEL && $objectFile instanceof Excel) {
+        if ($object->type() === Object::TYPE_EXCEL && $object instanceof Excel) {
             if (isset($info['header'])) {
-                $objectFile->setHeader($info['header']);
+                $object->setHeader($info['header']);
             }
     
             if (isset($info['footer'])) {
-                $objectFile->setFooter($info['footer']);
+                $object->setFooter($info['footer']);
             }
         }
     }

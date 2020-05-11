@@ -10,7 +10,7 @@ use WecarSwoole\Exceptions\Exception;
 /**
  * 目标文件
  */
-class ObjectFile
+class Object
 {
     public const TYPE_CSV = 'csv';
     public const TYPE_EXCEL = 'excel';

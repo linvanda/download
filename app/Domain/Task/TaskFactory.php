@@ -4,7 +4,7 @@ namespace App\Domain\Task;
 
 use App\Domain\Object\CSV;
 use App\Domain\Object\Excel;
-use App\Domain\Object\ObjectFile;
+use App\Domain\Object\Object;
 use App\Domain\Project\IProjectRepository;
 use App\Domain\Source\Source;
 use App\Domain\URI;
@@ -30,11 +30,11 @@ class TaskFactory
         $id = $taskDTO->id ?? $idGen->id();
         
         $source = new Source(new URI($taskDTO->sourceUrl), intval($taskDTO->step) ?: Source::STEP_DEFAULT);
-        $objectFile = self::buildObjectFile($taskDTO);
+        $object = self::buildObject($taskDTO);
         $callback = new URI($taskDTO->callback ?: '');
 
         // 基于 DTO 创建 Task 对象
-        $task = new Task($id, $taskDTO->name, $project, $source, $objectFile, $callback, $taskDTO->operatorId ?: '');
+        $task = new Task($id, $taskDTO->name, $project, $source, $object, $callback, $taskDTO->operatorId ?: '');
         // 其他属性设置
         $task->createTime = $taskDTO->ctime ?? time();
         $task->lastExecTime = $taskDTO->etime ?? 0;
@@ -46,12 +46,12 @@ class TaskFactory
         return $task;
     }
 
-    protected static function buildObjectFile(TaskDTO $taskDTO): ObjectFile
+    protected static function buildObject(TaskDTO $taskDTO): Object
     {
-        switch ($taskDTO->type ?: ObjectFile::TYPE_CSV) {
-            case ObjectFile::TYPE_CSV:
+        switch ($taskDTO->type ?: Object::TYPE_CSV) {
+            case Object::TYPE_CSV:
                 return new CSV($taskDTO->fileName ?: '', $taskDTO->template ?: null);
-            case ObjectFile::TYPE_EXCEL:
+            case Object::TYPE_EXCEL:
                 return new Excel($taskDTO->fileName ?: '', $taskDTO->template ?: null, $taskDTO->title ?: '', $taskDTO->summary ?: '');
             default:
                 throw new Exception("不支持的文件类型", ErrCode::FILE_TYPE_ERR);

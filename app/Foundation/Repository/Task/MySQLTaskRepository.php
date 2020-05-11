@@ -28,8 +28,8 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'name' => $task->name(),
             'project_id' => $task->project()->id(),
             'source_url' => $task->source()->uri()->url(),
-            'type' => self::FILE_TYPE_MAP[$task->objectFile()->type()],
-            'file_name' => $task->objectFile()->fileName(),
+            'type' => self::FILE_TYPE_MAP[$task->object()->type()],
+            'file_name' => $task->object()->fileName(),
             'operator_id' => $task->operator,
             'callback' => $task->callbackURI()->url(),
             'step' => $task->source()->step(),
@@ -43,13 +43,13 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         ];
 
         $extra = [];
-        if ($task->objectFile()->template()) {
-            $extra['template'] = serialize($task->objectFile()->template());
+        if ($task->object()->template()) {
+            $extra['template'] = serialize($task->object()->template());
         }
-        $objectFile = $task->objectFile();
-        if ($objectFile instanceof Excel) {
-            $extra['title'] = $objectFile->title();
-            $extra['summary'] = $objectFile->summary();
+        $object = $task->object();
+        if ($object instanceof Excel) {
+            $extra['title'] = $object->title();
+            $extra['summary'] = $object->summary();
         }
 
         $info['extra'] = json_encode($extra);
