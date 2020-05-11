@@ -5,29 +5,28 @@ namespace App\Domain\Source;
 use App\Domain\Object\Excel;
 use App\Domain\Object\Obj;
 use App\Domain\Object\Template\Excel\TableTpl;
-use App\Domain\Task\Task;
 use App\ErrCode;
 use App\Foundation\Client\API;
 use WecarSwoole\Exceptions\Exception;
 
 /**
  * 动态元数据
- * 该类会修改 $task 的数据
+ * 该类会修改 $obj 的数据
  */
 class MetaData
 {
-    private $task;
+    private $obj;
     private $invoker;
 
-    public function __construct(Task $task, API $invoker)
+    public function __construct(Obj $obj, API $invoker)
     {
-        $this->task = $task;
+        $this->obj = $obj;
         $this->invoker = $invoker;
     }
 
     /**
     * 获取动态元数据信息
-    * 对方返回的 data 结构：
+    * 当文件格式是 excel 时，对方返回的 data 结构：
     * {
     *      'status' => 200,
     *      'msg' => '错误信息',
@@ -56,33 +55,38 @@ class MetaData
      */
     private function setMetaData(array $info)
     {
-        switch ($this->task->object()->type()) {
+        $meta = [];
+        switch ($this->obj->type()) {
             case Obj::TYPE_EXCEL:
-                $this->setExcelMetaData($info['data'] ?? [], $info['template'] ?? [], $info['header'] ?? [], $info['footer'] ?? []);
+                $meta = $this->getExcelMetaData($info['data'] ?? [], $info['template'] ?? [], $info['header'] ?? [], $info['footer'] ?? []);
                 break;
+        }
+
+        if ($meta) {
+            $this->obj->setMeta($meta);
         }
     }
 
-    private function setExcelMetaData(array $data, array $tableTpl = [], array $header = [], array $footer = [])
+    private function getExcelMetaData(array $data, array $tableTpl = [], array $header = [], array $footer = [])
     {
-        $object = $this->task->object();
-        if (!$object instanceof Excel) {
+        $excel = $this->obj;
+        if (!$excel instanceof Excel) {
             return;
         }
 
-        if ($tableTpl) {
-            $object->setTableTpl($tableTpl);            
-        } elseif ($object->tableTpl() === null && $data) {
-            // 如果没有设置动态模板，而且之前也没有提供静态模板，则需要计算默认模板
-            $object->setTableTpl(TableTpl::getDefaultTplFromData($data[0]));
-        }
+        $meta = [];
+
+        // 如果没有设置动态模板，而且之前也没有提供静态模板，则需要计算默认模板
+        $meta['table_tpl'] = $tableTpl ?: $excel->getMeta('table_tpl') ?: TableTpl::getDefaultTplFromData($data[0]);
 
         if ($header) {
-            $object->setHeader($header);
+            $meta['header'] = $header;
         }
 
         if ($footer) {
-            $object->setFooter($footer);
+            $meta['footer'] = $footer;
         }
+
+        return $meta;
     }
 }

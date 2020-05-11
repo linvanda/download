@@ -2,7 +2,6 @@
 
 namespace App\Foundation\Repository\Task;
 
-use App\Domain\Object\Excel;
 use App\Domain\Project\IProjectRepository;
 use WecarSwoole\Repository\MySQLRepository;
 use App\Domain\Task\ITaskRepository;
@@ -42,18 +41,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'stime' => $task->lastChangeStatusTime,
         ];
 
-        $extra = [];
-        $object = $task->object();
-        if ($object instanceof Excel) {
-            $extra['title'] = $object->title();
-            $extra['summary'] = $object->summary();
-
-            if ($task->object()->tableTpl()) {
-                $extra['template'] = serialize($task->object()->tableTpl());
-            }
-        }
-
-        $info['extra'] = json_encode($extra);
+        $info['obj_meta'] = serialize($task->object()->getMeta());
 
         $this->query->insert('task')->values($info)->execute();
 
@@ -131,15 +119,15 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
 
     protected function buildTaskDTO(array $info): ?TaskDTO
     {
-        $extra = isset($info['extra']) ? json_decode($info['extra'], true) : [];
+        $meta = isset($info['obj_meta']) ? unserialize($info['obj_meta']) : [];
 
         $taskDTO = new TaskDTO(
             array_merge(
                 $info,
                 [
-                    'template' => isset($extra['template']) ? unserialize($extra['template']) : null,
-                    'title' => $extra['title'] ?? '',
-                    'summary' => $extra['summary'] ?? '',
+                    'template' => $meta['table_tpl'] ?? null,
+                    'title' => $meta['title'] ?? '',
+                    'summary' => $meta['summary'] ?? '',
                     'type' => array_flip(self::FILE_TYPE_MAP)[$info['type']],
                 ]
             )

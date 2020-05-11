@@ -20,10 +20,15 @@ class API
     private $url;
     private $method;
 
-    public function __construct(string $url, string $method = 'GET')
+    public function __construct(string $url = '', string $method = 'GET')
     {
         $this->url = $url;
         $this->method = $method;
+    }
+
+    public function setUrl(string $url)
+    {
+        $this->url = $url;
     }
 
     /**

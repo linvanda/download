@@ -2,7 +2,7 @@
 
 namespace App\Processor\WorkFlow\Handler;
 
-use App\Domain\Source\SourceDataService;
+use App\Domain\Source\SourceService;
 use App\Processor\Ticket;
 use App\Processor\WorkFlow\WorkFlow;
 use WecarSwoole\Container;
@@ -27,7 +27,7 @@ class ToDoHandler extends WorkHandler
 
         go(function () {
             try {
-                Container::get(SourceDataService::class)->fetch($this->task());
+                Container::get(SourceService::class)->fetch($this->task());
                 $this->notify(WorkFlow::WF_SOURCE_READY);
             } catch (\Exception $e) {
                 $this->notify(WorkFlow::WF_SOURCE_FAILED, $e->getMessage());
