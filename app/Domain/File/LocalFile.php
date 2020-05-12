@@ -4,21 +4,17 @@ namespace App\Domain\File;
 
 use App\ErrCode;
 use App\Exceptions\FileException;
-use EasySwoole\EasySwoole\Config;
-use WecarSwoole\Util\File;
 
 /**
- * 本地文件（源文件、目标文件）的操作类
+ * 本地文件
  */
-abstract class LocalFile
+class LocalFile
 {
-    protected $taskId;
     protected $file;
 
-    public function __construct(string $taskId)
+    public function __construct(string $fileName, string $mode = 'w+')
     {
-        $this->taskId = $taskId;
-        $this->openFile('w+'); 
+        $this->openFile($fileName, $mode); 
     }
 
     public function __destruct()
@@ -28,14 +24,36 @@ abstract class LocalFile
         }
     }
 
-    protected function baseDir(): string
+    /**
+     * 存储数据到 csv 文件
+     * @param array $dataList 一维或二维数组
+     */
+    public function saveAsCsv(array $dataList)
     {
-        return File::join(Config::getInstance()->getConf('local_file_base_dir'), "{$this->taskId}");
+        $dataList = self::formatDataList($dataList);
+
+        foreach ($dataList as $item) {
+            if (fputcsv($this->file, $item) === false) {
+                throw new FileException("写入源文件失败:{$this->saveToFile}", ErrCode::FILE_OP_FAILED);
+            }
+        }
     }
 
-    protected function openFile(string $mode)
+    private static function formatDataList(array $dataList): array
     {
-        $fileName = $this->fullFileName();
+        reset($dataList);
+
+        if (!isset($dataList[0]) || !is_array($dataList[0])) {
+            $dataList = [$dataList];
+        }
+
+        return array_map(function ($item) {
+            return array_values($item);
+        }, $dataList);
+    }
+
+    protected function openFile(string $fileName, string $mode)
+    {
         $dir = dirname($fileName);
         if (!file_exists($dir)) {
             mkdir($dir, 0744, true);
@@ -48,9 +66,4 @@ abstract class LocalFile
 
         $this->file = $file;
     }
-
-    /**
-     * 文件路径
-     */
-    abstract protected function fullFileName(): string;
 }

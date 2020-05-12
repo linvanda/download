@@ -10,6 +10,7 @@ use App\Domain\Source\Source;
 use App\Domain\URI;
 use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
+use EasySwoole\EasySwoole\Config;
 use WecarSwoole\Container;
 use WecarSwoole\Exceptions\Exception;
 use WecarSwoole\ID\IIDGenerator;
@@ -29,8 +30,16 @@ class TaskFactory
         $idGen = $idGenerator ?: Container::get(IIDGenerator::class);
         $id = $taskDTO->id ?? $idGen->id();
         
-        $source = new Source(new URI($taskDTO->sourceUrl), intval($taskDTO->step) ?: Source::STEP_DEFAULT);
+        // 源
+        $source = new Source(
+            new URI($taskDTO->sourceUrl),
+            $id,
+            Config::getInstance()->getConf('local_file_base_dir'),
+            intval($taskDTO->step) ?: Source::STEP_DEFAULT
+        );
+        // 目标
         $object = self::buildObject($taskDTO);
+        // 回调
         $callback = new URI($taskDTO->callback ?: '');
 
         // 基于 DTO 创建 Task 对象

@@ -2,6 +2,7 @@
 
 namespace App\Domain\Source;
 
+use App\Domain\File\LocalFile;
 use App\Domain\File\SourceFile;
 use App\Domain\Task\Task;
 use App\Foundation\Client\API;
@@ -16,6 +17,6 @@ class SourceService
      */
     public function fetch(Task $task)
     {
-        $task->source()->fetch(new API(), new SourceFile($task->id()));
+        $task->source()->fetch(new API(), new LocalFile($task->source()->fileName()));
     }
 }
