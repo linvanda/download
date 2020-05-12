@@ -62,7 +62,7 @@ abstract class Obj
         return $key ? ($this->metaData[$key] ?? null) : $this->metaData;
     }
 
-    abstract public function generate();
+    // abstract public function generate();
 
     protected function setType(string $type)
     {

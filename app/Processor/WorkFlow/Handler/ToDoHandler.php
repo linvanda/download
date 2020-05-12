@@ -2,6 +2,7 @@
 
 namespace App\Processor\WorkFlow\Handler;
 
+use App\Domain\Object\ObjService;
 use App\Domain\Source\SourceService;
 use App\Processor\Ticket;
 use App\Processor\WorkFlow\WorkFlow;
@@ -27,6 +28,9 @@ class ToDoHandler extends WorkHandler
 
         go(function () {
             try {
+                // 获取动态元数据
+                Container::get(ObjService::class)->fetchDynamicMeta($this->task());
+                // 获取数据
                 Container::get(SourceService::class)->fetch($this->task());
                 $this->notify(WorkFlow::WF_SOURCE_READY);
             } catch (\Exception $e) {

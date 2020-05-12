@@ -37,38 +37,23 @@ class Source
     }
 
     /**
-     * 从源拉取数据保存到本地
+     * 从源拉取数据并保存到本地
      * @param API $invoker 源数据调用程序
      * @param SourceFile $sourceFile 源文件生成器
      */
     public function fetch(API $invoker, SourceFile $sourceFile)
     {
         $page = $n = $cnt = $total = 0;
-        $invoker->setUrl($this->uri()->url());
         
         while ($n++ < 1000000) {
-            $result = $invoker->invoke(['page' => $page, 'page_size' => $this->step]);
-            
-            if (!$result || !isset($result['status']) || $result['status'] !== 200) {
-                throw new SourceException(
-                    "获取源数据失败：返回：" . print_r($result, true),
-                    ErrCode::FETCH_SOURCE_FAILED
-                );
-            }
+            $result = $this->invokeData($invoker, $page, $this->step);
 
-            if (!isset($result['data']['data']) || !isset($result['data']['total'])) {
-                throw new SourceException(
-                    "获取源数据失败：数据格式错误：" . print_r($result, true),
-                    ErrCode::FETCH_SOURCE_FAILED
-                );
-            }
-
-            $data = $result['data']['data'];
+            $data = $result['data'];
             $cnt += count($data);
 
             // 第一次获取数据时将 key 写入
             if ($n == 1 && count($data)) {
-                $total = $result['data']['total'];
+                $total = $result['total'];
                 $sourceFile->saveData(array_keys($data[0]));
             }
 
@@ -84,7 +69,37 @@ class Source
         }
     }
 
-    protected function setStep(int $step)
+    /**
+     * 从源拉取元数据
+     */
+    public function fetchMeta(API $invoker): array
+    {
+        return $this->invokeData($invoker, 0, 1);
+    }
+
+    private function invokeData(API $invoker, int $page, int $pageSize): array
+    {
+        $invoker->setUrl($this->uri()->url());
+        $result = $invoker->invoke(['page' => $page, 'page_size' => $pageSize]);
+         
+        if (!$result || !isset($result['status']) || $result['status'] !== 200) {
+            throw new SourceException(
+                "获取源数据失败：返回：" . print_r($result, true),
+                ErrCode::FETCH_SOURCE_FAILED
+            );
+        }
+
+        if (!isset($result['data']['data']) || !isset($result['data']['total'])) {
+            throw new SourceException(
+                "获取源数据失败：数据格式错误：" . print_r($result, true),
+                ErrCode::FETCH_SOURCE_FAILED
+            );
+        }
+
+        return $result['data'];
+    }
+
+    private function setStep(int $step)
     {
         if ($step < self::STEP_MIN || $step > self::STEP_MAX) {
             $step = self::STEP_DEFAULT;

@@ -8,12 +8,12 @@ use WecarSwoole\Exceptions\Exception;
 /**
  * 表格模板工厂
  */
-class TableTplFactory
+class TplFactory
 {
     /**
      * @param array|string $tplCfg 模板配置
      */
-    public static function build($tplCfg): ?TableTpl
+    public static function build($tplCfg): ?Tpl
     {
         if ($tplCfg && is_string($tplCfg)) {
             $tplCfg = json_decode($tplCfg, true);
@@ -30,7 +30,7 @@ class TableTplFactory
         $rowCfg = $tplCfg['row'] ?? [];
         $colCfg = $tplCfg['col'] ?? $tplCfg;
 
-        return new TableTpl(self::buildColHead($colCfg), self::buildRowHead($rowCfg));
+        return new Tpl(self::buildColHead($colCfg), self::buildRowHead($rowCfg));
     }
 
     private static function buildRowHead(array $rowCfg): ?RowHead

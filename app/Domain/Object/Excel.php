@@ -2,8 +2,8 @@
 
 namespace App\Domain\Object;
 
-use App\Domain\Object\Template\Excel\TableTplFactory;
-use App\Domain\Object\Template\Excel\TableTpl;
+use App\Domain\Object\Template\Excel\TplFactory;
+use App\Domain\Object\Template\Excel\Tpl;
 
 /**
  * 目标文件：Excel
@@ -20,17 +20,17 @@ class Excel extends Obj
     protected $footer = [];
     /**
      * 表格模板
-     * @var TableTpl
+     * @var Tpl
      */
-    protected $tableTpl;
+    protected $template;
 
-    public function __construct(string $fileName = '', $tableTpl = null, string $title = '', string $summary = '')
+    public function __construct(string $fileName = '', $template = null, string $title = '', string $summary = '')
     {
         parent::__construct($fileName, self::TYPE_EXCEL);
 
         $this->title = $title;
         $this->summary = $summary;
-        $this->setTableTpl($tableTpl);
+        $this->setTpl($template);
     }
 
     /**
@@ -51,8 +51,11 @@ class Excel extends Obj
         if (isset($metaData['footer'])) {
             $this->footer = $metaData['footer'];
         }
-        if (isset($metaData['table_tpl'])) {
-            $this->tableTpl = $this->setTableTpl($metaData['table_tpl']);
+        if (isset($metaData['template'])) {
+            $this->template = $this->setTpl($metaData['template']);
+        } elseif ($metaData['data'] && !$this->template) {
+            // 如果没有静态 template，且有提供源数据，则试图从源数据解析出模板
+            $this->template = $this->setTpl(Tpl::getDefaultTplFromData($metaData['data']));
         }
 
         $this->metaData = $this->getMeta();
@@ -69,7 +72,7 @@ class Excel extends Obj
             'summary' => $this->summary,
             'header' => $this->header,
             'footer' => $this->footer,
-            'table_tpl' => $this->tableTpl,
+            'template' => $this->template,
         ];
 
         return $key ? ($data[$key] ?? null) : $data;
@@ -78,8 +81,8 @@ class Excel extends Obj
     /**
      * 表格模板
      */
-    private function setTableTpl($tableTpl)
+    private function setTpl($template)
     {
-        $this->tableTpl = $tableTpl === null || $tableTpl instanceof TableTpl ? $tableTpl : TableTplFactory::build($tableTpl);
+        $this->template = $template === null || $template instanceof Tpl ? $template : TplFactory::build($template);
     }
 }

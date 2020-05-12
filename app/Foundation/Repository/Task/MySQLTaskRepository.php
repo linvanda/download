@@ -125,7 +125,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             array_merge(
                 $info,
                 [
-                    'template' => $meta['table_tpl'] ?? null,
+                    'template' => $meta['template'] ?? null,
                     'title' => $meta['title'] ?? '',
                     'summary' => $meta['summary'] ?? '',
                     'type' => array_flip(self::FILE_TYPE_MAP)[$info['type']],

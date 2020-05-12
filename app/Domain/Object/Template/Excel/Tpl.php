@@ -5,7 +5,7 @@ namespace App\Domain\Object\Template\Excel;
 /**
  * Excel 表格模板
  */
-class TableTpl
+class Tpl
 {
     /**
      * @var ColHead 列标头
@@ -34,10 +34,14 @@ class TableTpl
 
     /**
      * 从数据中解析默认模板
-     * @param array $data 一维数组，如 ["name" => "张三", "age" => 89]
+     * @param array $data 一维或二维数组，如 ["name" => "张三", "age" => 89]，[["name" => "张三", "age" => 89]]
      */
     public static function getDefaultTplFromData(array $data): array
     {
+        if (isset($data[0]) && is_array($data[0])) {
+            $data = $data[0];
+        }
+
         $cfg = [];
 
         foreach ($data as $key => $val) {
