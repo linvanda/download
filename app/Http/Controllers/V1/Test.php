@@ -253,7 +253,7 @@ class Test extends Controller
 
     public function sourceData()
     {
-        sleep(4);
+        sleep(2);
         $data = [];
 
         for ($i = 0; $i < 10; $i++) {

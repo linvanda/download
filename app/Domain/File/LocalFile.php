@@ -10,16 +10,18 @@ use App\Exceptions\FileException;
  */
 class LocalFile
 {
-    protected $file;
+    private $file;
+    private $fileName;
 
     public function __construct(string $fileName, string $mode = 'w+')
     {
-        $this->openFile($fileName, $mode); 
+        $this->openFile($fileName, $mode);
+        $this->fileName = $fileName;
     }
 
     public function __destruct()
     {
-        if ($this->file) {
+        if ($this->file && is_resource($this->file)) {
             fclose($this->file);
         }
     }
@@ -37,6 +39,19 @@ class LocalFile
                 throw new FileException("写入源文件失败:{$this->saveToFile}", ErrCode::FILE_OP_FAILED);
             }
         }
+    }
+
+    /**
+     * 文件大小
+     */
+    public function size(): int
+    {
+        return filesize($this->fileName);
+    }
+
+    public function close()
+    {
+        fclose($this->file);
     }
 
     private static function formatDataList(array $dataList): array

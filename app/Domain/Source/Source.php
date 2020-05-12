@@ -8,18 +8,25 @@ use App\ErrCode;
 use App\Exceptions\SourceException;
 use App\Foundation\Client\API;
 use WecarSwoole\Util\File;
+use WecarSwoole\Util\GetterSetter;
 
 /**
  * 数据源
  */
 class Source
 {
+    use GetterSetter;
+    
     public const STEP_MIN = 100;
     public const STEP_MAX = 1500;
     public const STEP_DEFAULT = 500;
 
     // 生成的本地文件名
     private $fileName;
+    // 数据记录数（行数）
+    private $count;
+    // 源文件大小
+    private $size;
 
     protected $uri;
     protected $step;
@@ -31,19 +38,28 @@ class Source
         $this->setFileName($dir);
     }
 
-    public function uri(): URI
-    {
-        return $this->uri;
-    }
-
-    public function step(): int
-    {
-        return $this->step;
-    }
-
+    /**
+     * 源文件名称（包含目录）
+     */
     public function fileName(): string
     {
         return $this->fileName;
+    }
+
+    /**
+     * 数据记录数（行数）
+     */
+    public function count(): int
+    {
+        return $this->count;
+    }
+
+    /**
+     * 源文件大小，单位字节
+     */
+    public function size(): int
+    {
+        return $this->size;
     }
 
     /**
@@ -53,7 +69,7 @@ class Source
      */
     public function fetch(API $invoker, LocalFile $file)
     {
-        $invoker->setUrl($this->uri()->url());
+        $invoker->setUrl($this->uri->url());
         $page = $n = $cnt = $total = 0;
         
         while ($n++ < 1000000) {
@@ -78,6 +94,11 @@ class Source
 
             $page++;
         }
+
+        $file->close();
+
+        $this->count = $cnt;
+        $this->size = $file->size();
     }
 
     /**
@@ -85,7 +106,7 @@ class Source
      */
     public function fetchMeta(API $invoker): array
     {
-        $invoker->setUrl($this->uri()->url());
+        $invoker->setUrl($this->uri->url());
         return $this->invokeData($invoker, 0, 1);
     }
 
