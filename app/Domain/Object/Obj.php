@@ -4,6 +4,7 @@ namespace App\Domain\Object;
 
 use App\ErrCode;
 use WecarSwoole\Exceptions\Exception;
+use WecarSwoole\Util\File;
 
 /**
  * 目标文件
@@ -20,22 +21,39 @@ abstract class Obj
         self::TYPE_EXCEL => ['xlsx', 'xls'],
     ];
 
-    // 目标文件名
+    // 目标文件
     protected $fileName;
+    // 下载文件名称
+    protected $downloadFileName;
     // 目标文件类型
     protected $type;
-    /**
-     * @var array 元数据
-     */
+    // 元数据
     protected $metaData = [];
 
-    public function __construct(string $fileName = '', string $type = 'csv')
+    /**
+     * @param string $baseDir 目标临时文件存放目录
+     * @param string $downloadFileName 下载文件名称
+     * @param string $type 文件类型
+     */
+    public function __construct(string $baseDir, string $downloadFileName = '', string $type = 'csv')
     {
         $this->setType($type);
-        $this->setFileName($fileName);
+        $this->setDownLoadFileName($downloadFileName);
+        $this->setObjectFileName($baseDir);
     }
 
-    public function fileName(): string
+    /**
+     * 下载文件名称（给用户看的）
+     */
+    public function downloadFileName(): string
+    {
+        return $this->downloadFileName;
+    }
+
+    /**
+     * 目标文件名称（给系统用的）
+     */
+    public function objectFileName(): string
     {
         return $this->fileName;
     }
@@ -64,7 +82,7 @@ abstract class Obj
 
     // abstract public function generate();
 
-    protected function setType(string $type)
+    private function setType(string $type)
     {
         if (!in_array($type, [self::TYPE_CSV, self::TYPE_EXCEL])) {
             throw new Exception("目标文件类型不合法", ErrCode::PARAM_VALIDATE_FAIL);
@@ -73,21 +91,28 @@ abstract class Obj
         $this->type = $type;
     }
 
-    protected function setFileName(string $name)
+    private function setDownLoadFileName(string $name)
     {
         if (!$name) {
-            $name = self::generateFileName();
+            $name = self::generateDownloadFileName();
+        } else {
+            $name = self::fixDownloadFileName($name);
         }
 
-        $this->fileName = $this->appendFileExt($name);
+        $this->downloadFileName = $this->appendFileExt($name);
     }
 
-    protected static function generateFileName(): string
+    private function setObjectFileName(string $dir)
+    {
+        $this->objectFileName = File::join($dir, $this->appendFileExt('object'));
+    }
+
+    private static function generateDownloadFileName(): string
     {
         return date('YmdHis');
     }
 
-    protected function appendFileExt(string $fileName): string
+    private function appendFileExt(string $fileName): string
     {
         if ($dotPos = strrpos($fileName, '.')) {
             $ext = substr($fileName, $dotPos + 1);
@@ -98,5 +123,13 @@ abstract class Obj
         }
 
         return $fileName . "." . self::FILE_EXT[$this->type][0];
+    }
+
+    /**
+     * 对传入的文件名称做处理，去掉前后的 .，将 / 替换成 _
+     */
+    private static function fixDownloadFileName(string $name): string
+    {
+        return trim('.', str_replace('/', '_', $name));
     }
 }

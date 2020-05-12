@@ -7,8 +7,8 @@ namespace App\Domain\Object;
  */
 class CSV extends Obj
 {
-    public function __construct(string $fileName = '')
+    public function __construct(string $baseDir, string $downloadFileName = '')
     {
-        parent::__construct($fileName, self::TYPE_CSV);
+        parent::__construct($baseDir, $downloadFileName, self::TYPE_CSV);
     }
 }

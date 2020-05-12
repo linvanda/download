@@ -24,13 +24,9 @@ class Excel extends Obj
      */
     protected $template;
 
-    public function __construct(string $fileName = '', $template = null, string $title = '', string $summary = '')
+    public function __construct(string $baseDir, string $downloadFileName = '')
     {
-        parent::__construct($fileName, self::TYPE_EXCEL);
-
-        $this->title = $title;
-        $this->summary = $summary;
-        $this->setTpl($template);
+        parent::__construct($baseDir, $downloadFileName, self::TYPE_EXCEL);
     }
 
     /**
@@ -53,7 +49,7 @@ class Excel extends Obj
         }
         if (isset($metaData['template'])) {
             $this->template = $this->setTpl($metaData['template']);
-        } elseif ($metaData['data'] && !$this->template) {
+        } elseif (isset($metaData['data']) && !$this->template) {
             // 如果没有静态 template，且有提供源数据，则试图从源数据解析出模板
             $this->template = $this->setTpl(Tpl::getDefaultTplFromData($metaData['data']));
         }

@@ -3,12 +3,10 @@
 namespace App\Domain\Source;
 
 use App\Domain\File\LocalFile;
-use App\Domain\File\SourceFile;
 use App\Domain\URI;
 use App\ErrCode;
 use App\Exceptions\SourceException;
 use App\Foundation\Client\API;
-use EasySwoole\EasySwoole\Config;
 use WecarSwoole\Util\File;
 
 /**
@@ -17,7 +15,7 @@ use WecarSwoole\Util\File;
 class Source
 {
     public const STEP_MIN = 100;
-    public const STEP_MAX = 1000;
+    public const STEP_MAX = 1500;
     public const STEP_DEFAULT = 500;
 
     // 生成的本地文件名
@@ -26,11 +24,11 @@ class Source
     protected $uri;
     protected $step;
 
-    public function __construct(URI $uri, string $taskId, string $baseDir, int $step = 500)
+    public function __construct(URI $uri, string $dir, int $step = 500)
     {
         $this->uri = $uri;
         $this->setStep($step);
-        $this->setFileName($taskId, $baseDir);
+        $this->setFileName($dir);
     }
 
     public function uri(): URI
@@ -112,9 +110,9 @@ class Source
         return $result['data'];
     }
 
-    private function setFileName(string $taskId, string $baseDir)
+    private function setFileName(string $dir)
     {
-        $this->fileName = File::join($baseDir, $taskId, 'source.csv');
+        $this->fileName = File::join($dir, 'source.csv');
     }
 
     private function setStep(int $step)

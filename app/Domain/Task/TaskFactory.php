@@ -14,6 +14,7 @@ use EasySwoole\EasySwoole\Config;
 use WecarSwoole\Container;
 use WecarSwoole\Exceptions\Exception;
 use WecarSwoole\ID\IIDGenerator;
+use WecarSwoole\Util\File;
 
 /**
  * 工厂：创建 task 对象
@@ -29,12 +30,12 @@ class TaskFactory
         // 此处并没有对外界传入的 id 做唯一性校验，有调用方保证
         $idGen = $idGenerator ?: Container::get(IIDGenerator::class);
         $id = $taskDTO->id ?? $idGen->id();
+        $taskDTO->id = $id;
         
         // 源
         $source = new Source(
             new URI($taskDTO->sourceUrl),
-            $id,
-            Config::getInstance()->getConf('local_file_base_dir'),
+            File::join(Config::getInstance()->getConf('local_file_base_dir'), $id),
             intval($taskDTO->step) ?: Source::STEP_DEFAULT
         );
         // 目标
@@ -55,13 +56,22 @@ class TaskFactory
         return $task;
     }
 
-    protected static function buildObject(TaskDTO $taskDTO): Object
+    private static function buildObject(TaskDTO $taskDTO): Object
     {
+        $baseDir = File::join(Config::getInstance()->getConf('local_file_base_dir'), $taskDTO->id);
         switch ($taskDTO->type ?: Obj::TYPE_CSV) {
             case Obj::TYPE_CSV:
-                return new CSV($taskDTO->fileName ?: '', $taskDTO->template ?: null);
+                return new CSV($baseDir, $taskDTO->fileName ?: '');
             case Obj::TYPE_EXCEL:
-                return new Excel($taskDTO->fileName ?: '', $taskDTO->template ?: null, $taskDTO->title ?: '', $taskDTO->summary ?: '');
+                $excel = new Excel($baseDir, $taskDTO->fileName ?: '');
+                $excel->setMeta(
+                    [
+                        'template' => $taskDTO->template ?: null,
+                        'title' => $taskDTO->title ?: '',
+                        'summary' => $taskDTO->summary ?: '',
+                    ]
+                );
+                return $excel;
             default:
                 throw new Exception("不支持的文件类型", ErrCode::FILE_TYPE_ERR);
         }

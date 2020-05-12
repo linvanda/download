@@ -28,7 +28,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'project_id' => $task->project()->id(),
             'source_url' => $task->source()->uri()->url(),
             'type' => self::FILE_TYPE_MAP[$task->object()->type()],
-            'file_name' => $task->object()->fileName(),
+            'file_name' => $task->object()->downloadFileName(),
             'operator_id' => $task->operator,
             'callback' => $task->callbackURI()->url(),
             'step' => $task->source()->step(),
