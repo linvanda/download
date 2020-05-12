@@ -49,19 +49,23 @@ class TaskManager
      */
     public function process(Task $task)
     {
-        // 将任务状态改成正在执行中
-        Container::get(TaskService::class)->switchStatus($task, Task::STATUS_DOING);
-        try {
-            /**
-             * 启动工作流后有可能一直阻塞在这里直到工作流执行结束（同步模式），也有可能工作流内部
-             * 使用了异步处理，这里立马返回（但工作流仍然在执行）
-             */
-            $this->logger->info("开始处理任务：{$task->id()}");
-            $this->getWorkFlow($task)->start();
-        } catch (\Exception $e) {
-            $this->logger->error("任务{$task->id()}处理异常：{$e->getMessage()}");
-            $this->clear($task);
-        }
+        Ticket::get("task_source");
+
+        // 在新的协程中执行
+        go(function () use ($task) {
+            // 将任务状态改成正在执行中
+            Container::get(TaskService::class)->switchStatus($task, Task::STATUS_DOING);
+            try {
+                $this->logger->info("开始处理任务：{$task->id()}");
+                // 
+                $this->getWorkFlow($task)->start();
+            } catch (\Exception $e) {
+                $this->logger->error("任务{$task->id()}处理异常：{$e->getMessage()}");
+                $this->clear($task);
+            } finally {
+                Ticket::done("task_source");
+            }
+        });
     }
 
     /**

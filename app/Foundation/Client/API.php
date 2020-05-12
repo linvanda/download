@@ -53,7 +53,7 @@ class API
         $result = null;
         while ($this->retryNum++ < self::MAX_RETRY_NUM) {
             try {
-                $result = BaseAPI::simpleInvoke($this->url, $this->method, $params);
+                $result = BaseAPI::simpleInvoke($this->url, $this->method, $params, '_', ['timeout' => 5]);
 
                 if ($result && $result->getStatus() >= 200 && $result->getStatus() < 300) {
                     $this->lastErrNo = 0;

@@ -2,7 +2,9 @@
 
 namespace App\Processor\WorkFlow\Handler;
 
+use App\Domain\Object\ObjService;
 use App\Processor\WorkFlow\WorkFlow;
+use WecarSwoole\Container;
 
 /**
  * 源数据就绪处理程序
@@ -15,10 +17,15 @@ class SourceReadyHandler extends WorkHandler
     }
 
     /**
-     * 投递给 task 进程生成目标数据
+     * 生成目标数据
      */
     protected function exec()
     {
-        $this->notify(WorkFlow::WF_OBJECT_READY);
+        try {
+            Container::get(ObjService::class)->generate($this->task());
+            $this->notify(WorkFlow::WF_OBJECT_READY);
+        } catch (\Exception $e) {
+            $this->notify(WorkFlow::WF_OBJECT_FAILED);
+        }
     }
 }

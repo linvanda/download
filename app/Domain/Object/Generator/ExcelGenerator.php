@@ -12,6 +12,6 @@ class ExcelGenerator implements IGenerator
 {
     public function generate(Source $source, Obj $object)
     {
-        
+        echo "generate excel\n";
     }
 }

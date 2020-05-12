@@ -30,7 +30,6 @@ class QueueListener
                 Container::get(LoggerInterface::class)->error("处理任务失败：任务不存在：{$data['task_id']}");
                 return;
             }
-
             // 交给任务管理器处理
             TaskManager::getInstance()->process($task);
         }, 0.1);

@@ -12,7 +12,7 @@ return [
         'RUN_MODEL' => SWOOLE_PROCESS,
         'SETTING' => [
             'worker_num' => 1,
-            'task_worker_num' => 4,
+            'task_worker_num' => 1,
             'reload_async' => false,
             'max_wait_time' => 5,
             'max_request' => 10000,

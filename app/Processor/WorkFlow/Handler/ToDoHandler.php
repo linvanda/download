@@ -23,21 +23,14 @@ class ToDoHandler extends WorkHandler
      */
     protected function exec()
     {
-        // 获取票据（用于限制并发量）
-        Ticket::get("task_source");
-
-        go(function () {
-            try {
-                // 获取动态元数据
-                Container::get(ObjService::class)->fetchDynamicMeta($this->task());
-                // 获取数据
-                Container::get(SourceService::class)->fetch($this->task());
-                $this->notify(WorkFlow::WF_SOURCE_READY);
-            } catch (\Exception $e) {
-                $this->notify(WorkFlow::WF_SOURCE_FAILED, $e->getMessage());
-            } finally {
-                Ticket::done("task_source");
-            }
-        });
+        try {
+            // 获取动态元数据
+            Container::get(ObjService::class)->fetchDynamicMeta($this->task());
+            // 获取数据
+            Container::get(SourceService::class)->fetch($this->task());
+            $this->notify(WorkFlow::WF_SOURCE_READY);
+        } catch (\Exception $e) {
+            $this->notify(WorkFlow::WF_SOURCE_FAILED, $e->getMessage());
+        }
     }
 }

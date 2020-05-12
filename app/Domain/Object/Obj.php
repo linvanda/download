@@ -55,7 +55,7 @@ abstract class Obj
      */
     public function objectFileName(): string
     {
-        return $this->fileName;
+        return $this->objectFileName;
     }
 
     public function type(): string

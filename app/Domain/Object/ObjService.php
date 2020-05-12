@@ -2,7 +2,11 @@
 
 namespace App\Domain\Object;
 
+use App\Domain\Object\Generator\CSVGenerator;
+use App\Domain\Object\Generator\ExcelGenerator;
 use App\Domain\Task\Task;
+use App\ErrCode;
+use App\Exceptions\ObjectException;
 use App\Foundation\Client\API;
 
 /**
@@ -15,7 +19,18 @@ class ObjService
      */
     public function generate(Task $task)
     {
+        switch ($task->object()->type()) {
+            case Obj::TYPE_CSV:
+                $generator = new CSVGenerator();
+                break;
+            case Obj::TYPE_EXCEL:
+                $generator = new ExcelGenerator();
+                break;
+            default:
+                throw new ObjectException("不支持的目标文件类型：{$task->object()->type()}", ErrCode::FILE_TYPE_ERR);
+        }
 
+        $generator->generate($task->source(), $task->object());
     }
 
     /**

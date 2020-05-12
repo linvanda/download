@@ -4,7 +4,6 @@ namespace EasySwoole\EasySwoole;
 
 use App\Bootstrap;
 use App\Processor\QueueListener;
-use WecarSwoole\CronTabUtil;
 use EasySwoole\EasySwoole\Swoole\EventRegister;
 use EasySwoole\EasySwoole\AbstractInterface\Event;
 use EasySwoole\Component\Context\ContextManager;
@@ -56,15 +55,14 @@ class EasySwooleEvent implements Event
         }
 
         // worker 进程启动脚本
-        $register->add(EventRegister::onWorkerStart, function () {
+        $register->add(EventRegister::onWorkerStart, function ($server) {
             Bootstrap::boot();
 
-            // 启动队列监听
-            QueueListener::listen();
+            // 启动队列监听（仅在 worker 进程启动）
+            if (!$server->taskworker) {
+                QueueListener::listen();
+            }
         });
-
-        // 定时任务
-        CronTabUtil::register();
 
         // Apollo 配置变更监听程序
         $server->addProcess((new ApolloWatcher())->getProcess());
