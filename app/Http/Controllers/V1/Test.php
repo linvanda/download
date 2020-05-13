@@ -12,7 +12,7 @@ class Test extends Controller
 {
     public function index()
     {
-        // ini_set("memory_limit", "1024M"); 
+        // ini_set("memory_limit", "1024M");
 
         // $spreadsheet = new Spreadsheet();
 
@@ -259,6 +259,8 @@ class Test extends Controller
         for ($i = 0; $i < 10; $i++) {
             $data[] = ['name' => '三', 'age' => mt_rand(10, 100), 'city' => ['深圳', '上海'][mt_rand(0,1)]];
         }
+
+        // echo token_get_all("./Task.php");
 
         $this->return([
             'data' => $data,

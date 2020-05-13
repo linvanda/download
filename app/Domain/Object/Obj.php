@@ -2,6 +2,7 @@
 
 namespace App\Domain\Object;
 
+use App\Domain\Object\Generator\IGenerator;
 use App\ErrCode;
 use WecarSwoole\Exceptions\Exception;
 use WecarSwoole\Util\File;
@@ -11,7 +12,7 @@ use WecarSwoole\Util\File;
  * 目标文件由 meta（元数据） + data（数据） 构成，meta 决定目标文件的内容如何展现，data 则是要展现什么
  * 不同的目标文件的 meta 信息大不相同，因而此处使用数组存储，具体的目标文件自身定义数组格式，外界根据其约定格式传递参数
  */
-abstract class Obj
+class Obj
 {
     public const TYPE_CSV = 'csv';
     public const TYPE_EXCEL = 'excel';
@@ -79,9 +80,7 @@ abstract class Obj
     {
         return $key ? ($this->metaData[$key] ?? null) : $this->metaData;
     }
-
-    // abstract public function generate();
-
+    
     private function setType(string $type)
     {
         if (!in_array($type, [self::TYPE_CSV, self::TYPE_EXCEL])) {

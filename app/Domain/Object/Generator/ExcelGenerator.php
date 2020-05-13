@@ -4,6 +4,8 @@ namespace App\Domain\Object\Generator;
 
 use App\Domain\Object\Obj;
 use App\Domain\Source\Source;
+use App\ErrCode;
+use App\Exceptions\FileException;
 use EasySwoole\EasySwoole\Config;
 
 /**
@@ -18,9 +20,60 @@ class ExcelGenerator implements IGenerator
      */
     public function generate(Source $source, Obj $object)
     {
-        list($fileNum, $fileRow) = $this->calcFileCount($source);
+        if (!file_exists($source->fileName())) {
+            throw new FileException("源文件不存在：{$source->fileName()}", ErrCode::FILE_OP_FAILED);
+        }
 
+        list($fileNum, $fileRow) = $this->calcFileCount($source);
+        $fileNames = $this->calcFileNames($object->downloadFileName(), $fileNum);
+
+        if (!$sourceFile = @fopen($source->fileName(), 'r')) {
+            throw new FileException("打开源文件失败：{$source->fileName()}", ErrCode::FILE_OP_FAILED);
+        }
+
+        // 先从第一行读取列标题
+        $colTitles = fgetcsv($sourceFile);
+        // 生成 sheet 模板
+        $sheetTpl = $this->createSheetTpl($source);
+
+        foreach ($fileNames as $index => $fileName) {
+            // 生成 excel。最后一个文件的 row 不做限制
+            $row = $index < count($fileNames) - 1 ? $fileRow : PHP_INT_MAX;
+            $this->createExcel($sourceFile, $fileName, $fileNum, $index, $row, $colTitles);
+        }
+    }
+
+    private function createSheetTpl(Source $source)
+    {
         
+    }
+
+    private function createExcel($sourceFile, string $objFileName, int $totalFileNum, int $index, int $row, array $colTitles)
+    {
+        $i = 0;
+        while ($i++ < $row && !feof($sourceFile)) {
+            if (!$colVal = fgetcsv($sourceFile)) {
+                continue;
+            }
+        }
+    }
+
+    private function calcFileNames(string $origFileName, int $fileNum): array
+    {
+        if ($fileNum === 1) {
+            return [$origFileName];
+        }
+
+        $fileNames = [];
+        $fnameArr = explode('.', $origFileName);
+        $ext = array_pop($fnameArr);
+        $base = implode('.', $fnameArr);
+
+        for ($i = 0; $i < $fileNum; $i++) {
+            $fileNames[] = implode('', [$base, "_{$i}", ".{$ext}"]);
+        }
+
+        return $fileNames;
     }
 
     /**
