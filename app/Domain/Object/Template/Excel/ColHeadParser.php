@@ -46,7 +46,7 @@ class ColHeadParser
 
         if (isset($colCfg['children']) && $colCfg['children']) {
             foreach ($colCfg['children'] as $subColCfg) {
-                $col->appendChild($this->parse($subColCfg));
+                $col->appendChild($this->parseNode($subColCfg));
             }
         }
 

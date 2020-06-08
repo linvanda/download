@@ -36,7 +36,7 @@ class RowHeadParser
 
         if (isset($rowCfg['children']) && $rowCfg['children']) {
             foreach ($rowCfg['children'] as $subColCfg) {
-                $row->appendChild($this->parse($subColCfg));
+                $row->appendChild($this->parseNode($subColCfg));
             }
         }
 

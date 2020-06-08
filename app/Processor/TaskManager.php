@@ -57,7 +57,6 @@ class TaskManager
             Container::get(TaskService::class)->switchStatus($task, Task::STATUS_DOING);
             try {
                 $this->logger->info("开始处理任务：{$task->id()}");
-                // 
                 $this->getWorkFlow($task)->start();
             } catch (\Exception $e) {
                 $this->logger->error("任务{$task->id()}处理异常：{$e->getMessage()}");
@@ -78,7 +77,7 @@ class TaskManager
     {
         // 修改任务状态
         Container::get(TaskService::class)->switchStatus($task, $result == 1 ? Task::STATUS_SUC : Task::STATUS_FAILED);
-        // 清理工作流
+        // 清理
         $this->clear($task);
         
         $this->logger->info("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}");

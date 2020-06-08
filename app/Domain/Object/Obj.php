@@ -2,7 +2,6 @@
 
 namespace App\Domain\Object;
 
-use App\Domain\Object\Generator\IGenerator;
 use App\ErrCode;
 use WecarSwoole\Exceptions\Exception;
 use WecarSwoole\Util\File;

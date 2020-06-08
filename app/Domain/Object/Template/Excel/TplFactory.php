@@ -30,7 +30,16 @@ class TplFactory
         $rowCfg = $tplCfg['row'] ?? [];
         $colCfg = $tplCfg['col'] ?? $tplCfg;
 
-        return new Tpl(self::buildColHead($colCfg), self::buildRowHead($rowCfg));
+        $colHead = self::buildColHead($colCfg);
+        $rowHead = self::buildRowHead($rowCfg);
+
+        // 如果有 rowHead 且 colHead 中没有对应的列占位，则补齐
+        if ($rowHead && !$colHead->search(ColHead::ROW_HEAD_COL_NAME)) {
+            $rowHeadCol = new ColHead(ColHead::ROW_HEAD_COL_NAME, '', null, ColHead::DT_STR);
+            $colHead->appendChild($rowHeadCol);
+        }
+
+        return new Tpl($colHead, $rowHead);
     }
 
     private static function buildRowHead(array $rowCfg): ?RowHead
