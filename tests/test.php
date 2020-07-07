@@ -32,17 +32,45 @@ include "./base.php";
 // echo "breadth:".$pnode->breadth()."\n";
 // var_export($pnode->search("11"));
 
-$flags = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+// $s = "你好中国china";
+// foreach ($s as $it) {
+//     echo $it."\n";
+// }
 
-$s = base_convert("25", 10, 26);
-$ss = "";
-for($i = 0; $i < strlen($s); $i++) {
-    $a = $s[$i];
-    if (!is_numeric($a)) {
-        $a = ord("j") - 97 + 10;
+
+function decrypt($data, $key) {
+    $key = md5($key);
+    $x = 0;
+    $data = base64_decode($data . "=");
+    $len = strlen($data);
+    $l = strlen($key);
+    $char = '';
+    $str = '';
+    for ($i = 0; $i < $len; $i++) {
+        if ($x == $l) {
+            $x = 0;
+        }
+        $char .= substr($key, $x, 1);
+        $x++;
     }
-
-    $ss .= $flags[$a - 1];
+    for ($i = 0; $i < $len; $i++) {
+        if (ord(substr($data, $i, 1)) < ord(substr($char, $i, 1))) {
+            $str .= chr((ord(substr($data, $i, 1)) + 256) - ord(substr($char, $i, 1)));
+        } else {
+            $str .= chr(ord(substr($data, $i, 1)) - ord(substr($char, $i, 1)));
+        }
+    }
+    return $str;
 }
 
-echo "---$s---$ss---\n";
+function decryptUCode($str) {
+    $key = 'wecar123';
+
+    //trim suffix 'JF_'
+    $data = substr($str, 3);
+    $phone = decrypt($data, $key);
+
+    return $phone;
+}
+
+echo decryptUCode('JF_aGyZlm6dlWOYmZM');

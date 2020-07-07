@@ -20,6 +20,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class ExcelGenerator implements IGenerator
 {
+    private const MAX_MGR_COL_NUM = 30;
+
     public function generate(Source $source, Obj $object)
     {
         if (!file_exists($source->fileName())) {
@@ -92,8 +94,7 @@ class ExcelGenerator implements IGenerator
 
         // header
         if (isset($meta['header'])) {
-            $this->setHeader($activeSheet, $meta['header'], $colNum, $currRowNum);
-            $currRowNum++;
+            $currRowNum += $this->setHeader($activeSheet, $meta['header'], $colNum, $currRowNum);
         }
 
         // 行标头、列标头
@@ -101,10 +102,25 @@ class ExcelGenerator implements IGenerator
 
     /**
      * 设置 Excel header
+     * 第一版对 header 简化处理：全部排布在一行
+     * @return int header 占用了几行
      */
-    private function setHeader(Worksheet $worksheet, array $headers, int $colNum, int $currRowNum)
+    private function setHeader(Worksheet $worksheet, array $headers, int $colNum, int $currRowNum): int
     {
+        $txt = "";
+        foreach ($headers as $key => $val) {
+            $txt .= $key . '：' . $this->formatHeaderText($val);
+        }
 
+        return 1;
+    }
+
+    /**
+     * 如果 $text 长度不足，则最多进行 $pad 个汉字长度填充（一个汉字相当于 2 个空格）
+     */
+    private function formatHeaderText(string $text, int $pad = 8): string
+    {
+        mb_strlen($text, 'utf-8');
     }
 
     /**
@@ -116,7 +132,7 @@ class ExcelGenerator implements IGenerator
             return;
         }
 
-        $worksheet->mergeCells("A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colNum > 30 ? 30 : $colNum + 1) . $currRowNum);
+        $worksheet->mergeCells("A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colNum > self::MAX_MGR_COL_NUM ? self::MAX_MGR_COL_NUM : $colNum + 1) . $currRowNum);
         $summaryCell = $worksheet->getCell("A{$currRowNum}");
         $summaryCell->setValue($summary);
     }
@@ -130,7 +146,7 @@ class ExcelGenerator implements IGenerator
             return;
         }
 
-        $worksheet->mergeCells("A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colNum > 30 ? 30 : $colNum + 1) . $currRowNum);
+        $worksheet->mergeCells("A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colNum > self::MAX_MGR_COL_NUM ? self::MAX_MGR_COL_NUM : $colNum + 1) . $currRowNum);
         $titleCell = $worksheet->getCell("A{$currRowNum}");
         $titleCell->setValue($title);
         $titleCell->getStyle()->getFont()->setSize(18);
