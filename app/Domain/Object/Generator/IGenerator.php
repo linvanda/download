@@ -12,6 +12,8 @@ interface IGenerator
 {
     /**
      * 根据源和目标信息生成目标文件
+     * @param Source $source 源
+     * @param Obj $object 目标对象
      */
     public function generate(Source $source, Obj $object);
 }
