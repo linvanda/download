@@ -3,12 +3,13 @@
 namespace App\Domain\Object\Template\Excel;
 
 /**
- * 标头节点
+ * 节点
  */
 class Node
 {
     protected $name;
     protected $title;
+    protected $pos = [0, 0];
     /**
      * @var Style
      */
@@ -16,18 +17,18 @@ class Node
     /**
      * @var array
      */
-    protected $children;
+    protected $children = [];
 
     public function __construct(string $name = '', string $title = '', Style $style = null)
     {
         $this->name = $name;
         $this->title = $title;
         $this->style = $style;
-        $this->children = [];
     }
 
     public function appendChild(Node $node)
     {
+        $node->setPosition($this->pos[0] + 1, count($this->children) + 1);
         $this->children[] = $node;
     }
 
@@ -41,6 +42,14 @@ class Node
         return $this->title;
     }
 
+    /**
+     * 是否叶子节点
+     */
+    public function isLeaf(): bool
+    {
+        return boolval(count($this->children));
+    }
+
     public function style(): Style
     {
         return $this->style;
@@ -49,6 +58,19 @@ class Node
     public function children(): array
     {
         return $this->children;
+    }
+
+    public function setPosition($row, $col)
+    {
+        $this->pos = [$row, $col];
+    }
+
+    /**
+     * 获取节点在树中的位置
+     */
+    public function getPosition(): array
+    {
+        return $this->pos;
     }
 
     /**

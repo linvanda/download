@@ -4,6 +4,8 @@ namespace App\Domain\Object\Generator;
 
 use App\Domain\Object\Template\Excel\Tpl;
 use App\Domain\Object\Obj;
+use App\Domain\Object\Template\Excel\ColHead;
+use App\Domain\Object\Template\Excel\RowHead;
 use App\Domain\Source\Source;
 use App\ErrCode;
 use App\Exceptions\FileException;
@@ -12,6 +14,7 @@ use EasySwoole\EasySwoole\Config;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use SplQueue;
 
 /**
  * Excel 文件生成器
@@ -64,7 +67,7 @@ class ExcelGenerator implements IGenerator
      * $meta 组成：title、summary、header、footer、template
      * 单元格（列）总数 = 行标头深度 + 列标头宽度 - 1
      */
-    private function createSheetTpl(array $meta)
+    private function createSheetTpl(array $meta): Worksheet
     {
         // 必须有 template
         $tpl = $meta['template'] ?? null;
@@ -97,7 +100,90 @@ class ExcelGenerator implements IGenerator
             $currRowNum += $this->setHeader($activeSheet, $meta['header'], $colNum, $currRowNum);
         }
 
-        // 行标头、列标头
+        // 列标头
+        $currRowNum += $this->setColHead($activeSheet, $tpl->colHead(), $currRowNum);
+
+        // 行标头
+        if ($tpl->rowHead()) {
+            $this->setRowHead($activeSheet, $tpl->rowHead(), $currRowNum);
+        }
+
+        return $activeSheet;
+    }
+
+    /**
+     * 设置行标题
+     */
+    private function setRowHead(Worksheet $worksheet, RowHead $rowHead, int $currRowNum)
+    {
+
+    }
+
+    /**
+     * 设置列标题
+     * 每个节点对应一个格子
+     * 需要确定每个节点在表格中的位置以及需要合并的行列数
+     * 节点所在的层数代表它所在的行数
+     * 非叶节点只需要考虑合并列，叶节点需要同时考虑合并列和行，其中需要合并的行数=树最大层 - 其所在层
+     * 非叶节点拥有的叶节点数目就是它要合并的列单元格数
+     * 采用广度优先遍历
+     * @return int 占用行数
+     */
+    private function setColHead(Worksheet $worksheet, ColHead $colHead, int $currRowNum): int
+    {
+        $maxDepth = $colHead->deep();
+        // 各行游标（各行当前列所在位置）
+        $rowsCursor = [];
+        for ($i = 1; $i <= $maxDepth; $i++) {
+            $rowsCursor[$i] = 0;
+        }
+
+        // 使用队列实现广度优先遍历
+        $queue = new SplQueue();
+        $queue->enqueue($colHead);
+
+        while (1) {
+            // 退出遍历条件：队列为空
+            if ($queue->isEmpty()) {
+                break;
+            }
+
+            /**
+             * 取出当前需要处理的节点
+             * @var ColHead
+             */
+            $node = $queue->dequeue();
+            $pos = $node->getPosition();
+
+            /**
+             * 将节点转化为单元格
+             * 注意 merge 值等于 1 表示不需要合并（仅和它自身合并）
+             */
+            // 该节点需要合并的列数等于该节点子树的广度
+            $mergeColNum = $node->breadth();
+            // 该节点需要合并的行数
+            $mergeRowNum = $node->isLeaf() ? $maxDepth - $pos[0] : 1;
+
+            // 设置单元格
+            if ($mergeColNum > 1 || $mergeRowNum > 1) {
+                $fromRow = $pos[0] + 1;
+                $toRow = $pos[0] + $mergeRowNum;
+                $fromCol = $rowsCursor[$fromRow] + 1;
+                $toCol = $rowsCursor[$fromRow] + $mergeColNum;
+                $worksheet->mergeCells(Coordinate::stringFromColumnIndex($fromRow) . $fromCol . ':' . Coordinate::stringFromColumnIndex($toRow) . $toCol);
+            }
+            $worksheet->getCell(Coordinate::stringFromColumnIndex($fromRow) . $fromCol)->setValue($node->title());
+
+            //更新行列游标
+            for ($i = $pos[0] + 1; $i <= $pos[0] + $mergeRowNum; $i++) {
+                $rowsCursor[$i] += $mergeColNum;
+            }
+
+            // 将该节点的孩子节点依次入列
+            foreach ($node->children() as $child) {
+                $queue->enqueue($child);
+            }
+        }
     }
 
     /**
@@ -107,20 +193,15 @@ class ExcelGenerator implements IGenerator
      */
     private function setHeader(Worksheet $worksheet, array $headers, int $colNum, int $currRowNum): int
     {
-        $txt = "";
+        $header = "";
         foreach ($headers as $key => $val) {
-            $txt .= $key . '：' . $this->formatHeaderText($val);
+            $header .= $key . '：' . $val . "    ";
         }
 
-        return 1;
-    }
+        $worksheet->mergeCells("A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colNum > self::MAX_MGR_COL_NUM ? self::MAX_MGR_COL_NUM : $colNum + 1) . $currRowNum);
+        $worksheet->getCell("A{$currRowNum}")->setValue($headers);
 
-    /**
-     * 如果 $text 长度不足，则最多进行 $pad 个汉字长度填充（一个汉字相当于 2 个空格）
-     */
-    private function formatHeaderText(string $text, int $pad = 8): string
-    {
-        mb_strlen($text, 'utf-8');
+        return 1;
     }
 
     /**
@@ -171,7 +252,7 @@ class ExcelGenerator implements IGenerator
         $cBreadth = $tpl->colHead()->breadth();
         $rDeep = $tpl->rowHead() ? $tpl->rowHead()->deep() : 0;
 
-        // 存在 rowHead 的情况下，colHead 中包含列一列 rowHead 用的专用占位列，因而计算上需要减 1
+        // 存在 rowHead 的情况下，colHead 中包含一列 rowHead 用的专用占位列，因而计算上需要减 1
         return $cBreadth + $rDeep - ($rDeep ? 1 : 0);
     }
 
