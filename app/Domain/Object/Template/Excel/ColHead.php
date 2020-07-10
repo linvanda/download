@@ -13,7 +13,6 @@ class ColHead extends Node
     public const DT_STR = 'string';// 默认类型
     public const DT_NUM = 'number';
     public const DT_RICH = 'rich';// 富文本（支持 html 标签）
-    public const ROW_HEAD_COL_NAME = '_row_header';
 
     /**
      * 列数据类型

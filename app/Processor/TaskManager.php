@@ -76,7 +76,7 @@ class TaskManager
     public function finish(Task $task, int $result = 1, string $msg = '')
     {
         // 修改任务状态
-        Container::get(TaskService::class)->switchStatus($task, $result == 1 ? Task::STATUS_SUC : Task::STATUS_FAILED);
+        Container::get(TaskService::class)->switchStatus($task, $result == 1 ? Task::STATUS_SUC : Task::STATUS_FAILED, $msg);
         // 清理
         $this->clear($task);
         

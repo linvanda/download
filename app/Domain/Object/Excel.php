@@ -48,10 +48,10 @@ class Excel extends Obj
             $this->footer = $metaData['footer'];
         }
         if (isset($metaData['template'])) {
-            $this->template = $this->setTpl($metaData['template']);
+            $this->setTpl($metaData['template']);
         } elseif (isset($metaData['data']) && !$this->template) {
             // 如果没有静态 template，且有提供源数据，则试图从源数据解析出模板
-            $this->template = $this->setTpl(Tpl::getDefaultTplFromData($metaData['data']));
+            $this->setTpl(Tpl::getDefaultTplFromData($metaData['data']));
         }
 
         $this->metaData = $this->getMeta();

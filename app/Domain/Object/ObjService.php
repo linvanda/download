@@ -42,7 +42,6 @@ class ObjService
         if (!$metaData = $task->source()->fetchMeta(new API())) {
             return;
         }
-        
         // 动态元数据不保存到数据库中
         $task->object()->setMeta($metaData);
     }

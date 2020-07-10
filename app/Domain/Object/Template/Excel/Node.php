@@ -7,8 +7,14 @@ namespace App\Domain\Object\Template\Excel;
  */
 class Node
 {
+    public const NODE_TOP = '_top_';
+    public const NODE_ROW_HEADER_COL = '_row_header_';
+    
     protected $name;
     protected $title;
+    /**
+     * 节点在树中的绝对位置：[行数(深度), 列数(广度)]，从 0 开始编号
+     */
     protected $pos = [0, 0];
     /**
      * @var Style
@@ -28,7 +34,6 @@ class Node
 
     public function appendChild(Node $node)
     {
-        $node->setPosition($this->pos[0] + 1, count($this->children) + 1);
         $this->children[] = $node;
     }
 
@@ -47,7 +52,7 @@ class Node
      */
     public function isLeaf(): bool
     {
-        return boolval(count($this->children));
+        return boolval(!count($this->children));
     }
 
     public function style(): Style
@@ -128,7 +133,7 @@ class Node
 
         $maxDeep = $deep;
         foreach ($node->children() as $childNode) {
-            $maxDeep = max($maxDeep, $this->detectDeep($childNode, ++$deep));
+            $maxDeep = max($maxDeep, $this->detectDeep($childNode, $deep + 1));
         }
 
         return $maxDeep;

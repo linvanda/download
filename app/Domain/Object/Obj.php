@@ -128,6 +128,6 @@ class Obj
      */
     private static function fixDownloadFileName(string $name): string
     {
-        return trim('.', str_replace('/', '_', $name));
+        return trim(str_replace('/', '_', $name), '.');
     }
 }

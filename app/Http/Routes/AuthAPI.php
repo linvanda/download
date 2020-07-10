@@ -33,6 +33,7 @@ class AuthAPI extends Route
          * param:
          *      source_url string 必填。数据源 url
          *      project_id string 必填。项目 id，由下载中心分配
+         *      name string 必填。任务名称
          *      file_name string 可选。下载文件的名称，默认根据日期加随机数生成
          *      type string 可选。可选值：csv|excel。默认 csv
          *      callback string 可选。处理完成后回调通知 url

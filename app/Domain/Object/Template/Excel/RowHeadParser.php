@@ -20,23 +20,24 @@ class RowHeadParser
     public function parse(array $config): RowHead
     {
         // 创建顶层节点
-        $top = new RowHead('', '', null);
-        foreach ($config as $rowCfg) {
-            $top->appendChild($this->parseNode($rowCfg));
+        $top = new RowHead(Node::NODE_TOP, '', null);
+        foreach ($config as $index => $rowCfg) {
+            $top->appendChild($this->parseNode($rowCfg, 1, $index));
         }
 
         return $top;
     }
 
-    private function parseNode(array $rowCfg): RowHead
+    private function parseNode(array $rowCfg, int $rowNum, int $colNum): RowHead
     {
         $styleCfg = $rowCfg['style'] ?? ['bg_color' => $rowCfg['bg_color'] ?? ''];
         $style = new Style($styleCfg);
         $row = new RowHead($rowCfg['name'] ?? '', $rowCfg['title'] ?? '', $style);
+        $row->setPosition($rowNum, $colNum);
 
         if (isset($rowCfg['children']) && $rowCfg['children']) {
-            foreach ($rowCfg['children'] as $subColCfg) {
-                $row->appendChild($this->parseNode($subColCfg));
+            foreach ($rowCfg['children'] as $index => $subColCfg) {
+                $row->appendChild($this->parseNode($subColCfg, $rowNum + 1, $index));
             }
         }
 

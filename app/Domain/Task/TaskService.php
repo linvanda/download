@@ -37,10 +37,10 @@ class TaskService
     /**
      * 切换任务状态
      */
-    public function switchStatus(Task $task, int $newStatus)
+    public function switchStatus(Task $task, int $newStatus, string $failedReason = '')
     {
         $oldStatus = $task->status();
-        $task->switchStatus($newStatus);
+        $task->switchStatus($newStatus, $failedReason);
         
         if (!$this->taskRepository->changeTaskStatus($task, $oldStatus)) {
             throw new Exception("修改任务状态失败：存储失败。{$task->id()}：{$oldStatus} -> {$newStatus}", ErrCode::INVALID_STATUS_OP);

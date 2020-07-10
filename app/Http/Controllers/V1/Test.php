@@ -258,36 +258,98 @@ class Test extends Controller
 
     public function sourceData()
     {
-        sleep(2);
         $data = [];
 
         for ($i = 0; $i < 10; $i++) {
-            $data[] = ['name' => '三', 'age' => mt_rand(10, 100), 'city' => ['深圳', '上海'][mt_rand(0,1)]];
+            $data[] = [
+                'name' => '张三',
+                'age' => mt_rand(10, 100),
+                'sex' => '男',
+                'love_in' => '乒乓球',
+                'love_out_land' => '跑步',
+                'love_out_sky' => '跳伞',
+                'city' => ['深圳', '上海'][mt_rand(0,1)],
+                'area' => '区域名称',
+                'building' => '小区名'
+            ];
         }
-
-        // echo token_get_all("./Task.php");
 
         $this->return([
             'data' => $data,
             'total' => 10000,
-            'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d H:i:s')],
+            'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
             'footer' => ['负责人' => '松林', '签名' => ''],
             'template' => [
                 [
-                    'name' => 'name',
-                    'title' => '姓名',
-                    'type' => 'string',
-                    'color' => 'red',
+                    'title' => '人员',
+                    'children' => [
+                        [
+                            'name' => 'name',
+                            'title' => '姓名',
+                            'type' => 'string',
+                            'color' => 'red',
+                        ],
+                        [
+                            'title' => '其它',
+                            'children' => [
+                                [
+                                    'name' => 'age',
+                                    'title' => '年龄',
+                                    'type' => 'number',
+                                ],
+                                [
+                                    'name' => 'sex',
+                                    'title' => '性别',
+                                    'type' => 'string',
+                                ],
+                                [
+                                    'title' => '爱好',
+                                    'children' => [
+                                        [
+                                            'name' => 'love_in',
+                                            'title' => '室内',
+                                        ],
+                                        [
+                                            'title' => '室外',
+                                            'children' => [
+                                                [
+                                                    'name' => 'love_out_land',
+                                                    'title' => '陆地',
+                                                ],
+                                                [
+                                                    'name' => 'love_out_sky',
+                                                    'title' => '空中',
+                                                ],
+                                            ]
+                                        ],
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
                 ],
                 [
-                    'name' => 'age',
-                    'title' => '年龄',
-                    'type' => 'number',
+                    'title' => '住址',
+                    'children' => [
+                        [
+                            'name' => 'city',
+                            'title' => '城市'
+                        ],
+                        [
+                            'title' => '小区',
+                            'children' => [
+                                [
+                                    'name' => 'area',
+                                    'title' => '区域',
+                                ],
+                                [
+                                    'name' => 'building',
+                                    'title' => '楼盘',
+                                ]
+                            ]
+                        ]
+                    ]
                 ],
-                [
-                    'name' => 'city',
-                    'title' => '城市'
-                ]
             ]
         ]);
     }

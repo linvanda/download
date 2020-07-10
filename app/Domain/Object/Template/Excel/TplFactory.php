@@ -34,8 +34,8 @@ class TplFactory
         $rowHead = self::buildRowHead($rowCfg);
 
         // 如果有 rowHead 且 colHead 中没有对应的列占位，则补齐
-        if ($rowHead && !$colHead->search(ColHead::ROW_HEAD_COL_NAME)) {
-            $rowHeadCol = new ColHead(ColHead::ROW_HEAD_COL_NAME, '', null, ColHead::DT_STR);
+        if ($rowHead && !$colHead->search(Node::NODE_ROW_HEADER_COL)) {
+            $rowHeadCol = new ColHead(Node::NODE_ROW_HEADER_COL, '', null, ColHead::DT_STR);
             $colHead->appendChild($rowHeadCol);
         }
 

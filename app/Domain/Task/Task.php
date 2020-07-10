@@ -65,6 +65,8 @@ class Task extends Entity
     protected $status;
     // 处理次数（包括第一次处理）
     protected $retryNum;
+    // 处理失败原因
+    protected $failedReason;
 
     /**
      * 外界必须通过工厂方法来创建
@@ -125,7 +127,7 @@ class Task extends Entity
     /**
      * 更改任务状态
      */
-    public function switchStatus(int $newStatus)
+    public function switchStatus(int $newStatus, string $failedReason = '')
     {
         // 如果新状态是可重试失败，则要检查重试次数是否已经用完，如用完，则将状态改为不可重试的失败
         if ($newStatus === self::STATUS_FAILED && $this->retryNum >= self::MAX_RETRY_NUM) {
@@ -146,6 +148,8 @@ class Task extends Entity
             $this->retryNum++;
             $this->lastExecTime = $time;
         }
+
+        $this->failedReason = $failedReason ?: '';
     }
 
     private function validateStatusChange(int $newStatus)

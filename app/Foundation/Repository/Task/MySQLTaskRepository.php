@@ -105,6 +105,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         ->update('task')
         ->set([
             'status' => $task->status(),
+            'failed_reason' => $task->failedReason,
             'utime' => time(),
             'etime' => $task->lastExecTime,
             'ftime' => $task->finishedTime,
