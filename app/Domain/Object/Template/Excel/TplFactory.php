@@ -34,10 +34,10 @@ class TplFactory
         $rowHead = self::buildRowHead($rowCfg);
 
         // 如果有 rowHead 且 colHead 中没有对应的列占位，则补齐
-        if ($rowHead && !$colHead->search(Node::NODE_ROW_HEADER_COL)) {
-            $rowHeadCol = new ColHead(Node::NODE_ROW_HEADER_COL, '', null, ColHead::DT_STR);
-            $colHead->appendChild($rowHeadCol);
-        }
+        // if ($rowHead && !$colHead->search(RowHead::NODE_ROW_HEADER_COL)) {
+        //     $rowHeadCol = new ColHead(RowHead::NODE_ROW_HEADER_COL, '', null, ColHead::DT_STR);
+        //     $colHead->appendChild($rowHeadCol);
+        // }
 
         return new Tpl($colHead, $rowHead);
     }
@@ -48,7 +48,7 @@ class TplFactory
             return null;
         }
 
-        return RowHeadParser::getInstance()->parse($rowCfg);
+        return RowHead::parse($rowCfg);
     }
 
     private static function buildColHead(array $colCfg): ColHead
@@ -57,6 +57,6 @@ class TplFactory
             throw new Exception("模板格式错误：缺少列标题配置", ErrCode::TPL_FMT_ERR);
         }
 
-        return ColHeadParser::getInstance()->parse($colCfg);
+        return ColHead::parse($colCfg);
     }
 }

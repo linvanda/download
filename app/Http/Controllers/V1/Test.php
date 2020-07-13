@@ -258,7 +258,9 @@ class Test extends Controller
 
     public function sourceData()
     {
-        $data = [];
+        $data = [
+
+        ];
 
         for ($i = 0; $i < 10; $i++) {
             $data[] = [
@@ -280,76 +282,120 @@ class Test extends Controller
             'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
             'footer' => ['负责人' => '松林', '签名' => ''],
             'template' => [
-                [
-                    'title' => '人员',
-                    'children' => [
-                        [
-                            'name' => 'name',
-                            'title' => '姓名',
-                            'type' => 'string',
-                            'color' => 'red',
-                        ],
-                        [
-                            'title' => '其它',
-                            'children' => [
-                                [
-                                    'name' => 'age',
-                                    'title' => '年龄',
-                                    'type' => 'number',
-                                ],
-                                [
-                                    'name' => 'sex',
-                                    'title' => '性别',
-                                    'type' => 'string',
-                                ],
-                                [
-                                    'title' => '爱好',
-                                    'children' => [
-                                        [
-                                            'name' => 'love_in',
-                                            'title' => '室内',
-                                        ],
-                                        [
-                                            'title' => '室外',
-                                            'children' => [
-                                                [
-                                                    'name' => 'love_out_land',
-                                                    'title' => '陆地',
-                                                ],
-                                                [
-                                                    'name' => 'love_out_sky',
-                                                    'title' => '空中',
-                                                ],
-                                            ]
-                                        ],
+                'row' => [
+                    [
+                        'title' => '云研发',
+                        'children' => [
+                            [
+                                'name' => 'front_end',
+                                'title' => '前端',
+                                'row_count' => 2,
+                            ],
+                            [
+                                'name' => 'back_end',
+                                'title' => '后端',
+                                'row_count' => 4,
+                            ],
+                        ]
+                    ],
+                    [
+                        'title' => '线下',
+                        'children' => [
+                            [
+                                'title' => 'OS',
+                                'name' => 'os',
+                                'row_count' => 3,
+                            ],
+                            [
+                                'title' => '智能设备',
+                                'children' => [
+                                    [
+                                        'name' => 'pos',
+                                        'title' => '手持终端',
+                                        'row_count' => 2,
+                                    ],
+                                    [
+                                        'name' => 'screen',
+                                        'title' => '大屏',
+                                        'row_count' => 3,
+                                    ],
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'col' => [
+                    [
+                        'title' => '人员',
+                        'children' => [
+                            [
+                                'name' => 'name',
+                                'title' => '姓名',
+                                'type' => 'string',
+                                'color' => 'red',
+                            ],
+                            [
+                                'title' => '其它',
+                                'children' => [
+                                    [
+                                        'name' => 'age',
+                                        'title' => '年龄',
+                                        'type' => 'number',
+                                    ],
+                                    [
+                                        'name' => 'sex',
+                                        'title' => '性别',
+                                        'type' => 'string',
+                                    ],
+                                    [
+                                        'title' => '爱好',
+                                        'children' => [
+                                            [
+                                                'name' => 'love_in',
+                                                'title' => '室内',
+                                            ],
+                                            [
+                                                'title' => '室外',
+                                                'children' => [
+                                                    [
+                                                        'name' => 'love_out_land',
+                                                        'title' => '陆地',
+                                                    ],
+                                                    [
+                                                        'name' => 'love_out_sky',
+                                                        'title' => '空中',
+                                                    ],
+                                                ]
+                                            ],
+                                        ]
                                     ]
                                 ]
                             ]
                         ]
-                    ]
-                ],
-                [
-                    'title' => '住址',
-                    'children' => [
-                        [
-                            'name' => 'city',
-                            'title' => '城市'
-                        ],
-                        [
-                            'title' => '小区',
-                            'children' => [
-                                [
-                                    'name' => 'area',
-                                    'title' => '区域',
-                                ],
-                                [
-                                    'name' => 'building',
-                                    'title' => '楼盘',
+                    ],
+                    [
+                        'title' => '住址',
+                        'children' => [
+                            [
+                                'name' => 'city',
+                                'title' => '城市'
+                            ],
+                            [
+                                'title' => '小区',
+                                'children' => [
+                                    [
+                                        'name' => 'area',
+                                        'title' => '区域',
+                                    ],
+                                    [
+                                        'name' => 'building',
+                                        'title' => '楼盘',
+                                    ]
                                 ]
                             ]
                         ]
-                    ]
-                ],
+                    ],
+                ]
             ]
         ]);
     }

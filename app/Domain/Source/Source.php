@@ -3,6 +3,7 @@
 namespace App\Domain\Source;
 
 use App\Domain\File\LocalFile;
+use App\Domain\Object\Template\Excel\RowHead;
 use App\Domain\URI;
 use App\ErrCode;
 use App\Exceptions\SourceException;
@@ -75,12 +76,16 @@ class Source
         while ($n++ < 1000000) {
             $result = $this->invokeData($invoker, $page, $this->step);
 
-            $data = $result['data'];
+            if (!$data = $result['data']) {
+                continue;
+            }
+
+            $data = $this->formatSourceData($data);
             $cnt += count($data);
 
             // 第一次获取数据时将 key 写入
             if ($n == 1 && count($data)) {
-                $total = $result['total'];
+                $total = $result['total'] ?? count($data);
                 $file->saveAsCsv(array_keys($data[0]));
             }
 
@@ -108,6 +113,39 @@ class Source
     {
         $invoker->setUrl($this->uri->url());
         return $this->invokeData($invoker, 0, 1);
+    }
+
+    /**
+     * 格式化源数据数组格式，统一整理成二维数组，并将行表头纳入其中
+     */
+    private function formatSourceData(array $data): array
+    {
+        if (!$data) {
+            return $data;
+        }
+
+        $firstVal = $data[0] ?? array_values($data)[0] ?? [];
+
+        if (!is_array(array_values($firstVal)[0])) {
+            // 二维数组，加上默认的 row_head
+            return array_map(function ($item) {
+                if (!isset($item[RowHead::NODE_ROW_HEADER_COL])) {
+                    $item[RowHead::NODE_ROW_HEADER_COL] = '';
+                }
+                return $item;
+            }, $data);
+        }
+
+        // 三维转二维
+        $newData = [];
+        foreach ($data as $rowHead => $item) {
+            foreach ($item as $subItem) {
+                $subItem[RowHead::NODE_ROW_HEADER_COL] = $rowHead;
+                $newData[] = $subItem;
+            }
+        }
+
+        return $newData;
     }
 
     private function invokeData(API $invoker, int $page, int $pageSize): array

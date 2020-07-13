@@ -3,12 +3,11 @@
 namespace App\Domain\Object\Template\Excel;
 
 /**
- * 节点
+ * 表格节点
  */
 class Node
 {
     public const NODE_TOP = '_top_';
-    public const NODE_ROW_HEADER_COL = '_row_header_';
     
     protected $name;
     protected $title;
@@ -102,7 +101,7 @@ class Node
         return $this->searchNode($name, $this);
     }
 
-    private function searchNode(string $name, Node $node): ?Node
+    protected function searchNode(string $name, Node $node): ?Node
     {
         if ($node->name() === $name) {
             return $node;
@@ -125,9 +124,9 @@ class Node
     /**
      * 深度探测：取各条线路探测结果的最大值
      */
-    private function detectDeep(Node $node, int $deep = 1): int
+    protected function detectDeep(Node $node, int $deep = 1): int
     {
-        if (!$node->children()) {
+        if ($node->isLeaf()) {
             return $deep;
         }
 
@@ -142,9 +141,9 @@ class Node
     /**
      * 广度探测：遇到一个没有 children 的节点则广度加 1
      */
-    private function detectBreadth(Node $node, int &$breadth = 0): int
+    protected function detectBreadth(Node $node, int &$breadth = 0): int
     {
-        if (!$node->children()) {
+        if ($node->isLeaf()) {
             return ++$breadth;
         }
 

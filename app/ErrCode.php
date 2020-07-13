@@ -23,4 +23,5 @@ class ErrCode extends BaseErrCode
     public const INVALID_STATUS_OP = 509; // 非法的状态切换
     public const FETCH_SOURCE_FAILED = 510; // 获取源数据失败
     public const FILE_OP_FAILED = 511; // 操作文件失败
+    public const SOURCE_DATA_EMPTY = 512;
 }

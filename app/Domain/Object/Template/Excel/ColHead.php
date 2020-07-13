@@ -10,19 +10,34 @@ use WecarSwoole\Exceptions\Exception;
  */
 class ColHead extends Node
 {
+    use NodeParseTrait;
+
     public const DT_STR = 'string';// 默认类型
     public const DT_NUM = 'number';
     public const DT_RICH = 'rich';// 富文本（支持 html 标签）
 
-    /**
-     * 列数据类型
-     */
+    // 列数据类型
     protected $dataType;
 
     public function __construct(string $name = '', string $title = '', Style $style = null, string $dataType = self::DT_STR)
     {
         $this->resolveDataType($dataType);
         parent::__construct($name, $title, $style);
+    }
+
+    protected static function createNode(array $colCfg): Node
+    {
+        $styleCfg = $colCfg['style'] ?? [
+            'bg_color' => $colCfg['bg_color'] ?? '',
+            'width' => $colCfg['width'] ?? 0,
+            'height' => $colCfg['height'] ?? 0,
+            'align' => $colCfg['align'] ?? Style::ALIGN_CENTER,
+            'color' => $colCfg['color'] ?? '',
+            'bold' => $colCfg['bold'] ?? false,
+        ];
+        $style = new Style($styleCfg);
+
+        return new ColHead($colCfg['name'] ?? '', $colCfg['title'] ?? '', $style, $colCfg['type'] ?? ColHead::DT_STR);
     }
 
     private function resolveDataType(string $dataType)
