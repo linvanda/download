@@ -7,14 +7,14 @@ namespace App\Domain\Object\Template\Excel;
  */
 class RowHead extends Node
 {
-    use NodeParseTrait;
+    use NodeParser;
 
     public const NODE_ROW_HEADER_COL = '_row_head_';
 
     // 节点关联的行数，只有叶子节点有效
     private $rowCount;
 
-    public function __construct(string $name = '', string $title = '', Style $style = null, int $rowCount = 0)
+    public function __construct(string $name = '', string $title = '', Style $style = null, int $rowCount = 1)
     {
         $this->name = $name;
         $this->title = $title;

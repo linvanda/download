@@ -8,7 +8,7 @@ use WecarSwoole\Exceptions\Exception;
 /**
  * 根据配置文件解析出 excel 节点树
  */
-trait NodeParseTrait
+trait NodeParser
 {
     public static function parse(array $config): Node
     {

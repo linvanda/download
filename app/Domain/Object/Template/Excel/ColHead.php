@@ -10,7 +10,7 @@ use WecarSwoole\Exceptions\Exception;
  */
 class ColHead extends Node
 {
-    use NodeParseTrait;
+    use NodeParser;
 
     public const DT_STR = 'string';// 默认类型
     public const DT_NUM = 'number';

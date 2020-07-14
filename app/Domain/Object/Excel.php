@@ -2,7 +2,6 @@
 
 namespace App\Domain\Object;
 
-use App\Domain\Object\Template\Excel\TplFactory;
 use App\Domain\Object\Template\Excel\Tpl;
 
 /**
@@ -79,6 +78,6 @@ class Excel extends Obj
      */
     private function setTpl($template)
     {
-        $this->template = $template === null || $template instanceof Tpl ? $template : TplFactory::build($template);
+        $this->template = $template === null || $template instanceof Tpl ? $template : Tpl::build($template);
     }
 }

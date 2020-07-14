@@ -8,7 +8,7 @@ use WecarSwoole\Exceptions\Exception;
 /**
  * 表格模板工厂
  */
-class TplFactory
+trait TplBuilder
 {
     /**
      * @param array|string $tplCfg 模板配置
@@ -32,12 +32,6 @@ class TplFactory
 
         $colHead = self::buildColHead($colCfg);
         $rowHead = self::buildRowHead($rowCfg);
-
-        // 如果有 rowHead 且 colHead 中没有对应的列占位，则补齐
-        // if ($rowHead && !$colHead->search(RowHead::NODE_ROW_HEADER_COL)) {
-        //     $rowHeadCol = new ColHead(RowHead::NODE_ROW_HEADER_COL, '', null, ColHead::DT_STR);
-        //     $colHead->appendChild($rowHeadCol);
-        // }
 
         return new Tpl($colHead, $rowHead);
     }

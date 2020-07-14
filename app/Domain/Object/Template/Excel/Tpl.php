@@ -7,6 +7,8 @@ namespace App\Domain\Object\Template\Excel;
  */
 class Tpl
 {
+    use TplBuilder;
+    
     /**
      * @var ColHead 列标头
      */
