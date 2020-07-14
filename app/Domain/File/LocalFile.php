@@ -33,7 +33,7 @@ class LocalFile
     public function saveAsCsv(array $dataList)
     {
         $dataList = self::formatDataList($dataList);
-
+        
         foreach ($dataList as $item) {
             if (fputcsv($this->file, $item) === false) {
                 throw new FileException("写入源文件失败:{$this->saveToFile}", ErrCode::FILE_OP_FAILED);

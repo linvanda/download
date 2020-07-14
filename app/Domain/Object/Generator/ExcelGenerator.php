@@ -357,15 +357,18 @@ class ExcelGenerator implements IGenerator
         // 生成模板
         list($rowOffset, $colOffset, $rowMap, $colMap) = $this->createSheetTpl($activeSheet, $object->getMeta());
 
-        // 循环读取源数据写入到 excel 中
         $rowHeadIndex = array_search(RowHead::NODE_ROW_HEADER_COL, $colTitles);// 行标题索引位置（针对有行表头的）
         $rowHeadUsed = [];// 行标题内部偏移值
-        while ($maxRow-- && !feof($sourceFile)) {
-            $rowOffset++;
+        $origRowOffset = $rowOffset;
+        $origColOffset = $colOffset;
 
+        // 循环读取源数据写入到 excel 中
+        while ($maxRow-- && !feof($sourceFile)) {
             if (!$rowValues = fgetcsv($sourceFile)) {
                 continue;
             }
+
+            $rowOffset++;
 
             /**
              * 填充一行数据
@@ -380,20 +383,28 @@ class ExcelGenerator implements IGenerator
                     if (!$theRowNum = $rowMap[$theRowName][$innerIndex] ?? 0) {
                         continue;
                     }
+
+                    $rowHeadUsed[$theRowName] = isset($rowHeadUsed[$theRowName]) ? $rowHeadUsed[$theRowName] + 1 : 0;
                 }
             }
+            // 遍历每列值填充到 excel 中
             foreach ($rowValues as $index => $val) {
-                /**
-                 * 确定行列号
-                 */
-                $theColNum = $colMap[$colTitles[$index]] ?? 0;
-                if (!$theColNum) {
+                // 确定列号
+                if (!$theColNum = ($colMap[$colTitles[$index]] ?? 0)) {
                     continue;
                 }
 
                 $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum)->setValue($val);
             }
         }
+
+        // 将 colOffset 便宜到结束位置
+        $colOffset += in_array(RowHead::NODE_ROW_HEADER_COL, $colTitles) ? count($colTitles) - 1 : count($colTitles);
+
+        // 设置数据区的公共样式
+        $activeSheet->getStyle(Coordinate::stringFromColumnIndex($origColOffset + 1) . ($origRowOffset + 1)
+        . ':' . Coordinate::stringFromColumnIndex($colOffset) . $rowOffset)
+        ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
         $writer = new Xlsx($spreadSheet);
         $writer->save($objFileName);
