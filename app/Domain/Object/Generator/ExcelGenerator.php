@@ -52,17 +52,19 @@ class ExcelGenerator
                 $maxRow = $index < count($fileNames) - 1 ? $fileRowCount : PHP_INT_MAX;
                 $this->createExcel($sourceFile, $fileName, $maxRow, $colTitles, $target);
             }
-
-            // 如果涉及到多个文件，则压缩
-            if (count($fileNames) > 1) {
-                (new Archive(File::join($target->getBaseDir(), 'object'), $fileNames))();
-            }
         } catch (\Exception $e) {
             throw new ObjectException($e->getMessage(), $e->getCode());
         } finally {
             fclose($sourceFile);
             // 删除源文件
             unlink($source->fileName());
+        }
+
+        // 如果涉及到多个文件，则压缩
+        if (count($fileNames) > 1) {
+            $newTargetFileName = (new Archive(File::join($target->getBaseDir(), 'object'), $fileNames))();
+            // 重新设置目标文件名字
+            $target->setObjectFileName($newTargetFileName);
         }
     }
 

@@ -3,6 +3,7 @@
 namespace App\Domain\Object\Generator;
 
 use App\ErrCode;
+use App\Exceptions\FileException;
 use WecarSwoole\Exceptions\Exception;
 use ZipArchive;
 
@@ -46,11 +47,10 @@ class Archive
                 continue;
             }
             if (!$zip->addFile($fileName, strval($index + 1) . '.' . explode('.', $fileName)[1])) {
+                $zip->close();
                 throw new Exception("add file to zip failed", ErrCode::FILE_OP_FAILED);
             }
         }
-
-        $zip->close();
 
         // 必须在 zip close 后才能删除文件
         if ($this->delOrigFile) {

@@ -60,6 +60,14 @@ class Obj
         return $this->objectFileName;
     }
 
+    /**
+     * 设置目标文件名称
+     */
+    public function setObjectFileName(string $fileName = '')
+    {
+        $this->objectFileName = $fileName ?: File::join($this->baseDir, $this->appendFileExt('object'));
+    }
+
     public function type(): string
     {
         return $this->type;
@@ -108,11 +116,6 @@ class Obj
         }
 
         $this->downloadFileName = $this->appendFileExt($name);
-    }
-
-    private function setObjectFileName()
-    {
-        $this->objectFileName = File::join($this->baseDir, $this->appendFileExt('object'));
     }
 
     private static function generateDownloadFileName(): string
