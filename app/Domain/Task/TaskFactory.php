@@ -69,6 +69,8 @@ class TaskFactory
                         'template' => $taskDTO->template ?: null,
                         'title' => $taskDTO->title ?: '',
                         'summary' => $taskDTO->summary ?: '',
+                        'default_width' => $taskDTO->defaultWidth,
+                        'default_height' => $taskDTO->defaultHeight,
                     ]
                 );
                 return $excel;

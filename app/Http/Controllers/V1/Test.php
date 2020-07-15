@@ -417,7 +417,7 @@ class Test extends Controller
             ],
             [
                 'name' => '张十六',
-                'age' => mt_rand(10, 100),
+                'age' => 10928989879,
                 'sex' => '男',
                 'love_in' => '乒乓球',
                 'love_out_land' => '跑步',
@@ -447,9 +447,9 @@ class Test extends Controller
             'data' => $data,
             'total' => 10000,
             'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
-            'footer' => ['负责人' => '松林', '签名' => ''],
+            'footer' => ['负责人' => '松林', '总监签名' => '          ', 'CEO 签名' => '        '],
             'template' => [
-                'row' => [
+                'row_' => [
                     [
                         'title' => '云研发',
                         'children' => [
@@ -513,6 +513,7 @@ class Test extends Controller
                                         'name' => 'sex',
                                         'title' => '性别',
                                         'type' => 'string',
+                                        'width' => 8,
                                     ],
                                     [
                                         'title' => '爱好',

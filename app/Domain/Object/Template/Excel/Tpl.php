@@ -47,6 +47,10 @@ class Tpl
         $cfg = [];
 
         foreach ($data as $key => $val) {
+            if ($key == RowHead::NODE_ROW_HEADER_COL) {
+                continue;
+            }
+            
             $cfg[] = [
                 'name' => $key,
                 'title' => $key,

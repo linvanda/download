@@ -19,9 +19,9 @@ class Style implements IExtractable
     public const ALIGN_RIGHT = 'right';
     private const COLOR_LITERAL = ['black', 'white', 'red', 'green', 'blue', 'yellow', 'cyan'];
 
-    // 单元格宽度，默认 0（自适应）
+    // 单元格宽度，默认 0
     private $width;
-    // 单元格高度，默认 0（自适应）
+    // 单元格高度，默认 0
     private $height;
     private $color;
     private $bgColor;

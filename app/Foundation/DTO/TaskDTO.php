@@ -24,6 +24,8 @@ class TaskDTO extends DTO
     public $stime;// 最后状态变更时间
     public $status;// 状态
     public $retryNum;// 重试次数
+    public $defaultWidth;// Excel 默认列宽度，单位 pt
+    public $defaultHeight;// Excel 默认行高，单位 pt
 
     public function __construct(array $data = [])
     {

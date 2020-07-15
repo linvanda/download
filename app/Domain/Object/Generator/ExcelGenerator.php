@@ -2,11 +2,12 @@
 
 namespace App\Domain\Object\Generator;
 
+use App\Domain\Object\Excel;
 use App\Domain\Object\Template\Excel\Tpl;
-use App\Domain\Object\Obj;
 use App\Domain\Object\Template\Excel\ColHead;
 use App\Domain\Object\Template\Excel\Node;
 use App\Domain\Object\Template\Excel\RowHead;
+use App\Domain\Object\Template\Excel\Style;
 use App\Domain\Source\Source;
 use App\Exceptions\FileException;
 use App\Exceptions\ObjectException;
@@ -16,6 +17,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use SplQueue;
 use App\ErrCode;
 
@@ -24,19 +26,17 @@ use App\ErrCode;
  * 根据源文件的行数和大小决定生成几个目标文件
  * 如果生成多个目标文件（或者单个文件达到一定尺寸），则执行归档压缩
  */
-class ExcelGenerator implements IGenerator
+class ExcelGenerator
 {
-    private const MAX_MGR_COL_NUM = 50;
-
-    public function generate(Source $source, Obj $object)
+    public function generate(Source $source, Excel $target)
     {
         if (!file_exists($source->fileName())) {
             throw new FileException("源文件不存在：{$source->fileName()}", ErrCode::FILE_OP_FAILED);
         }
 
         // 计算需要生成多少个文件，每个文件最大多少行，并算出每个文件名称
-        list($fileNum, $fileRow) = $this->calcFileCount($source);
-        $fileNames = $this->calcFileNames($object->objectFileName(), $fileNum);
+        list($fileCount, $fileRowCount) = $this->calcFileCount($source, $target->getTpl()->rowHead() ? true : false);
+        $fileNames = $this->calcFileNames($target->objectFileName(), $fileCount);
 
         if (!$sourceFile = @fopen($source->fileName(), 'r')) {
             throw new FileException("打开源文件失败：{$source->fileName()}", ErrCode::FILE_OP_FAILED);
@@ -48,8 +48,8 @@ class ExcelGenerator implements IGenerator
 
             foreach ($fileNames as $index => $fileName) {
                 // 生成 excel。最后一个文件的 row 不做限制
-                $maxRow = $index < count($fileNames) - 1 ? $fileRow : PHP_INT_MAX;
-                $this->createExcel($sourceFile, $fileName, $maxRow, $colTitles, $object);
+                $maxRow = $index < count($fileNames) - 1 ? $fileRowCount : PHP_INT_MAX;
+                $this->createExcel($sourceFile, $fileName, $maxRow, $colTitles, $target);
             }
 
             // 如果涉及到多个文件，则压缩
@@ -64,15 +64,92 @@ class ExcelGenerator implements IGenerator
     }
 
     /**
+     * 生成 excel 文件
+     * @param resource $sourceFile 源数据文件，资源对象
+     * @param string $objFileName 目标文件名
+     * @param int $maxRow 最大读取行数
+     * @param array $colTitles 列名数组
+     * @param Excel $target 目标对象
+     */
+    private function createExcel($sourceFile, string $objFileName, int $maxRow, array $colTitles, Excel $target)
+    {
+        $spreadSheet = new Spreadsheet();
+        $activeSheet = $spreadSheet->getActiveSheet();
+
+        $this->setDefaultStyle($spreadSheet, $target);
+
+        // 生成模板
+        list($rowOffset, $colOffset, $rowMap, $colMap) = $this->createSheetTpl($activeSheet, $target);
+
+        $rowHeadIndex = array_search(RowHead::NODE_ROW_HEADER_COL, $colTitles);// 行标题索引位置（针对有行表头的）
+        $rowHeadUsed = [];// 行标题内部偏移值
+
+        // 循环读取源数据写入到 excel 中
+        while ($maxRow-- && !feof($sourceFile)) {
+            if (!$rowValues = fgetcsv($sourceFile)) {
+                continue;
+            }
+
+            $rowOffset++;
+
+            /**
+             * 填充一行数据
+             */
+            // 确定行号
+            $theRowNum = $rowOffset;
+            // 如果有 rowMap，则使用 rowMap 的行号
+            if ($rowMap && $rowHeadIndex !== false) {
+                $theRowName = $rowValues[$rowHeadIndex];
+                if (isset($rowMap[$theRowName])) {
+                    $innerIndex = isset($rowHeadUsed[$theRowName]) ? $rowHeadUsed[$theRowName] + 1 : 0;
+                    if (!$theRowNum = $rowMap[$theRowName][$innerIndex] ?? 0) {
+                        continue;
+                    }
+
+                    $rowHeadUsed[$theRowName] = isset($rowHeadUsed[$theRowName]) ? $rowHeadUsed[$theRowName] + 1 : 0;
+                }
+            }
+            // 遍历每列值填充到 excel 中
+            foreach ($rowValues as $index => $val) {
+                // 确定列号
+                if (!$theColNum = ($colMap[$colTitles[$index]] ?? 0)) {
+                    continue;
+                }
+
+                $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum)->setValue($val);
+            }
+
+            // 设置行高度（使用默认行高度无效）
+            $activeSheet->getRowDimension($theRowNum)->setRowHeight($target->getDefaultHeight());
+        }
+
+        // 将 colOffset 偏移到结束位置
+        $colOffset += in_array(RowHead::NODE_ROW_HEADER_COL, $colTitles) ? count($colTitles) - 1 : count($colTitles);
+
+        // 设置整个表格边框
+        $activeSheet->getStyle('A1' . ':' . Coordinate::stringFromColumnIndex($colOffset) . $rowOffset)
+        ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+        // 设置页脚
+        if ($target->getFooter()) {
+            $this->setFooter($activeSheet, $target->getFooter(), $colOffset, $rowOffset);
+        }
+
+        $writer = new Xlsx($spreadSheet);
+        $writer->save($objFileName);
+
+        $spreadSheet->disconnectWorksheets();
+        unset($spreadSheet);
+    }
+
+    /**
      * 生成 excel 模板
-     * $meta 组成：title、summary、header、footer、template
      * @return array [当前行号, 当前列号, 行映射, 列映射]
      */
-    private function createSheetTpl(Worksheet $activeSheet, array $meta): array
+    private function createSheetTpl(Worksheet $activeSheet, Excel $target): array
     {
         // 必须有 template
-        $tpl = $meta['template'] ?? null;
-        if (!$tpl || !$tpl instanceof Tpl) {
+        if (!$tpl = $target->getTpl()) {
             throw new ObjectException("缺少 template");
         }
 
@@ -81,20 +158,20 @@ class ExcelGenerator implements IGenerator
         $currRowNum = 0;
         
         // 标题
-        if (isset($meta['title'])) {
-            $this->setTitle($activeSheet, $meta['title'], $colNum);
+        if ($target->getTitle()) {
+            $this->setTitle($activeSheet, $target->getTitle(), $colNum);
             $currRowNum++;
         }
 
         // 摘要
-        if (isset($meta['summary'])) {
-            $this->setSummary($activeSheet, $meta['summary'], $colNum, $currRowNum);
+        if ($target->getSummary()) {
+            $this->setSummary($activeSheet, $target->getSummary(), $colNum, $currRowNum);
             $currRowNum++;
         }
 
         // header
-        if (isset($meta['header'])) {
-            $currRowNum += $this->setHeader($activeSheet, $meta['header'], $colNum, $currRowNum);
+        if ($target->getHeader()) {
+            $currRowNum += $this->setHeader($activeSheet, $target->getHeader(), $colNum, $currRowNum);
         }
 
         // 列标头
@@ -169,6 +246,7 @@ class ExcelGenerator implements IGenerator
     {
         $depth = $headTree->deep() - 1;// 根节点不计入列表头深度
         $map = [];// 行列映射表。格式：[行/列名称 => [行/列号]]
+        $styleMap = [];// 行列样式，格式：行/列号 => 样式对象
 
         // 使用队列实现广度优先遍历
         $queue = new SplQueue();
@@ -221,8 +299,9 @@ class ExcelGenerator implements IGenerator
 
             $worksheet->getCell(Coordinate::stringFromColumnIndex($fromCol) . $fromRow)->setValue($node->title());
 
-            // 保存行列映射
+            // 叶子节点的特殊处理
             if ($node->isLeaf()) {
+                // 保存行列映射
                 if (!isset($map[$node->name()])) {
                     $map[$node->name()] = [];
                 }
@@ -235,6 +314,9 @@ class ExcelGenerator implements IGenerator
                         $map[$node->name()][] = $fromRow + $i;
                     }
                 }
+
+                // 行列样式
+                $styleMap[$type == 1 ? $fromCol : $fromRow] = $node->style();
             }
 
             next:
@@ -244,20 +326,57 @@ class ExcelGenerator implements IGenerator
             }
         }
 
-        // 设置单元格样式
-        $startRow = $rowOffset + 1;
-        $startCol = 1;
-        $endRow = $rowOffset + ($type == 1 ? $depth : $headTree->breadth());
-        $endCol = $type == 1 ? $colOffset + $headTree->breadth() : $depth;
-        $style = $worksheet->getStyle(Coordinate::stringFromColumnIndex($startCol) . $startRow
-        . ':' . Coordinate::stringFromColumnIndex($endCol) . $endRow);
-        $style->getFont()->setBold(true)->setSize(17);
-        $style->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
-        $style->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-        $style->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-        $style->getFill()->getStartColor()->setARGB('DFDFDF');
+        // 设置表头样式
+        $this->setCRHeadStyle(
+            $worksheet,
+            1,
+            $rowOffset + 1,
+            $type == 1 ? $colOffset + $headTree->breadth() : $depth,
+            $rowOffset + ($type == 1 ? $depth : $headTree->breadth())
+        );
+
+        // 设置行列样式
+        if ($type == 1) {
+            $this->setColStyle($worksheet, $styleMap);
+        } else {
+            $this->setRowStyle($worksheet, $styleMap);
+        }
 
         return $map;
+    }
+
+    /**
+     * 设置列样式
+     * 目前仅支持设置行宽度
+     */
+    private function setColStyle(Worksheet $worksheet, array $colStyleMap)
+    {
+        foreach ($colStyleMap as $colNo => $style) {
+            if (!$style || !$style instanceof Style) {
+                continue;
+            }
+
+            if ($style->getWidth()) {
+                $worksheet->getColumnDimension(Coordinate::stringFromColumnIndex($colNo))->setWidth($style->getWidth());
+            }
+        }
+    }
+
+    /**
+     * 设置行样式
+     */
+    private function setRowStyle(Worksheet $worksheet, array $rowStyleMap)
+    {
+        // 暂时不设置任何行样式
+    }
+
+    private function setCRHeadStyle(Worksheet $worksheet, int $startCol, int $startRow, int $endCol, int $endRow)
+    {
+        $style = $worksheet->getStyle(Coordinate::stringFromColumnIndex($startCol) . $startRow
+        . ':' . Coordinate::stringFromColumnIndex($endCol) . $endRow);
+        $style->getFont()->setBold(true)->setSize(16);
+        $style->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+        $style->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('DFDFDF');
     }
 
     /**
@@ -265,43 +384,38 @@ class ExcelGenerator implements IGenerator
      * 第一版对 header 简化处理：全部排布在一行
      * @return int header 占用了几行
      */
-    private function setHeader(Worksheet $worksheet, array $headers, int $colNum, int $currRowNum): int
+    private function setHeader(Worksheet $worksheet, array $headers, int $colCount, int $lastRowNum): int
     {
-        $headerTxt = "";
-        foreach ($headers as $key => $val) {
-            $headerTxt .= $key . '：' . $val . "    ";
-        }
-
-        // 从下一行开始
-        $currRowNum += 1;
-
-        $worksheet->mergeCells("A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colNum > self::MAX_MGR_COL_NUM ? self::MAX_MGR_COL_NUM : $colNum) . $currRowNum);
-        $worksheet->getCell("A{$currRowNum}")->setValue($headerTxt);
-
+        $this->setSimpleHeaderFooter($worksheet, $headers, $colCount, $lastRowNum, 1);
         return 1;
     }
 
     /**
      * 设置 Excel Summary
      */
-    private function setSummary(Worksheet $worksheet, string $summary, int $colNum, int $currRowNum)
+    private function setSummary(Worksheet $worksheet, string $summary, int $colCount, int $lastRowNum)
     {
         if (!$summary) {
             return;
         }
 
         // 从下一行开始
-        $currRowNum += 1;
+        $currRowNum = $lastRowNum + 1;
 
-        $worksheet->mergeCells("A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colNum > self::MAX_MGR_COL_NUM ? self::MAX_MGR_COL_NUM : $colNum) . $currRowNum);
-        $summaryCell = $worksheet->getCell("A{$currRowNum}");
-        $summaryCell->setValue($summary);
+        $coordinate = "A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colCount) . $currRowNum;
+        $worksheet->mergeCells($coordinate);
+        $worksheet->getRowDimension($currRowNum)->setRowHeight(36);
+        $cell = $worksheet->getCell("A{$currRowNum}");
+        // 自动换行
+        $style = $cell->getStyle();
+        $style->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_CENTER);
+        $cell->setValue($summary);
     }
 
     /**
      * 设置 Excel title
      */
-    private function setTitle(Worksheet $worksheet, string $title, int $colNum, int $lastRowNum = 0)
+    private function setTitle(Worksheet $worksheet, string $title, int $colCount, int $lastRowNum = 0)
     {
         if (!$title) {
             return;
@@ -310,21 +424,49 @@ class ExcelGenerator implements IGenerator
         // 从下一行开始
         $currRowNum = $lastRowNum + 1;
 
-        $worksheet->mergeCells("A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colNum > self::MAX_MGR_COL_NUM ? self::MAX_MGR_COL_NUM : $colNum) . $currRowNum);
+        $coordinate = "A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colCount) . $currRowNum;
+        $worksheet->mergeCells($coordinate);
         $worksheet->getRowDimension($currRowNum)->setRowHeight(36);
         $cell = $worksheet->getCell("A{$currRowNum}");
         $cell->setValue($title);
-        $cell->getStyle()->getFont()->setSize(24)->setBold(true);
-        $cell->getStyle()->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+        $style = $cell->getStyle();
+        $style->getFont()->setSize(22)->setBold(true);
+        $style->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+    }
+
+    /**
+     * 设置 Excel 页脚
+     */
+    private function setFooter(Worksheet $worksheet, array $footers, int $colCount, int $lastRowNum)
+    {
+        $this->setSimpleHeaderFooter($worksheet, $footers, $colCount, $lastRowNum);
+    }
+
+    private function setSimpleHeaderFooter(Worksheet $worksheet, array $contents, int $colCount, int $lastRowNum, int $hasBorder = 0)
+    {
+        $txt = "";
+        foreach ($contents as $key => $val) {
+            $txt .= $key . '：' . $val . "        ";
+        }
+
+        // 从下一行开始
+        $currRowNum = $lastRowNum + 1;
+
+        $coordinate = "A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colCount) . $currRowNum;
+        $worksheet->mergeCells($coordinate);
+        $cell = $worksheet->getCell("A{$currRowNum}");
+        $cell->setValue($txt);
+        $cell->getStyle()->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
+        $worksheet->getRowDimension($currRowNum)->setRowHeight(30);
     }
 
     /**
      * 设置 Excel 默认样式
      */
-    private function setDefaultStyle(Spreadsheet $workSheet)
+    private function setDefaultStyle(Spreadsheet $workSheet, Excel $target)
     {
-        $workSheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(14);
-        $workSheet->getActiveSheet()->getDefaultRowDimension()->setRowHeight(22);
+        $workSheet->getActiveSheet()->getDefaultColumnDimension()->setWidth($target->getDefaultWidth());
+        $workSheet->getActiveSheet()->getDefaultRowDimension()->setRowHeight($target->getDefaultHeight());
     }
 
     /**
@@ -335,82 +477,6 @@ class ExcelGenerator implements IGenerator
         $cBreadth = $tpl->colHead()->breadth();
         $rDeep = $tpl->rowHead() ? $tpl->rowHead()->deep() - 1 : 0;
         return $cBreadth + $rDeep;
-    }
-
-    /**
-     * 生成 excel 文件
-     * @param resource $sourceFile 源数据文件，资源对象
-     * @param string $objFileName 目标文件名
-     * @param int $maxRow 最大读取行数
-     * @param array $colTitles 列名数组
-     * @param array $colMap 列名和列号映射数组
-     * @param Worksheet $sheetTpl excel 模板
-     * @param int $startRow 开始行号
-     * @param int $startCol 开始列号
-     */
-    private function createExcel($sourceFile, string $objFileName, int $maxRow, array $colTitles, Obj $object)
-    {
-        $spreadSheet = new Spreadsheet();
-        $this->setDefaultStyle($spreadSheet);
-        $activeSheet = $spreadSheet->getActiveSheet();
-
-        // 生成模板
-        list($rowOffset, $colOffset, $rowMap, $colMap) = $this->createSheetTpl($activeSheet, $object->getMeta());
-
-        $rowHeadIndex = array_search(RowHead::NODE_ROW_HEADER_COL, $colTitles);// 行标题索引位置（针对有行表头的）
-        $rowHeadUsed = [];// 行标题内部偏移值
-        $origRowOffset = $rowOffset;
-        $origColOffset = $colOffset;
-
-        // 循环读取源数据写入到 excel 中
-        while ($maxRow-- && !feof($sourceFile)) {
-            if (!$rowValues = fgetcsv($sourceFile)) {
-                continue;
-            }
-
-            $rowOffset++;
-
-            /**
-             * 填充一行数据
-             */
-            // 确定行号
-            $theRowNum = $rowOffset;
-            // 如果有 rowMap，则使用 rowMap 的行号
-            if ($rowMap && $rowHeadIndex !== false) {
-                $theRowName = $rowValues[$rowHeadIndex];
-                if (isset($rowMap[$theRowName])) {
-                    $innerIndex = isset($rowHeadUsed[$theRowName]) ? $rowHeadUsed[$theRowName] + 1 : 0;
-                    if (!$theRowNum = $rowMap[$theRowName][$innerIndex] ?? 0) {
-                        continue;
-                    }
-
-                    $rowHeadUsed[$theRowName] = isset($rowHeadUsed[$theRowName]) ? $rowHeadUsed[$theRowName] + 1 : 0;
-                }
-            }
-            // 遍历每列值填充到 excel 中
-            foreach ($rowValues as $index => $val) {
-                // 确定列号
-                if (!$theColNum = ($colMap[$colTitles[$index]] ?? 0)) {
-                    continue;
-                }
-
-                $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum)->setValue($val);
-            }
-        }
-
-        // 将 colOffset 便宜到结束位置
-        $colOffset += in_array(RowHead::NODE_ROW_HEADER_COL, $colTitles) ? count($colTitles) - 1 : count($colTitles);
-
-        // 设置数据区的公共样式
-        $activeSheet->getStyle(Coordinate::stringFromColumnIndex($origColOffset + 1) . ($origRowOffset + 1)
-        . ':' . Coordinate::stringFromColumnIndex($colOffset) . $rowOffset)
-        ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-
-        $writer = new Xlsx($spreadSheet);
-        $writer->save($objFileName);
-
-        $spreadSheet->disconnectWorksheets();
-        unset($spreadSheet);
     }
 
     private function calcFileNames(string $origFileName, int $fileNum): array
@@ -435,13 +501,18 @@ class ExcelGenerator implements IGenerator
      * 计算目标文件数目以及每个文件最大行数
      * @return array [文件数目, 最大行数]
      */
-    private function calcFileCount(Source $source): array
+    private function calcFileCount(Source $source, bool $hasRowHead = false): array
     {
+        // 有行标题的情况下只生成一个文件
+        if ($hasRowHead) {
+            return [1, PHP_INT_MAX];
+        }
+
         $maxSize = Config::getInstance()->getConf("excel_max_size");
         $maxCount = Config::getInstance()->getConf("excel_max_count");
         $sourceSize = $source->size();
         $sourceCount = $source->count();
-
+        
         if ($sourceSize <= $maxSize * 1.5 && $sourceCount <= $maxCount * 1.5) {
             return [1, PHP_INT_MAX];
         }

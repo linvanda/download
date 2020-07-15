@@ -130,6 +130,8 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
                     'title' => $meta['title'] ?? '',
                     'summary' => $meta['summary'] ?? '',
                     'type' => array_flip(self::FILE_TYPE_MAP)[$info['type']],
+                    'default_width' => $meta['default_width'] ?? 0,
+                    'default_height' => $meta['default_height'] ?? 0,
                 ]
             )
         );

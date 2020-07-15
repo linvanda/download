@@ -14,9 +14,13 @@ class Excel extends Obj
     // 摘要
     protected $summary;
     // 表头
-    protected $header = [];
+    protected $header;
     // 表尾
-    protected $footer = [];
+    protected $footer;
+    // 默认列宽度
+    protected $defaultWidth;
+    // 默认行高度
+    protected $defaultHeight;
     /**
      * 表格模板
      * @var Tpl
@@ -28,24 +32,54 @@ class Excel extends Obj
         parent::__construct($baseDir, $downloadFileName, self::TYPE_EXCEL);
     }
 
+    public function getTitle(): string
+    {
+        return $this->title ?? '';
+    }
+
+    public function getSummary(): string
+    {
+        return $this->summary ?? '';
+    }
+
+    public function getHeader(): array
+    {
+        return $this->header ?? [];
+    }
+
+    public function getFooter(): array
+    {
+        return $this->footer ?? [];
+    }
+
+    public function getDefaultWidth(): int
+    {
+        return $this->defaultWidth ?? 14;
+    }
+
+    public function getDefaultHeight(): int
+    {
+        return $this->defaultHeight ?? 14;
+    }
+
+    public function getTpl(): Tpl
+    {
+        return $this->template;
+    }
+
     /**
      * 重写 setMeta，将数组中的各部分赋值给相应的属性，让其更具有语义
      * 注意，此处是增量覆盖
      */
     public function setMeta(array $metaData)
     {
-        if (isset($metaData['title'])) {
-            $this->title = $metaData['title'];
-        }
-        if (isset($metaData['summary'])) {
-            $this->summary = $metaData['summary'];
-        }
-        if (isset($metaData['header'])) {
-            $this->header = $metaData['header'];
-        }
-        if (isset($metaData['footer'])) {
-            $this->footer = $metaData['footer'];
-        }
+        $this->title = $metaData['title'] ?? $this->title;
+        $this->summary = $metaData['summary'] ?? $this->summary;
+        $this->header = $metaData['header'] ?? $this->header;
+        $this->footer = $metaData['footer'] ?? $this->footer;
+        $this->defaultWidth = $metaData['default_width'] ?? $this->defaultWidth;
+        $this->defaultHeight = $metaData['default_height'] ?? $this->defaultHeight;
+
         if (isset($metaData['template'])) {
             $this->setTpl($metaData['template']);
         } elseif (isset($metaData['data']) && !$this->template) {
@@ -58,7 +92,6 @@ class Excel extends Obj
 
     /**
      * 重写 getMeta
-     * 
      */
     public function getMeta(string $key = '')
     {
@@ -68,6 +101,8 @@ class Excel extends Obj
             'header' => $this->header,
             'footer' => $this->footer,
             'template' => $this->template,
+            'default_width' => $this->getDefaultWidth(),
+            'default_height' => $this->getDefaultHeight(),
         ];
 
         return $key ? ($data[$key] ?? null) : $data;

@@ -2,7 +2,7 @@
 
 namespace App\Domain\Object\Generator;
 
-use App\Domain\Object\Obj;
+use App\Domain\Object\CSV;
 use App\Domain\Object\Template\Excel\RowHead;
 use App\Domain\Source\Source;
 use App\ErrCode;
@@ -12,12 +12,12 @@ use Exception;
 /**
  * CSV 文件生成器
  */
-class CSVGenerator implements IGenerator
+class CSVGenerator
 {
     /**
      * CSV 目标文件生成方式
      */
-    public function generate(Source $source, Obj $object)
+    public function generate(Source $source, CSV $target)
     {
         $sourceFileName = $source->fileName();
         if (!$sourceFileName || !file_exists($sourceFileName)) {
@@ -39,8 +39,8 @@ class CSVGenerator implements IGenerator
             unset($colNames[$rowHeadIndex]);
         }
 
-        if (!$objectFile = @fopen($object->objectFileName(), 'w')) {
-            throw new FileException("打开目标文件失败：{$object->objectFileName()}", ErrCode::FILE_OP_FAILED);
+        if (!$objectFile = @fopen($target->objectFileName(), 'w')) {
+            throw new FileException("打开目标文件失败：{$target->objectFileName()}", ErrCode::FILE_OP_FAILED);
         }
         fputcsv($objectFile, $colNames);
 

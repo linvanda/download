@@ -43,22 +43,22 @@ $baseConfig = [
             // 读库使用二维数组配置，以支持多个读库
             'read' => [
                 [
-                    'host' => apollo('FW.mysql.download_center.rw', 'host'),
-                    'port' => apollo('FW.mysql.download_center.rw', 'port'),
-                    'user' => apollo('FW.mysql.download_center.rw', 'username'),
-                    'password' => apollo('FW.mysql.download_center.rw', 'password'),
-                    'database' => apollo('FW.mysql.download_center.rw', 'dbname'),
-                    'charset' => apollo('FW.mysql.download_center.rw', 'charset'),
+                    'host' => apollo('FW.mysql.download_center.rw', 'download_center.host'),
+                    'port' => apollo('FW.mysql.download_center.rw', 'download_center.port'),
+                    'user' => apollo('FW.mysql.download_center.rw', 'download_center.username'),
+                    'password' => apollo('FW.mysql.download_center.rw', 'download_center.password'),
+                    'database' => apollo('FW.mysql.download_center.rw', 'download_center.dbname'),
+                    'charset' => apollo('FW.mysql.download_center.rw', 'download_center.charset'),
                 ]
             ],
             // 仅支持一个写库
             'write' => [
-                'host' => apollo('FW.mysql.download_center.rw', 'host'),
-                'port' => apollo('FW.mysql.download_center.rw', 'port'),
-                'user' => apollo('FW.mysql.download_center.rw', 'username'),
-                'password' => apollo('FW.mysql.download_center.rw', 'password'),
-                'database' => apollo('FW.mysql.download_center.rw', 'dbname'),
-                'charset' => apollo('FW.mysql.download_center.rw', 'charset'),
+                'host' => apollo('FW.mysql.download_center.rw', 'download_center.host'),
+                'port' => apollo('FW.mysql.download_center.rw', 'download_center.port'),
+                'user' => apollo('FW.mysql.download_center.rw', 'download_center.username'),
+                'password' => apollo('FW.mysql.download_center.rw', 'download_center.password'),
+                'database' => apollo('FW.mysql.download_center.rw', 'download_center.dbname'),
+                'charset' => apollo('FW.mysql.download_center.rw', 'download_center.charset'),
             ],
             // 连接池配置
             'pool' => [
