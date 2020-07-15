@@ -115,6 +115,7 @@ $baseConfig = [
     // 最低记录级别：debug, info, warning, error, critical, off
     'log_level' => apollo('application', 'log_level') ?: 'info',
     'base_url' => apollo('application', 'base_url'),
+    'api_invoke_log' => apollo('application', 'api_invoke_log') ?: 'on',
     'task_queue' => 'tasks', // 任务队列名称
     'task_concurrent_limit' => apollo('application', 'task_concurrent_limit') ?: 20, // 每个进程并发执行的任务数最大值
     'local_file_base_dir' => File::join(EASYSWOOLE_ROOT, 'storage/data'), // 本地临时文件存储基路径

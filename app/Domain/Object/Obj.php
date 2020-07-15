@@ -29,6 +29,7 @@ class Obj
     protected $type;
     // 元数据
     protected $metaData = [];
+    protected $baseDir;
 
     /**
      * @param string $baseDir 目标临时文件存放目录
@@ -37,9 +38,10 @@ class Obj
      */
     public function __construct(string $baseDir, string $downloadFileName = '', string $type = 'csv')
     {
+        $this->baseDir = $baseDir;
         $this->setType($type);
         $this->setDownLoadFileName($downloadFileName);
-        $this->setObjectFileName($baseDir);
+        $this->setObjectFileName();
     }
 
     /**
@@ -72,6 +74,14 @@ class Obj
     }
 
     /**
+     * 目标文件基路径
+     */
+    public function getBaseDir(): string
+    {
+        return $this->baseDir;
+    }
+
+    /**
      * 获取 meta 信息
      * @return mixed
      */
@@ -100,9 +110,9 @@ class Obj
         $this->downloadFileName = $this->appendFileExt($name);
     }
 
-    private function setObjectFileName(string $dir)
+    private function setObjectFileName()
     {
-        $this->objectFileName = File::join($dir, $this->appendFileExt('object'));
+        $this->objectFileName = File::join($this->baseDir, $this->appendFileExt('object'));
     }
 
     private static function generateDownloadFileName(): string

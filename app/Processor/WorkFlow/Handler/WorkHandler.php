@@ -4,6 +4,8 @@ namespace App\Processor\WorkFlow\Handler;
 
 use App\Domain\Task\Task;
 use App\Processor\WorkFlow\WorkFlow;
+use Psr\Log\LoggerInterface;
+use WecarSwoole\Container;
 
 /**
  * 工作流节点处理器基类
@@ -48,7 +50,7 @@ abstract class WorkHandler
         }
 
         // 自己能处理，则处理掉，同时不再传递给下游
-        echo "处理任务{$this->workFlow->task()->id()}的状态{$workStatus}\n";
+        Container::get(LoggerInterface::class)->info("处理任务{$this->workFlow->task()->id()}的状态{$workStatus}");
         $this->exec();
     }
 

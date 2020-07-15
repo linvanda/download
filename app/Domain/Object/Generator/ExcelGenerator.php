@@ -20,6 +20,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use SplQueue;
 use App\ErrCode;
+use WecarSwoole\Util\File;
 
 /**
  * Excel 文件生成器
@@ -53,7 +54,9 @@ class ExcelGenerator
             }
 
             // 如果涉及到多个文件，则压缩
-
+            if (count($fileNames) > 1) {
+                (new Archive(File::join($target->getBaseDir(), 'object'), $fileNames))();
+            }
         } catch (\Exception $e) {
             throw new ObjectException($e->getMessage(), $e->getCode());
         } finally {
@@ -512,7 +515,7 @@ class ExcelGenerator
         $maxCount = Config::getInstance()->getConf("excel_max_count");
         $sourceSize = $source->size();
         $sourceCount = $source->count();
-        
+
         if ($sourceSize <= $maxSize * 1.5 && $sourceCount <= $maxCount * 1.5) {
             return [1, PHP_INT_MAX];
         }

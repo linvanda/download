@@ -429,23 +429,24 @@ class Test extends Controller
             ],
         ];
 
-        // for ($i = 0; $i < 10; $i++) {
-        //     $data[] = [
-        //         'name' => '张三',
-        //         'age' => mt_rand(10, 100),
-        //         'sex' => '男',
-        //         'love_in' => '乒乓球',
-        //         'love_out_land' => '跑步',
-        //         'love_out_sky' => '跳伞',
-        //         'city' => ['深圳', '上海'][mt_rand(0,1)],
-        //         'area' => '区域名称',
-        //         'building' => '小区名'
-        //     ];
-        // }
+        $data = [];
+        for ($i = 0; $i < 20000; $i++) {
+            $data[] = [
+                'name' => "张三{$i}",
+                'age' => mt_rand(10, 100),
+                'sex' => ['男', '女'][mt_rand(0,1)],
+                'love_in' => ['乒乓球', '羽毛球'][mt_rand(0,1)],
+                'love_out_land' => ['跑步', '爬山'][mt_rand(0,1)],
+                'love_out_sky' => '跳伞',
+                'city' => ['深圳', '上海'][mt_rand(0,1)],
+                'area' => '区域名称',
+                'building' => '小区名'
+            ];
+        }
 
         $this->return([
             'data' => $data,
-            'total' => 10000,
+            'total' => 20000,
             'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
             'footer' => ['负责人' => '松林', '总监签名' => '          ', 'CEO 签名' => '        '],
             'template' => [
