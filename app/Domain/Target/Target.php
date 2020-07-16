@@ -22,7 +22,7 @@ class Target
     ];
 
     // 目标文件
-    protected $fileName;
+    protected $targetFileName;
     // 下载文件名称
     protected $downloadFileName;
     // 目标文件类型
