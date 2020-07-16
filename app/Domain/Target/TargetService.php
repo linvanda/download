@@ -9,6 +9,7 @@ use App\Domain\Task\Task;
 use App\ErrCode;
 use App\Exceptions\TargetException;
 use App\Foundation\Client\API;
+use EasySwoole\EasySwoole\Config;
 
 /**
  * 目标文件服务
@@ -31,7 +32,14 @@ class TargetService
                 throw new TargetException("不支持的目标文件类型：{$task->target()->type()}", ErrCode::FILE_TYPE_ERR);
         }
 
-        $generator->generate($task->source(), $task->target(), new Zip());
+        switch (Config::getInstance()->getConf('zip_type')) {
+            case COMPRESS_TYPE_ZIP:
+            default:
+                $compress = new Zip();
+                break;
+        }
+
+        $generator->generate($task->source(), $task->target(), $compress);
     }
 
     /**

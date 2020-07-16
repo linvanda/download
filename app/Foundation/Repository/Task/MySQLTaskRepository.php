@@ -3,6 +3,7 @@
 namespace App\Foundation\Repository\Task;
 
 use App\Domain\Project\IProjectRepository;
+use App\Domain\Target\Target;
 use WecarSwoole\Repository\MySQLRepository;
 use App\Domain\Task\ITaskRepository;
 use App\Domain\Task\Task;

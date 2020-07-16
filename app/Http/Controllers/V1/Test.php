@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\Domain\Processor\Ticket;
+use App\Domain\Transfer\Upload;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use WecarSwoole\Http\Controller;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -593,5 +594,13 @@ class Test extends Controller
         $title = "测试大文件.csv";
         $this->response()->withHeader("Content-Disposition", "attachment; filename=$title");
         $this->response()->sendFile($fileName);
+    }
+
+    /**
+     * 测试上传到oss
+     */
+    public function upload()
+    {
+        // (new Upload())->upload(File::join(STORAGE_ROOT, 'data/0cff3e83-27b0-da63-73b2-601a94bfb1fb/object.zip'), '0cff3e83-27b0-da63-73b2-601a94bfb1fb');
     }
 }

@@ -130,6 +130,16 @@ $baseConfig = [
     'excel_max_count' => apollo('application', 'excel_max_count') ?: 10000,
     // 文件压缩阈值，单位字节
     'zip_threshold' => apollo('application', 'zip_threshold') ?: 200 * 1024,
+    // 文件压缩类型，目前仅支持 zip 压缩
+    'zip_type' => apollo('application', 'zip_type') ?: 'zip',
+    // 阿里云 OSS 服务 key
+    'oss_access_key' => apollo('application', 'oss_access_key'),
+    // 阿里云 OSS 服务 secret
+    'oss_access_secret' => apollo('application', 'oss_access_secret'),
+    // 阿里云 OSS 服务 endpoint (区域数据中心域名)
+    'oss_endpoint' => apollo('application', 'oss_endpoint'),
+    // 阿里云 OSS 服务 bucket（在阿里云 OSS 管理后台创建的）
+    'oss_bucket' => apollo('application', 'oss_bucket'),
 ];
 
 return array_merge(

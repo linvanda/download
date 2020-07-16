@@ -14,7 +14,7 @@ class TransferService
      */
     public function upload(Task $task)
     {
-
+        (new Upload())->upload($task->target()->targetFileName(), $task->id());
     }
 
     /**

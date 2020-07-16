@@ -13,6 +13,7 @@ class Routes extends Route
         $this->get("/v1/test/download", "/V1/Test/download");
         $this->get("/v1/test/create", "/V1/Test/createBigFile");
         $this->get("/v1/test/source", "/V1/Test/sourceData");
+        $this->get("/v1/test/upload", "/V1/Test/upload");
         // -------- 测试用 End --------
 
         /**
