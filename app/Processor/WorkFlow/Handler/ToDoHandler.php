@@ -2,7 +2,7 @@
 
 namespace App\Processor\WorkFlow\Handler;
 
-use App\Domain\Object\ObjService;
+use App\Domain\Target\TargetService;
 use App\Domain\Source\SourceService;
 use App\Processor\WorkFlow\WorkFlow;
 use WecarSwoole\Container;
@@ -25,7 +25,7 @@ class ToDoHandler extends WorkHandler
     {
         try {
             // 获取动态元数据
-            Container::get(ObjService::class)->fetchDynamicMeta($this->task());
+            Container::get(TargetService::class)->fetchDynamicMeta($this->task());
             // 获取数据
             Container::get(SourceService::class)->fetch($this->task());
             $this->notify(WorkFlow::WF_SOURCE_READY);

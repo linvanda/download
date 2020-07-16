@@ -4,7 +4,7 @@ namespace App\Processor\WorkFlow;
 
 use App\Domain\Task\Task;
 use App\Processor\TaskManager;
-use App\Processor\WorkFlow\Handler\ObjectReadyHandler;
+use App\Processor\WorkFlow\Handler\TargetReadyHandler;
 use App\Processor\WorkFlow\Handler\ReDoHandler;
 use App\Processor\WorkFlow\Handler\SourceReadyHandler;
 use App\Processor\WorkFlow\Handler\ToDoHandler;
@@ -131,7 +131,7 @@ class WorkFlow
         // 添加节点处理程序
         $workFlow->addHandler(new ToDoHandler($workFlow))
              ->addHandler(new SourceReadyHandler($workFlow))
-             ->addHandler(new ObjectReadyHandler($workFlow))
+             ->addHandler(new TargetReadyHandler($workFlow))
              ->addHandler(new UploadSuccessHandler($workFlow))
              ->addHandler(new ReDoHandler($workFlow));
 

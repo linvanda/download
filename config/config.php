@@ -106,7 +106,8 @@ $baseConfig = [
     ],
     // 缓存配置
     'cache' => [
-        'driver' => apollo('application', 'cache.driver') ?: 'file', // 可用：redis、file、array、null(一般测试时用来禁用缓存)
+        // 可用：redis、file、array、null(一般测试时用来禁用缓存)
+        'driver' => apollo('application', 'cache.driver') ?: 'file',
         'prefix' => 'download',
         'expire' => 3600, // 缓存默认过期时间，单位秒
         'redis' => 'cache', // 当 driver = redis 时，使用哪个 redis 配置
@@ -115,12 +116,20 @@ $baseConfig = [
     // 最低记录级别：debug, info, warning, error, critical, off
     'log_level' => apollo('application', 'log_level') ?: 'info',
     'base_url' => apollo('application', 'base_url'),
+    // 是否记录 api 调用日志
     'api_invoke_log' => apollo('application', 'api_invoke_log') ?: 'on',
-    'task_queue' => 'tasks', // 任务队列名称
-    'task_concurrent_limit' => apollo('application', 'task_concurrent_limit') ?: 20, // 每个进程并发执行的任务数最大值
-    'local_file_base_dir' => File::join(EASYSWOOLE_ROOT, 'storage/data'), // 本地临时文件存储基路径
-    'excel_max_size' => apollo('application', 'excel_max_size') ?: 50 * 1024 * 1024, // 单个 excel 文件最大尺寸（以源文件记），单位字节
-    'excel_max_count' => apollo('application', 'excel_max_count') ?: 10000, // 单个 excel 最大行数
+    // 任务队列名称
+    'task_queue' => 'tasks',
+    // 每个进程并发执行的任务数最大值
+    'task_concurrent_limit' => apollo('application', 'task_concurrent_limit') ?: 20,
+    // 本地临时文件存储基路径
+    'local_file_base_dir' => File::join(EASYSWOOLE_ROOT, 'storage/data'),
+    // 单个 excel 文件最大尺寸（以源文件记），单位字节
+    'excel_max_size' => apollo('application', 'excel_max_size') ?: 50 * 1024 * 1024,
+    // 单个 excel 最大行数
+    'excel_max_count' => apollo('application', 'excel_max_count') ?: 10000,
+    // 文件压缩阈值，单位字节
+    'zip_threshold' => apollo('application', 'zip_threshold') ?: 200 * 1024,
 ];
 
 return array_merge(

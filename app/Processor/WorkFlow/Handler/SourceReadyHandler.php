@@ -2,7 +2,7 @@
 
 namespace App\Processor\WorkFlow\Handler;
 
-use App\Domain\Object\ObjService;
+use App\Domain\Target\TargetService;
 use App\Processor\WorkFlow\WorkFlow;
 use WecarSwoole\Container;
 use Psr\Log\LoggerInterface;
@@ -23,7 +23,7 @@ class SourceReadyHandler extends WorkHandler
     protected function exec()
     {
         try {
-            Container::get(ObjService::class)->generate($this->task());
+            Container::get(TargetService::class)->generate($this->task());
             $this->notify(WorkFlow::WF_OBJECT_READY);
         } catch (\Exception $e) {
             Container::get(LoggerInterface::class)->error($e->getMessage(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);

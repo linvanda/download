@@ -2,8 +2,7 @@
 
 namespace App\Domain\Source;
 
-use App\Domain\File\LocalFile;
-use App\Domain\File\SourceFile;
+use App\Foundation\File\LocalFile;
 use App\Domain\Task\Task;
 use App\Foundation\Client\API;
 

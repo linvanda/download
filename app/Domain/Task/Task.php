@@ -2,7 +2,7 @@
 
 namespace App\Domain\Task;
 
-use App\Domain\Object\Obj;
+use App\Domain\Target\Target;
 use App\Domain\Project\Project;
 use App\Domain\Source\Source;
 use App\Domain\URI;
@@ -48,7 +48,7 @@ class Task extends Entity
     // 数据源
     protected $source;
     // 目标文件
-    protected $object;
+    protected $target;
     // 回调通知 uri
     protected $callback;
     // 操作者编号
@@ -76,7 +76,7 @@ class Task extends Entity
         string $name,
         Project $project,
         Source $source,
-        Obj $object,
+        Target $target,
         URI $callback = null,
         string $operator = ''
     ) {
@@ -84,7 +84,7 @@ class Task extends Entity
         $this->name = $name;
         $this->project = $project;
         $this->source = $source;
-        $this->object = $object;
+        $this->target = $target;
         $this->callback = $callback;
         $this->operator = $operator;
     }
@@ -109,9 +109,9 @@ class Task extends Entity
         return $this->source;
     }
 
-    public function object(): Obj
+    public function target(): Target
     {
-        return $this->object;
+        return $this->target;
     }
 
     public function callbackURI(): URI

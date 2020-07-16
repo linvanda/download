@@ -2,9 +2,9 @@
 
 namespace App\Domain\Task;
 
-use App\Domain\Object\CSV;
-use App\Domain\Object\Excel;
-use App\Domain\Object\Obj;
+use App\Domain\Target\CSV;
+use App\Domain\Target\Excel;
+use App\Domain\Target\Target;
 use App\Domain\Project\IProjectRepository;
 use App\Domain\Source\Source;
 use App\Domain\URI;
@@ -39,12 +39,12 @@ class TaskFactory
             intval($taskDTO->step) ?: Source::STEP_DEFAULT
         );
         // 目标
-        $object = self::buildObject($taskDTO);
+        $target = self::buildTarget($taskDTO);
         // 回调
         $callback = new URI($taskDTO->callback ?: '');
 
         // 基于 DTO 创建 Task 对象
-        $task = new Task($id, $taskDTO->name, $project, $source, $object, $callback, $taskDTO->operatorId ?: '');
+        $task = new Task($id, $taskDTO->name, $project, $source, $target, $callback, $taskDTO->operatorId ?: '');
         // 其他属性设置
         $task->createTime = $taskDTO->ctime ?? time();
         $task->lastExecTime = $taskDTO->etime ?? 0;
@@ -56,13 +56,13 @@ class TaskFactory
         return $task;
     }
 
-    private static function buildObject(TaskDTO $taskDTO): Object
+    private static function buildTarget(TaskDTO $taskDTO): Target
     {
         $baseDir = File::join(Config::getInstance()->getConf('local_file_base_dir'), $taskDTO->id);
-        switch ($taskDTO->type ?: Obj::TYPE_CSV) {
-            case Obj::TYPE_CSV:
+        switch ($taskDTO->type ?: Target::TYPE_CSV) {
+            case Target::TYPE_CSV:
                 return new CSV($baseDir, $taskDTO->fileName ?: '');
-            case Obj::TYPE_EXCEL:
+            case Target::TYPE_EXCEL:
                 $excel = new Excel($baseDir, $taskDTO->fileName ?: '');
                 $excel->setMeta(
                     [

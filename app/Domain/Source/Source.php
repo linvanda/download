@@ -2,8 +2,8 @@
 
 namespace App\Domain\Source;
 
-use App\Domain\File\LocalFile;
-use App\Domain\Object\Template\Excel\RowHead;
+use App\Foundation\File\LocalFile;
+use App\Domain\Target\Template\Excel\RowHead;
 use App\Domain\URI;
 use App\ErrCode;
 use App\Exceptions\SourceException;

@@ -27,8 +27,8 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'name' => $task->name(),
             'project_id' => $task->project()->id(),
             'source_url' => $task->source()->uri->url(),
-            'type' => self::FILE_TYPE_MAP[$task->object()->type()],
-            'file_name' => $task->object()->downloadFileName(),
+            'type' => self::FILE_TYPE_MAP[$task->target()->type()],
+            'file_name' => $task->target()->downloadFileName(),
             'operator_id' => $task->operator,
             'callback' => $task->callbackURI()->url(),
             'step' => $task->source()->step,
@@ -41,7 +41,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'stime' => $task->lastChangeStatusTime,
         ];
 
-        $info['obj_meta'] = serialize($task->object()->getMeta());
+        $info['obj_meta'] = serialize($task->target()->getMeta());
 
         $this->query->insert('task')->values($info)->execute();
 
