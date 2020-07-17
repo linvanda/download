@@ -3,6 +3,7 @@
 namespace App\Foundation\Repository\Transfer;
 
 use App\Domain\Transfer\DownloadTicket;
+use App\Domain\Transfer\DownloadTimer;
 use App\Domain\Transfer\ITransferRepository;
 use ReflectionClass;
 use WecarSwoole\RedisFactory;
@@ -17,7 +18,7 @@ class RedisTransferRepository extends Repository implements ITransferRepository
         $this->redis = RedisFactory::build('main');
     }
 
-    public function addDownloadTicket(DownloadTicket $ticket)
+    public function saveDownloadTicket(DownloadTicket $ticket)
     {
         $info = [
             'id' => $ticket->ticket(),
@@ -25,7 +26,7 @@ class RedisTransferRepository extends Repository implements ITransferRepository
             'create_time' => $ticket->createTime,
         ];
 
-        $this->redis->set($this->getTicketRedisKey($ticket->ticket()), json_encode($info), 600);
+        $this->redis->set($this->getTicketRedisKey($ticket->ticket()), json_encode($info), 350);
     }
 
     public function getDownloadTicket(string $ticketId): ?DownloadTicket
@@ -44,8 +45,46 @@ class RedisTransferRepository extends Repository implements ITransferRepository
         return $ticket;
     }
 
+    /**
+     * 保存任务下载次数
+     */
+    public function saveDownloadTimer(DownloadTimer $timer)
+    {
+        $info = [
+            'task_id' => $timer->taskId,
+            'create_time' => $timer->createTime,
+            'times' => $timer->times,
+        ];
+
+        $this->redis->set($this->getTimerRedisKey($timer->taskId), json_encode($info), 650);
+    }
+
+    /**
+     * 查询任务下载次数
+     */
+    public function getDownloadTimer(string $taskId): ?DownloadTimer
+    {
+        if (!$info = $this->redis->get($this->getTimerRedisKey($taskId))) {
+            return null;
+        }
+        
+        $info = json_decode($info, true);
+
+        $timer = (new ReflectionClass(DownloadTimer::class))->newInstanceWithoutConstructor();
+        $timer->taskId = $info['task_id'];
+        $timer->createTime = $info['create_time'];
+        $timer->times = $info['times'];
+
+        return $timer;
+    }
+
     private function getTicketRedisKey(string $ticketId): string
     {
         return 'download_ticket_' . md5($ticketId);
+    }
+
+    private function getTimerRedisKey(string $taskId): string
+    {
+        return 'download_timer_' . md5($taskId);
     }
 }

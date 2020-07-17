@@ -142,6 +142,8 @@ $baseConfig = [
     'oss_bucket' => apollo('application', 'oss_bucket'),
     // 临时下载 url
     'tmp_download_url' => apollo('application', 'tmp_download_url') ?: '/v1/download',
+    // 同一个任务 10 分钟内允许下载的次数
+    'download_10m_limit' => apollo('application', 'download_10m_limit') ?: 5,
 ];
 
 return array_merge(

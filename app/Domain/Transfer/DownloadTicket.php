@@ -9,7 +9,7 @@ use WecarSwoole\Entity;
  */
 class DownloadTicket extends Entity
 {
-    const EXPIRE = 600;
+    const EXPIRE = 300;
 
     protected $id;
     protected $taskId;

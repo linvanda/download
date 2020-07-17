@@ -5,6 +5,7 @@ namespace App\Domain\Transfer;
 use App\Domain\Task\Task;
 use App\ErrCode;
 use App\Foundation\File\LocalFile;
+use EasySwoole\EasySwoole\Config;
 use EasySwoole\Utility\Random;
 use WecarSwoole\Container;
 use WecarSwoole\Exceptions\Exception;
@@ -44,8 +45,38 @@ class TransferService
     public function buildDownloadUrl(string $taskId, string $url): string
     {
         $ticket = new DownloadTicket(Random::character(64), $taskId);
-        Container::get(ITransferRepository::class)->addDownloadTicket($ticket);
+        Container::get(ITransferRepository::class)->saveDownloadTicket($ticket);
 
         return $url . (strpos($url, '?') === false ? '?' : '&') . "ticket={$ticket->ticket()}";
+    }
+
+    /**
+     * 检查下载请求的合法性，防止恶意攻击
+     * 每 10 分钟内只允许下载 5 次
+     */
+    public function checkDownloadValidity(string $taskId)
+    {
+        $limit = Config::getInstance()->getConf('download_10m_limit');
+        $downloadTimer = Container::get(ITransferRepository::class)->getDownloadTimer($taskId);
+
+        if ($downloadTimer && $downloadTimer->times() >= $limit) {
+            throw new Exception("download fail:operate too frequently", ErrCode::DOWNLOAD_FAILED);
+        }
+    }
+
+    /**
+     * 记录任务下载次数
+     */
+    public function incrDownloadTimes(string $taskId)
+    {
+        $repos = Container::get(ITransferRepository::class);
+
+        if (!$downloadTimer = $repos->getDownloadTimer($taskId)) {
+            $downloadTimer = new DownloadTimer($taskId);
+        }
+
+        $downloadTimer->increase();
+
+        $repos->saveDownloadTimer($downloadTimer);
     }
 }

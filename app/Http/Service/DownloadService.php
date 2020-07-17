@@ -21,17 +21,23 @@ class DownloadService
      */
     public function download(string $taskId, Response $response)
     {
-        $this->checkValidity($taskId);
+        $transferService = Container::get(TransferService::class);
+
+        $transferService->checkDownloadValidity($taskId);
 
         if (!$task = Container::get(ITaskRepository::class)->getTaskById($taskId)) {
             throw new Exception("任务不存在：{$taskId}", ErrCode::DOWNLOAD_FAILED);
         }
 
-        $localFile = Container::get(TransferService::class)->fetchToLocal($task);
+        $localFile = $transferService->fetchToLocal($task);
+        $downloadName = explode('.', $task->target()->downloadFileName())[0] . '.' . explode('.', $localFile)[1];
 
         set_time_limit(0);
-        $response->withHeader("Content-Disposition", "attachment; filename={$task->target()->downloadFileName()}");
+        $response->withHeader("Content-Disposition", "attachment; filename=$downloadName");
         $response->sendFile($localFile);
+
+        // 记录下载次数
+        $transferService->incrDownloadTimes($taskId);
     }
 
     /**
@@ -40,22 +46,13 @@ class DownloadService
     public function downloadWithTicket(string $ticketId, Response $response)
     {
         if (!$ticket = Container::get(ITransferRepository::class)->getDownloadTicket($ticketId)) {
-            throw new Exception("下载失败：ticket 不存在或者已过期", ErrCode::DOWNLOAD_FAILED);
+            throw new Exception("download fail:ticket not exist or expired", ErrCode::DOWNLOAD_FAILED);
         }
 
         if (!$ticket->isValid()) {
-            throw new Exception("下载失败：ticket 不存在或者已过期", ErrCode::DOWNLOAD_FAILED);
+            throw new Exception("download fail:ticket expired", ErrCode::DOWNLOAD_FAILED);
         }
 
         $this->download($ticket->taskId(), $response);
-    }
-
-    /**
-     * 校验下载合法性
-     * 不合法则抛出异常
-     */
-    private function checkValidity(string $taskId)
-    {
-        // TODO
     }
 }
