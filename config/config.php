@@ -140,6 +140,8 @@ $baseConfig = [
     'oss_endpoint' => apollo('application', 'oss_endpoint'),
     // 阿里云 OSS 服务 bucket（在阿里云 OSS 管理后台创建的）
     'oss_bucket' => apollo('application', 'oss_bucket'),
+    // 临时下载 url
+    'tmp_download_url' => apollo('application', 'tmp_download_url') ?: '/v1/download',
 ];
 
 return array_merge(

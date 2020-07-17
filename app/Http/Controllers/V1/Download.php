@@ -2,16 +2,23 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Domain\Transfer\TransferService;
+use App\Http\Service\DownloadService;
+use EasySwoole\EasySwoole\Config;
+use WecarSwoole\Container;
 use WecarSwoole\Http\Controller;
+use WecarSwoole\Util\Url;
 
 class Download extends Controller
 {
     protected function validateRules(): array
     {
         return [
-            'retreive' => [
+            'asyncGetData' => [
                 'task_id' => ['required', 'lengthMax' => 100],
-                'type' => ['inArray' => ['redirect', 'download']],
+            ],
+            'getDownloadUrl' => [
+                'task_id' => ['required', 'lengthMax' => 100],
             ],
             'getData' => [
                 'ticket' => ['required', 'lengthMax' => 100],
@@ -32,22 +39,37 @@ class Download extends Controller
 
     /**
      * 取数据
+     * 后端鉴权后下载数据
+     * 注意：调用端需要考虑大文件下载情况，此时如果调用端使用诸如 file_get_contents 将数据一次全部放到内存中
+     * 可能会导致内存溢出，此时应该采用 curl 的 CURLOPT_WRITEFUNCTION 将数据写入到本地文件中
      */
-    public function retreive()
+    public function asyncGetData()
     {
-
+        Container::get(DownloadService::class)->download($this->params('task_id'), $this->response());
     }
 
     /**
-     * 前端下载数据
+     * 获取临时下载 url
+     */
+    public function getDownloadUrl()
+    {
+        $conf = Config::getInstance();
+        $url = Url::assemble($conf->getConf('tmp_download_url'), $conf->getConf('base_url'));
+        $this->return(['url' => Container::get(TransferService::class)->buildDownloadUrl($this->params('task_id'), $url)]);
+    }
+
+    /**
+     * 前端通过临时下载 url 下载数据
+     * 无需鉴权，该 url 通过 getDownloadUrl 生成
      */
     public function getData()
     {
-
+        Container::get(DownloadService::class)->downloadWithTicket($this->params('ticket'), $this->response());
     }
 
     /**
      * 同步下载数据
+     * 相当于投递任务和取回数据一体化，用于小批量数据下载
      */
     public function syncGetData()
     {

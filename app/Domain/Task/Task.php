@@ -124,6 +124,11 @@ class Task extends Entity
         return $this->status;
     }
 
+    public function isSuccessed(): bool
+    {
+        return $this->status() === self::STATUS_SUC;
+    }
+
     /**
      * 更改任务状态
      */

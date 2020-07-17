@@ -2,7 +2,6 @@
 
 namespace App\Domain\Task;
 
-use App\Domain\Target\Target;
 use App\Foundation\DTO\TaskDTO;
 
 interface ITaskRepository

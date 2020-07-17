@@ -18,7 +18,9 @@ class Routes extends Route
 
         /**
          * 下载数据
+         * @params:
+         *      ticket string 必填。临时 ticket，十分钟有效期
          */
-        $this->get('/v1/download/{ticket}', '/V1/Download/getData');
+        $this->get('/v1/download', '/V1/Download/getData');
     }
 }

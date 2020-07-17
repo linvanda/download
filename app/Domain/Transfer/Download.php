@@ -2,7 +2,6 @@
 
 namespace App\Domain\Transfer;
 
-use App\Domain\Target\Target;
 use App\ErrCode;
 use EasySwoole\EasySwoole\Config;
 use OSS\OssClient;
@@ -18,7 +17,7 @@ class Download
      * @param 本地原始文件名（未经过压缩的）
      * @return string 真实存在的本地文件名
      */
-    public function download(string $taskId, string $targetFile): string
+    public function pull(string $taskId, string $targetFile): string
     {
         $realLocalFile = '';
 
@@ -69,8 +68,18 @@ class Download
             }
         }
 
+        if (!file_exists($localDir)) {
+            mkdir($localDir);
+            chmod($localDir, 0755);
+        }
+
         // 下载到本地
-        $localFile = File::join($localDir, 'object', explode('.', $remoteName)[1]);
+        $localFile = File::join($localDir, 'target.' . explode('.', $remoteName)[1]);
+
+        if (!file_exists($localFile)) {
+            touch($localFile);
+        }
+
         $client->getObject($bucket, $remoteName, [OssClient::OSS_FILE_DOWNLOAD => $localFile]);
 
         return $localFile;

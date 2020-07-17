@@ -10,6 +10,7 @@ use App\ErrCode;
 use App\Exceptions\TargetException;
 use App\Foundation\Client\API;
 use EasySwoole\EasySwoole\Config;
+use WecarSwoole\Util\File;
 
 /**
  * 目标文件服务

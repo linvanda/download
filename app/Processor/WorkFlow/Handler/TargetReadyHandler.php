@@ -2,7 +2,9 @@
 
 namespace App\Processor\WorkFlow\Handler;
 
+use App\Domain\Transfer\TransferService;
 use App\Processor\WorkFlow\WorkFlow;
+use WecarSwoole\Container;
 
 /**
  * 目标文件就绪处理程序
@@ -15,10 +17,16 @@ class TargetReadyHandler extends WorkHandler
     }
 
     /**
-     * 上传到 CDN
+     * 上传到存储服务器
      */
     protected function exec()
     {
-        $this->notify(WorkFlow::WF_UPLOAD_SUC);
+        try {
+            Container::get(TransferService::class)->upload($this->task());
+            $this->notify(WorkFlow::WF_UPLOAD_SUC);
+        } catch (\Exception $e) {
+            Container::get(LoggerInterface::class)->error($e->getMessage(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);
+            $this->notify(WorkFlow::WF_UPLOAD_FAILED, $e->getMessage());
+        }
     }
 }

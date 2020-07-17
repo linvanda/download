@@ -4,6 +4,7 @@ namespace App\Foundation\File;
 
 use App\ErrCode;
 use App\Exceptions\FileException;
+use WecarSwoole\Util\File;
 
 /**
  * 本地文件
@@ -52,6 +53,36 @@ class LocalFile
     public function close()
     {
         fclose($this->file);
+    }
+
+    /**
+     * 删除目录（包括目录里面的文件）
+     * @return bool 删除成功返回 true，失败 false
+     */
+    public static function deleteDir(string $dir): bool
+    {
+        if (!is_dir($dir) || !is_writable($dir)) {
+            return false;
+        }
+
+        // 删除目录下所有文件（理论上只有一个）
+        foreach (scandir($dir) as $fileOrDir) {
+            if ($fileOrDir == '.' || $fileOrDir == '..') {
+                continue;
+            }
+
+            $file = File::join($dir, $fileOrDir);
+            if (is_file($file)) {
+                unlink($file);
+            } else {
+                self::deleteDir($fileOrDir);
+            }
+        }
+
+        // 删除空目录
+        rmdir($dir);
+
+        return true;
     }
 
     private static function formatDataList(array $dataList): array

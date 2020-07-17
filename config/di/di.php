@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Transfer\ITransferRepository;
+use App\Foundation\Repository\Transfer\RedisTransferRepository;
 use Psr\SimpleCache\CacheInterface;
 use Psr\Log\LoggerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -15,6 +17,7 @@ use function DI\{autowire, get};
 
 return [
     // 仓储
+    ITransferRepository::class => autowire(RedisTransferRepository::class),
     'App\Domain\*\I*Repository' => autowire('\App\Foundation\Repository\*\MySQL*Repository'),
     // 缓存
     CacheInterface::class => function () {

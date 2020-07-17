@@ -58,18 +58,24 @@ class AuthAPI extends Route
         $this->get('/v1/tasks', '/V1/Task/list');
 
         /**
-         * 取数据
+         * 取数据（获取异步生成好的数据）
          * params:
          *      task_id string 必填。任务编号
-         *      type string 可选。取数据方式。可选值：redirect|download。redirect：接口返回用户下载数据的临时 url；download：接口直接返回数据本身
          */
-        $this->get('/v1/retreive', '/V1/Download/retreive');
+        $this->get('/v1/download/async', '/V1/Download/asyncGetData');
+
+        /**
+         * 获取下载临时 url
+         * params:
+         *      task_id string 必填。任务编号
+         */
+        $this->get('/v1/download/url', '/V1/Download/getDownloadUrl');
 
         /**
          * 同步获取数据（即不需要投递任务，而是直接调该接口生成并下载目标文件）
          * 该接口仅支持获取少量数据（具体的数据条数限制取决于配置）
          * 接口参数同 POST /v1/task 的，除了没有其中的关于异步相关的参数（如 callback）
          */
-        $this->get('/v1/sync/download', '/V1/Download/syncGetData');
+        $this->get('/v1/download/sync', '/V1/Download/syncGetData');
     }
 }
