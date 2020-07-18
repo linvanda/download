@@ -144,6 +144,8 @@ $baseConfig = [
     'tmp_download_url' => apollo('application', 'tmp_download_url') ?: '/v1/download',
     // 同一个任务 10 分钟内允许下载的次数
     'download_10m_limit' => apollo('application', 'download_10m_limit') ?: 5,
+    // 任务下载有效期（超过时间将不能下载），单位秒
+    'download_expire' => apollo('application', 'download_expire') ?: 86400 * 7,
 ];
 
 return array_merge(

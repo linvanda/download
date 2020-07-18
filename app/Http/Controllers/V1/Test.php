@@ -430,10 +430,11 @@ class Test extends Controller
             ],
         ];
 
+        $page = $this->params('page') ?: 0;
         $data = [];
-        for ($i = 0; $i < 20000; $i++) {
+        for ($i = 0; $i < 100000; $i++) {
             $data[] = [
-                'name' => "张三{$i}",
+                'name' => "张三{$i}-{$page}",
                 'age' => mt_rand(10, 100),
                 'sex' => ['男', '女'][mt_rand(0,1)],
                 'love_in' => ['乒乓球', '羽毛球'][mt_rand(0,1)],
@@ -447,7 +448,7 @@ class Test extends Controller
 
         $this->return([
             'data' => $data,
-            'total' => 20000,
+            'total' => 2000000,
             'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
             'footer' => ['负责人' => '松林', '总监签名' => '          ', 'CEO 签名' => '        '],
             'template' => [

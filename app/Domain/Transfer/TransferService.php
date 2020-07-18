@@ -52,15 +52,26 @@ class TransferService
 
     /**
      * 检查下载请求的合法性，防止恶意攻击
-     * 每 10 分钟内只允许下载 5 次
      */
-    public function checkDownloadValidity(string $taskId)
+    public function checkDownloadValidity(Task $task)
     {
-        $limit = Config::getInstance()->getConf('download_10m_limit');
+        $taskId = $task->id();
+
+        if (!$task->isSuccessed()) {
+            throw new Exception("download fail:task is not done:$taskId", ErrCode::DOWNLOAD_FAILED);
+        }
+
+        $limitFor10min = Config::getInstance()->getConf('download_10m_limit');
+        $downloadExpire = Config::getInstance()->getConf('download_expire');
+
+        if ($task->finishedTime() + $downloadExpire < time()) {
+            throw new Exception("download fail:task expired:$taskId", ErrCode::DOWNLOAD_FAILED);
+        }
+
         $downloadTimer = Container::get(ITransferRepository::class)->getDownloadTimer($taskId);
 
-        if ($downloadTimer && $downloadTimer->times() >= $limit) {
-            throw new Exception("download fail:operate too frequently", ErrCode::DOWNLOAD_FAILED);
+        if ($downloadTimer && $downloadTimer->times() >= $limitFor10min) {
+            throw new Exception("download fail:operate too frequently,taskID:{$taskId}", ErrCode::DOWNLOAD_FAILED);
         }
     }
 

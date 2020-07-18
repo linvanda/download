@@ -129,6 +129,11 @@ class Task extends Entity
         return $this->status() === self::STATUS_SUC;
     }
 
+    public function finishedTime(): int
+    {
+        return $this->finishedTime;
+    }
+
     /**
      * 更改任务状态
      */

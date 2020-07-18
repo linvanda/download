@@ -23,16 +23,17 @@ class DownloadService
     {
         $transferService = Container::get(TransferService::class);
 
-        $transferService->checkDownloadValidity($taskId);
-
         if (!$task = Container::get(ITaskRepository::class)->getTaskById($taskId)) {
             throw new Exception("任务不存在：{$taskId}", ErrCode::DOWNLOAD_FAILED);
         }
+
+        // $transferService->checkDownloadValidity($task);
 
         $localFile = $transferService->fetchToLocal($task);
         $downloadName = explode('.', $task->target()->downloadFileName())[0] . '.' . explode('.', $localFile)[1];
 
         set_time_limit(0);
+        $response->withHeader("Content-type", "application/octet-stream");
         $response->withHeader("Content-Disposition", "attachment; filename=$downloadName");
         $response->sendFile($localFile);
 

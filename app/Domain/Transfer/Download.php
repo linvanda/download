@@ -64,7 +64,7 @@ class Download
         if (!$client->doesObjectExist($bucket, $remoteName)) {
             $remoteName = $this->zipFile($taskId);
             if (!$client->doesObjectExist($bucket, $remoteName)) {
-                throw new Exception("要下载的文件不存在,taskId:$taskId", ErrCode::DOWNLOAD_FAILED);
+                throw new Exception("the download file is not exist(expired or deleted),taskId:$taskId", ErrCode::DOWNLOAD_FAILED);
             }
         }
 
