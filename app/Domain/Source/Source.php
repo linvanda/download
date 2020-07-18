@@ -19,8 +19,12 @@ class Source
     use GetterSetter;
     
     public const STEP_MIN = 100;
-    public const STEP_MAX = 1500;
-    public const STEP_DEFAULT = 500;
+    public const STEP_MAX = 5000;
+    public const STEP_DEFAULT = 1000;
+    public const SOURCE_FNAME = 'source.csv';
+
+    protected $uri;
+    protected $step;
 
     // 生成的本地文件名
     private $fileName;
@@ -28,9 +32,6 @@ class Source
     private $count;
     // 源文件大小
     private $size;
-
-    protected $uri;
-    protected $step;
 
     public function __construct(URI $uri, string $dir, int $step = 500)
     {
@@ -171,7 +172,7 @@ class Source
 
     private function setFileName(string $dir)
     {
-        $this->fileName = File::join($dir, 'source.csv');
+        $this->fileName = File::join($dir, self::SOURCE_FNAME);
     }
 
     private function setStep(int $step)

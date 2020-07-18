@@ -19,15 +19,13 @@ class ToDoHandler extends WorkHandler
     }
 
     /**
-     * 启动新协程拉取源数据
+     * 拉取源数据
      */
     protected function exec()
     {
         try {
-            // 获取动态元数据
-            Container::get(TargetService::class)->fetchDynamicMeta($this->task());
             // 获取数据
-            Container::get(SourceService::class)->fetch($this->task());
+            Container::get(SourceService::class)->fetch($this->task()->source(), $this->task()->target());
             $this->notify(WorkFlow::WF_SOURCE_READY);
         } catch (\Exception $e) {
             Container::get(LoggerInterface::class)->error($e->getMessage(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);

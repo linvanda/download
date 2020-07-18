@@ -10,6 +10,9 @@ use App\ErrCode;
 use WecarSwoole\Entity;
 use WecarSwoole\Exceptions\Exception;
 
+/**
+ * 任务类
+ */
 class Task extends Entity
 {
     // 待处理
@@ -23,7 +26,7 @@ class Task extends Entity
     // 处理失败，该失败不可重试
     public const STATUS_ERR = 5;
     // 最大处理次数
-    public const MAX_RETRY_NUM = 4;
+    public const MAX_RETRY_NUM = 3;
 
     /**
      * 状态转换表（状态机的查找表实现）
@@ -68,9 +71,6 @@ class Task extends Entity
     // 处理失败原因
     protected $failedReason;
 
-    /**
-     * 外界必须通过工厂方法来创建
-     */
     public function __construct(
         string $id,
         string $name,
@@ -114,7 +114,7 @@ class Task extends Entity
         return $this->target;
     }
 
-    public function callbackURI(): URI
+    public function callbackURI(): ?URI
     {
         return $this->callback;
     }

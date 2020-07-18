@@ -5,7 +5,6 @@ namespace App\Domain\Task;
 use App\Domain\Project\IProjectRepository;
 use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
-use WecarSwoole\Container;
 use WecarSwoole\Exceptions\Exception;
 
 /**
@@ -13,11 +12,13 @@ use WecarSwoole\Exceptions\Exception;
  */
 class TaskService
 {
-    protected $taskRepository;
+    private $taskRepository;
+    private $projectRepository;
 
-    public function __construct(ITaskRepository $taskRepository)
+    public function __construct(ITaskRepository $taskRepository, IProjectRepository $projectRepository)
     {
         $this->taskRepository = $taskRepository;
+        $this->projectRepository = $projectRepository;
     }
 
     /**
@@ -26,7 +27,7 @@ class TaskService
      */
     public function create(TaskDTO $taskDTO): Task
     {
-        $task = TaskFactory::create($taskDTO, Container::get(IProjectRepository::class));
+        $task = TaskFactory::create($taskDTO, $this->projectRepository);
 
         // 存储到数据库
         $this->taskRepository->addTask($task);

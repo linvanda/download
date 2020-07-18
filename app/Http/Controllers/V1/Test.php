@@ -432,7 +432,7 @@ class Test extends Controller
 
         $page = $this->params('page') ?: 0;
         $data = [];
-        for ($i = 0; $i < 100000; $i++) {
+        for ($i = 0; $i < 10000; $i++) {
             $data[] = [
                 'name' => "张三{$i}-{$page}",
                 'age' => mt_rand(10, 100),
@@ -448,7 +448,7 @@ class Test extends Controller
 
         $this->return([
             'data' => $data,
-            'total' => 2000000,
+            'total' => 20000,
             'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
             'footer' => ['负责人' => '松林', '总监签名' => '          ', 'CEO 签名' => '        '],
             'template' => [
@@ -603,5 +603,10 @@ class Test extends Controller
     public function upload()
     {
         // (new Upload())->upload(File::join(STORAGE_ROOT, 'data/0cff3e83-27b0-da63-73b2-601a94bfb1fb/object.zip'), '0cff3e83-27b0-da63-73b2-601a94bfb1fb');
+    }
+
+    public function notify()
+    {
+        $this->return(['type' => 'notify', 'url' => $this->params('download_url')]);
     }
 }

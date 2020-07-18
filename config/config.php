@@ -140,8 +140,10 @@ $baseConfig = [
     'oss_endpoint' => apollo('application', 'oss_endpoint'),
     // 阿里云 OSS 服务 bucket（在阿里云 OSS 管理后台创建的）
     'oss_bucket' => apollo('application', 'oss_bucket'),
-    // 临时下载 url
+    // 临时下载 url（前端下载，无需 token 验证）
     'tmp_download_url' => apollo('application', 'tmp_download_url') ?: '/v1/download',
+    // 后端下载 url（需要 token 验证）
+    'backend_download_url' => apollo('application', 'backend_download_url') ?: '/v1/download/async',
     // 同一个任务 10 分钟内允许下载的次数
     'download_10m_limit' => apollo('application', 'download_10m_limit') ?: 5,
     // 任务下载有效期（超过时间将不能下载），单位秒

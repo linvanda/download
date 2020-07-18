@@ -21,9 +21,9 @@ class Target
         self::TYPE_EXCEL => ['xlsx', 'xls'],
     ];
 
-    // 目标文件
+    // 目标文件名称（给程序用的）
     protected $targetFileName;
-    // 下载文件名称
+    // 下载文件名称（给用户看的）
     protected $downloadFileName;
     // 目标文件类型
     protected $type;

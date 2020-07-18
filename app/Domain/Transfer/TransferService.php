@@ -7,7 +7,6 @@ use App\ErrCode;
 use App\Foundation\File\LocalFile;
 use EasySwoole\EasySwoole\Config;
 use EasySwoole\Utility\Random;
-use WecarSwoole\Container;
 use WecarSwoole\Exceptions\Exception;
 
 /**
@@ -15,6 +14,16 @@ use WecarSwoole\Exceptions\Exception;
  */
 class TransferService
 {
+    /**
+     * @var ITransferRepository
+     */
+    private $transferRepository;
+
+    public function __construct(ITransferRepository $transferRepository)
+    {
+        $this->transferRepository = $transferRepository;
+    }
+
     /**
      * 将本地目标文件上传到远程存储
      */
@@ -45,7 +54,7 @@ class TransferService
     public function buildDownloadUrl(string $taskId, string $url): string
     {
         $ticket = new DownloadTicket(Random::character(64), $taskId);
-        Container::get(ITransferRepository::class)->saveDownloadTicket($ticket);
+        $this->transferRepository->saveDownloadTicket($ticket);
 
         return $url . (strpos($url, '?') === false ? '?' : '&') . "ticket={$ticket->ticket()}";
     }
@@ -68,7 +77,7 @@ class TransferService
             throw new Exception("download fail:task expired:$taskId", ErrCode::DOWNLOAD_FAILED);
         }
 
-        $downloadTimer = Container::get(ITransferRepository::class)->getDownloadTimer($taskId);
+        $downloadTimer = $this->transferRepository->getDownloadTimer($taskId);
 
         if ($downloadTimer && $downloadTimer->times() >= $limitFor10min) {
             throw new Exception("download fail:operate too frequently,taskID:{$taskId}", ErrCode::DOWNLOAD_FAILED);
@@ -80,14 +89,12 @@ class TransferService
      */
     public function incrDownloadTimes(string $taskId)
     {
-        $repos = Container::get(ITransferRepository::class);
-
-        if (!$downloadTimer = $repos->getDownloadTimer($taskId)) {
+        if (!$downloadTimer = $this->transferRepository->getDownloadTimer($taskId)) {
             $downloadTimer = new DownloadTimer($taskId);
         }
 
         $downloadTimer->increase();
 
-        $repos->saveDownloadTimer($downloadTimer);
+        $this->transferRepository->saveDownloadTimer($downloadTimer);
     }
 }

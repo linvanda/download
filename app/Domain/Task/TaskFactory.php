@@ -7,14 +7,14 @@ use App\Domain\Target\Excel;
 use App\Domain\Target\Target;
 use App\Domain\Project\IProjectRepository;
 use App\Domain\Source\Source;
-use App\Domain\URI;
-use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
 use EasySwoole\EasySwoole\Config;
 use WecarSwoole\Container;
 use WecarSwoole\Exceptions\Exception;
 use WecarSwoole\ID\IIDGenerator;
 use WecarSwoole\Util\File;
+use App\Domain\URI;
+use App\ErrCode;
 
 /**
  * 工厂：创建 task 对象
@@ -41,7 +41,7 @@ class TaskFactory
         // 目标
         $target = self::buildTarget($taskDTO);
         // 回调
-        $callback = new URI($taskDTO->callback ?: '');
+        $callback = $taskDTO->callback ? new URI($taskDTO->callback) : null;
 
         // 基于 DTO 创建 Task 对象
         $task = new Task($id, $taskDTO->name, $project, $source, $target, $callback, $taskDTO->operatorId ?: '');

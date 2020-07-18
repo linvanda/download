@@ -5,6 +5,7 @@ namespace App\Processor\WorkFlow\Handler;
 use App\Domain\Transfer\TransferService;
 use App\Processor\WorkFlow\WorkFlow;
 use WecarSwoole\Container;
+use Psr\Log\LoggerInterface;
 
 /**
  * 目标文件就绪处理程序

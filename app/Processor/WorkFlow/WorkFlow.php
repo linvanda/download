@@ -44,6 +44,7 @@ class WorkFlow
     public const WF_REDO = 9;
     // 通知客户端完成
     public const WF_NOTIFY_DONE = 10;
+    public const WF_NOTIFY_FAIL = 11;
     // 通用的执行完成状态，该状态没有处理程序处理，一般用来结束工作流
     public const WF_DONE = 100;
 
@@ -55,6 +56,7 @@ class WorkFlow
         self::WF_SOURCE_FAILED,
         self::WF_OBJECT_FAILED,
         self::WF_UPLOAD_FAILED,
+        self::WF_NOTIFY_FAIL,
     ];
 
     /**

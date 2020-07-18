@@ -23,7 +23,7 @@ class SourceReadyHandler extends WorkHandler
     protected function exec()
     {
         try {
-            Container::get(TargetService::class)->generate($this->task());
+            Container::get(TargetService::class)->generate($this->task()->source(), $this->task()->target());
             $this->notify(WorkFlow::WF_OBJECT_READY);
         } catch (\Exception $e) {
             Container::get(LoggerInterface::class)->error($e->getMessage(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);
