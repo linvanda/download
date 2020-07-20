@@ -19,7 +19,7 @@ class SourceService
         // 获取动态元数据
         $this->fetchDynamicMeta($source, $target);
         // 获取数据
-        $source->fetch(new API(), new LocalFile($source->fileName()));
+        $source->fetch(new API(), new LocalFile($source->fileName()), $target->type());
     }
 
     /**

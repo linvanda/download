@@ -42,6 +42,22 @@ class Test extends Controller
         $spreadsheet->getActiveSheet()->getCellByColumnAndRow(2, 5)->getValue();
         $letter = Coordinate::stringFromColumnIndex(2);
 
+        // 通过数组设置单元格值
+        $arrayData = [
+            [NULL, 2010, 2011, 2012],
+            ['Q1',   12,   15,   21],
+            ['Q2',   56,   73,   86],
+            ['Q3',   52,   61,   69],
+            ['Q4',   30,   32,    0],
+        ];
+        $spreadsheet->getActiveSheet()
+        ->fromArray(
+            $arrayData,  // The data to set
+            NULL,        // Array values with this value will not be set
+            'C3'         // Top left coordinate of the worksheet range where
+                        //    we want to set these values (default is A1)
+        );
+
         // 创建 worksheet
         $spreadsheet->createSheet();
         // Create a new worksheet called "My Data"
@@ -432,7 +448,7 @@ class Test extends Controller
 
         $page = $this->params('page') ?: 0;
         $data = [];
-        for ($i = 0; $i < 10000; $i++) {
+        for ($i = 0; $i < 5000; $i++) {
             $data[] = [
                 'name' => "张三{$i}-{$page}",
                 'age' => mt_rand(10, 100),
@@ -448,7 +464,7 @@ class Test extends Controller
 
         $this->return([
             'data' => $data,
-            'total' => 20000,
+            'total' => 50000000,
             'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
             'footer' => ['负责人' => '松林', '总监签名' => '          ', 'CEO 签名' => '        '],
             'template' => [

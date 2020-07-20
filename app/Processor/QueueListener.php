@@ -32,6 +32,6 @@ class QueueListener
             }
             // 交给任务管理器处理
             TaskManager::getInstance()->process($task);
-        }, 0.1);
+        }, 1);
     }
 }

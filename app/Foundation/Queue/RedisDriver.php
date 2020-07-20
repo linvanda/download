@@ -4,6 +4,8 @@ namespace App\Foundation\Queue;
 
 use EasySwoole\Queue\Job;
 use EasySwoole\Queue\QueueDriverInterface;
+use Psr\Log\LoggerInterface;
+use WecarSwoole\Container;
 use WecarSwoole\RedisFactory;
 
 /**
@@ -20,17 +22,27 @@ class RedisDriver implements QueueDriverInterface
         $this->queueName = $queueName;
     }
     
+    /**
+     * 入列失败不重试，由后台任务稍后重新入列
+     */
     public function push(Job $job): bool
     {
         return $this->redis->lPush($this->redisKey(), json_encode($job->getJobData()));
     }
 
+    /**
+     * 出列需要捕获异常，防止异常导致队列监听中断
+     */
     public function pop(float $timeout = 3.0): ?Job
     {
-        if ($data = json_decode($this->redis->rPop($this->redisKey()), true)) {
-            $job = new Job();
-            $job->setJobData($data);
-            return $job;
+        try {
+            if ($data = json_decode($this->redis->rPop($this->redisKey()), true)) {
+                $job = new Job();
+                $job->setJobData($data);
+                return $job;
+            }
+        } catch (\Exception $e) {
+            Container::get(LoggerInterface::class)->critical("dequeue fail:{$e->getMessage()}");
         }
 
         return null;
