@@ -20,13 +20,13 @@ class Task extends Entity
     // 已入列
     public const STATUS_ENQUEUED = 2;
     // 处理中（已出列处理）
-    public const STATUS_DOING = 2;
+    public const STATUS_DOING = 3;
     // 处理成功
-    public const STATUS_SUC = 3;
+    public const STATUS_SUC = 4;
     // 处理失败（该失败可重试，重试次数超限则会转入 STATUS_ERR）
-    public const STATUS_FAILED = 4;
+    public const STATUS_FAILED = 5;
     // 处理失败，该失败不可重试
-    public const STATUS_ERR = 5;
+    public const STATUS_ERR = 6;
     // 最大处理次数
     public const MAX_RETRY_NUM = 3;
 

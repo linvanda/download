@@ -3,13 +3,11 @@
 namespace App\Foundation\Repository\Task;
 
 use App\Domain\Project\IProjectRepository;
-use App\Domain\Target\Target;
 use WecarSwoole\Repository\MySQLRepository;
 use App\Domain\Task\ITaskRepository;
 use App\Domain\Task\Task;
 use App\Domain\Task\TaskFactory;
 use App\Foundation\DTO\DBTaskDTO;
-use App\Foundation\DTO\TaskDTO;
 use Exception;
 use WecarSwoole\Container;
 

@@ -3,6 +3,7 @@
 namespace EasySwoole\EasySwoole;
 
 use App\Bootstrap;
+use App\Processor\Defender;
 use App\Processor\QueueListener;
 use EasySwoole\EasySwoole\Swoole\EventRegister;
 use EasySwoole\EasySwoole\AbstractInterface\Event;
@@ -67,6 +68,8 @@ class EasySwooleEvent implements Event
 
         // Apollo 配置变更监听程序
         $server->addProcess((new ApolloWatcher())->getProcess());
+        // 任务守卫程序
+        $server->addProcess((new Defender())->getProcess());
     }
 
     /**

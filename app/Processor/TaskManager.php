@@ -56,6 +56,7 @@ class TaskManager
         $job = new Job();
         $job->setJobData(['task_id' => $task->id(), 'enqueue_time' => time()]);
         Queue::instance(Config::getInstance()->getConf('task_queue'))->producer()->push($job);
+        Container::get(TaskService::class)->switchStatus($task, Task::STATUS_ENQUEUED);
         $this->logger->info("投递任务到消息队列：{$task->id()}");
     }
 
@@ -64,13 +65,15 @@ class TaskManager
      */
     public function process(Task $task)
     {
+        // 获取进程级别 ticket
         Ticket::get("task_source");
 
         // 在新的协程中执行
         go(function () use ($task) {
-            // 将任务状态改成正在执行中
-            Container::get(TaskService::class)->switchStatus($task, Task::STATUS_DOING);
             try {
+                // 将任务状态改成正在执行中
+                Container::get(TaskService::class)->switchStatus($task, Task::STATUS_DOING);
+
                 $this->logger->info("开始处理任务：{$task->id()}");
                 $this->getWorkFlow($task)->start();
             } catch (\Exception $e) {
