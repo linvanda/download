@@ -87,6 +87,13 @@ class Task extends Entity
         $this->target = $target;
         $this->callback = $callback;
         $this->operator = $operator;
+        $this->createTime = time();
+        $this->lastExecTime = 0;
+        $this->finishedTime = 0;
+        $this->lastChangeStatusTime = 0;
+        $this->status = self::STATUS_TODO;
+        $this->retryNum = 0;
+        $this->failedReason = '';
     }
 
     public function id(): string

@@ -61,13 +61,8 @@ class EasySwooleEvent implements Event
 
             // 启动队列监听（仅在 worker 进程启动）
             if (!$server->taskworker) {
-                echo "work pid:" . posix_getpid()."\n";
                 QueueListener::listen();
             }
-
-            $server->tick(1000, function () {
-                echo "timer pid:" . posix_getpid()."\n";
-            });
         });
 
         // Apollo 配置变更监听程序

@@ -49,12 +49,12 @@ class TaskFactory
 
         if ($taskDTO instanceof DBTaskDTO) {
             // 来自存储层的数据，需要设置其他属性
-            $task->createTime = $taskDTO->ctime ?? time();
-            $task->lastExecTime = $taskDTO->etime ?? 0;
-            $task->finishedTime = $taskDTO->ftime ?? 0;
-            $task->lastChangeStatusTime = $taskDTO->stime ?? 0;
-            $task->status = $taskDTO->status ?? Task::STATUS_TODO;
-            $task->retryNum = $taskDTO->retryNum ?? 0;
+            $task->createTime = $taskDTO->ctime;
+            $task->lastExecTime = $taskDTO->etime;
+            $task->finishedTime = $taskDTO->ftime;
+            $task->lastChangeStatusTime = $taskDTO->stime;
+            $task->status = $taskDTO->status;
+            $task->retryNum = $taskDTO->retryNum;
         }
 
         return $task;

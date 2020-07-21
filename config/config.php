@@ -148,6 +148,8 @@ $baseConfig = [
     'download_10m_limit' => apollo('application', 'download_10m_limit') ?: 5,
     // 任务下载有效期（超过时间将不能下载），单位秒
     'download_expire' => apollo('application', 'download_expire') ?: 86400 * 7,
+    // 进程处理完多少任务后将重启
+    'task_max_process' => apollo('application', 'task_max_process') ?: 1000,
 ];
 
 return array_merge(

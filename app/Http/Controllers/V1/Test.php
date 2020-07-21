@@ -463,7 +463,7 @@ class Test extends Controller
 
         $this->return([
             'data' => $data,
-            'total' => 100000,
+            'total' => 10000,
             'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
             'footer' => ['负责人' => '松林', '总监签名' => '          ', 'CEO 签名' => '        '],
             'template' => [
