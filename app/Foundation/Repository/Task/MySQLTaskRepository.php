@@ -34,6 +34,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'operator_id' => $task->operator,
             'callback' => $task->callbackURI()->url(),
             'step' => $task->source()->step,
+            'max_exec_time' => $task->maxExecTime(),
             'status' => $task->status,
             'retry_num' => 0,
             'ctime' => $task->createTime,
@@ -41,6 +42,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'etime' => $task->lastExecTime,
             'ftime' => $task->finishedTime,
             'stime' => $task->lastChangeStatusTime,
+            'qtime' => $task->lastEnqueueTime,
         ];
 
         $info['obj_meta'] = serialize($task->target()->getMeta());
@@ -112,6 +114,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'etime' => $task->lastExecTime,
             'ftime' => $task->finishedTime,
             'stime' => $task->lastChangeStatusTime,
+            'qtime' => $task->lastEnqueueTime,
             'retry_num' => $task->retryNum,
         ])
         ->where(['id' => $task->id(), 'status' => $oldStatus])

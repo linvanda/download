@@ -15,9 +15,11 @@ use WecarSwoole\Exceptions\Exception;
  */
 class Task extends Entity
 {
-    // 待处理
+    // 待处理（未入列）
     public const STATUS_TODO = 1;
-    // 处理中
+    // 已入列
+    public const STATUS_ENQUEUED = 2;
+    // 处理中（已出列处理）
     public const STATUS_DOING = 2;
     // 处理成功
     public const STATUS_SUC = 3;
@@ -35,11 +37,12 @@ class Task extends Entity
      * （自己到自己如状态 a -> a 被认为是允许的，实际是没有任何转换）
      */
     private const STATUS_TRANS_MAP = [
-        [true, true, false, false, false],
-        [false, true, true, true, true],
-        [false, false, true, false, false],
-        [true, false, false, true, true],
-        [false, false, false, false, true]
+        [true, true, false, false, false, false],
+        [true, true, true, false, false, false],
+        [true, false, true, true, true, true],
+        [false, false, false, true, false, false],
+        [true, false, false, false, true, true],
+        [false, false, false, false, false, true],
     ];
 
     // 任务 id
@@ -56,6 +59,8 @@ class Task extends Entity
     protected $callback;
     // 操作者编号
     protected $operator;
+    // 任务执行时限
+    protected $maxExecTime;
     // 任务创建时间
     protected $createTime;
     // 任务最后处理时间
@@ -64,6 +69,8 @@ class Task extends Entity
     protected $finishedTime;
     // 最后状态修改时间
     protected $lastChangeStatusTime;
+    // 最后入列时间
+    protected $lastEnqueueTime;
     // 任务状态
     protected $status;
     // 处理次数（包括第一次处理）
@@ -78,7 +85,8 @@ class Task extends Entity
         Source $source,
         Target $target,
         URI $callback = null,
-        string $operator = ''
+        string $operator = '',
+        int $maxExecTime = 0
     ) {
         $this->id = $id;
         $this->name = $name;
@@ -91,9 +99,11 @@ class Task extends Entity
         $this->lastExecTime = 0;
         $this->finishedTime = 0;
         $this->lastChangeStatusTime = 0;
+        $this->lastEnqueueTime = 0;
         $this->status = self::STATUS_TODO;
         $this->retryNum = 0;
         $this->failedReason = '';
+        $this->maxExecTime = $maxExecTime;
     }
 
     public function id(): string
@@ -124,6 +134,11 @@ class Task extends Entity
     public function callbackURI(): ?URI
     {
         return $this->callback;
+    }
+
+    public function maxExecTime(): int
+    {
+        return $this->maxExecTime;
     }
 
     public function status(): int
@@ -157,13 +172,17 @@ class Task extends Entity
         $this->status = $newStatus;
         $this->lastChangeStatusTime = $time;
 
-        if ($newStatus == self::STATUS_SUC) {
-            $this->finishedTime = $time;
-        }
-
-        if ($newStatus == self::STATUS_DOING) {
-            $this->retryNum++;
-            $this->lastExecTime = $time;
+        switch ($newStatus) {
+            case self::STATUS_ENQUEUED:
+                $this->lastEnqueueTime = $time;
+                break;
+            case self::STATUS_DOING:
+                $this->retryNum++;
+                $this->lastExecTime = $time;
+                break;
+            case self::STATUS_SUC:
+                $this->finishedTime = $time;
+                break;
         }
 
         $this->failedReason = $failedReason ?: '';

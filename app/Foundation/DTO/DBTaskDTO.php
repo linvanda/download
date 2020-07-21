@@ -11,6 +11,7 @@ class DBTaskDTO extends TaskDTO
     public $etime;// 最后执行时间
     public $ftime;// 执行完成时间
     public $stime;// 最后状态变更时间
+    public $qtime;// 最后入列时间
     public $status;// 状态
     public $retryNum;// 重试次数
 }

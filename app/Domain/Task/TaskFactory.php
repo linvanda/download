@@ -45,13 +45,14 @@ class TaskFactory
         $callback = $taskDTO->callback ? new URI($taskDTO->callback) : null;
 
         // 基于 DTO 创建 Task 对象
-        $task = new Task($id, $taskDTO->name, $project, $source, $target, $callback, $taskDTO->operatorId ?: '');
+        $task = new Task($id, $taskDTO->name, $project, $source, $target, $callback, $taskDTO->operatorId ?: '', $taskDTO->maxExecTime ?: 0);
 
         if ($taskDTO instanceof DBTaskDTO) {
             // 来自存储层的数据，需要设置其他属性
             $task->createTime = $taskDTO->ctime;
             $task->lastExecTime = $taskDTO->etime;
             $task->finishedTime = $taskDTO->ftime;
+            $task->lastEnqueueTime = $taskDTO->qtime;
             $task->lastChangeStatusTime = $taskDTO->stime;
             $task->status = $taskDTO->status;
             $task->retryNum = $taskDTO->retryNum;
