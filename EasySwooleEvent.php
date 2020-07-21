@@ -38,21 +38,21 @@ class EasySwooleEvent implements Event
         });
 
         // 热重启(仅用在非生产环境)
-        if (Core::getInstance()->isDev()) {
-            $server->addProcess(
-                (new HotReload(
-                    'HotReload',
-                    [
-                        'disableInotify' => true,
-                        'monitorDirs' => [
-                            EASYSWOOLE_ROOT . '/app',
-                            EASYSWOOLE_ROOT . '/mock',
-                            CONFIG_ROOT
-                        ]
-                    ]
-                ))->getProcess()
-            );
-        }
+        // if (Core::getInstance()->isDev()) {
+        //     $server->addProcess(
+        //         (new HotReload(
+        //             'HotReload',
+        //             [
+        //                 'disableInotify' => true,
+        //                 'monitorDirs' => [
+        //                     EASYSWOOLE_ROOT . '/app',
+        //                     EASYSWOOLE_ROOT . '/mock',
+        //                     CONFIG_ROOT
+        //                 ]
+        //             ]
+        //         ))->getProcess()
+        //     );
+        // }
 
         // worker 进程启动脚本
         $register->add(EventRegister::onWorkerStart, function ($server) {
@@ -61,8 +61,13 @@ class EasySwooleEvent implements Event
 
             // 启动队列监听（仅在 worker 进程启动）
             if (!$server->taskworker) {
+                echo "work pid:" . posix_getpid()."\n";
                 QueueListener::listen();
             }
+
+            $server->tick(1000, function () {
+                echo "timer pid:" . posix_getpid()."\n";
+            });
         });
 
         // Apollo 配置变更监听程序

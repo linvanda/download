@@ -2,7 +2,7 @@
 
 namespace App\Domain\Task;
 
-use App\Foundation\DTO\TaskDTO;
+use App\Foundation\DTO\DBTaskDTO;
 
 interface ITaskRepository
 {
@@ -13,7 +13,7 @@ interface ITaskRepository
     /**
      * 根据任务 id 获取任务详情 DTO
      */
-    public function getTaskDTOById(string $id): ?TaskDTO;
+    public function getTaskDTOById(string $id): ?DBTaskDTO;
 
     /**
      * 根据项目 id 获取该项目下的任务列表，按照任务创建时间倒序排列
@@ -21,7 +21,7 @@ interface ITaskRepository
      * @param int $status 任务状态，0 表示所有
      * @param int $page 分页，从 0 开始
      * @param int $pageSize 每页数
-     * @return Array TaskDTO 数组
+     * @return Array DBTaskDTO 数组
      */
     public function getTaskDTOsByProjId(string $projectId, int $page, int $pageSize = 20, int $status = 0): Array;
 

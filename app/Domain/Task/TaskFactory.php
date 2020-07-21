@@ -15,6 +15,7 @@ use WecarSwoole\ID\IIDGenerator;
 use WecarSwoole\Util\File;
 use App\Domain\URI;
 use App\ErrCode;
+use App\Foundation\DTO\DBTaskDTO;
 
 /**
  * 工厂：创建 task 对象
@@ -45,13 +46,16 @@ class TaskFactory
 
         // 基于 DTO 创建 Task 对象
         $task = new Task($id, $taskDTO->name, $project, $source, $target, $callback, $taskDTO->operatorId ?: '');
-        // 其他属性设置
-        $task->createTime = $taskDTO->ctime ?? time();
-        $task->lastExecTime = $taskDTO->etime ?? 0;
-        $task->finishedTime = $taskDTO->ftime ?? 0;
-        $task->lastChangeStatusTime = $taskDTO->stime ?? 0;
-        $task->status = $taskDTO->status ?? Task::STATUS_TODO;
-        $task->retryNum = $taskDTO->retryNum ?? 0;
+
+        if ($taskDTO instanceof DBTaskDTO) {
+            // 来自存储层的数据，需要设置其他属性
+            $task->createTime = $taskDTO->ctime ?? time();
+            $task->lastExecTime = $taskDTO->etime ?? 0;
+            $task->finishedTime = $taskDTO->ftime ?? 0;
+            $task->lastChangeStatusTime = $taskDTO->stime ?? 0;
+            $task->status = $taskDTO->status ?? Task::STATUS_TODO;
+            $task->retryNum = $taskDTO->retryNum ?? 0;
+        }
 
         return $task;
     }

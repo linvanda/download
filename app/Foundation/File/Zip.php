@@ -22,7 +22,7 @@ class Zip implements ICompress
             touch($archiveFileName);
             chmod($archiveFileName, 0755);
         }
-
+        
         if ($zip->open($archiveFileName, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             throw new Exception("can not open zip file", ErrCode::FILE_OP_FAILED);
         }

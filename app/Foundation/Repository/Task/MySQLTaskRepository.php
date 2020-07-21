@@ -8,6 +8,7 @@ use WecarSwoole\Repository\MySQLRepository;
 use App\Domain\Task\ITaskRepository;
 use App\Domain\Task\Task;
 use App\Domain\Task\TaskFactory;
+use App\Foundation\DTO\DBTaskDTO;
 use App\Foundation\DTO\TaskDTO;
 use Exception;
 use WecarSwoole\Container;
@@ -62,7 +63,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         return $task;
     }
 
-    public function getTaskDTOById(string $id): ?TaskDTO
+    public function getTaskDTOById(string $id): ?DBTaskDTO
     {
         if (!$info = $this->query->select('*')->from('task')->where(['id' => $id, 'is_deleted' => 0])->one()) {
             return null;
@@ -119,11 +120,11 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         return $this->query->affectedRows() > 0;
     }
 
-    protected function buildTaskDTO(array $info): ?TaskDTO
+    protected function buildTaskDTO(array $info): ?DBTaskDTO
     {
         $meta = isset($info['obj_meta']) ? unserialize($info['obj_meta']) : [];
 
-        $taskDTO = new TaskDTO(
+        $taskDTO = new DBTaskDTO(
             array_merge(
                 $info,
                 [

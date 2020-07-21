@@ -157,7 +157,7 @@ class Source
 
     private function invokeData(API $invoker, int $page, int $pageSize): array
     {
-        $result = $invoker->invoke(['page' => $page, 'page_size' => $pageSize]);
+        $result = $invoker->invoke(['page' => $page, 'page_size' => $pageSize,]);
          
         if (!$result || !isset($result['status']) || $result['status'] !== 200) {
             throw new SourceException(

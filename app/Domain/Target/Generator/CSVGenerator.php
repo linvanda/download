@@ -31,8 +31,6 @@ class CSVGenerator
         if (rename($sourceFileName, $target->targetFileName()) === false) {
             throw new FileException("generate target file fail.rename failed.", ErrCode::FILE_OP_FAILED);
         }
-        
-        unlink($sourceFileName);
 
         // 压缩
         if ($source->size() > Config::getInstance()->getConf("zip_threshold")) {

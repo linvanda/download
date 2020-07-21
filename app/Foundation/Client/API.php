@@ -45,7 +45,7 @@ class API
             throw new Exception("url 请求失败：{$this->url}。errno:{$this->lastErrNo},errmsg:{$this->lastErrMsg}", ErrCode::FETCH_SOURCE_FAILED);
         }
 
-        return $result->getBody();
+        return $result->getBody() ?: [];
     }
 
     private function retryCall(array $params): Response
@@ -71,7 +71,7 @@ class API
             Container::get(LoggerInterface::class)->warning("第{$this->retryNum}次重试{$this->url}，原因：{$this->lastErrMsg}");
         }
 
-        return $result;
+        return $result === null ? new Response([], 500, self::MAX_RETRY_NUM . "次重试失败:{$this->url}") : $result;
     }
 
     private function calcIntervalTime(): int
