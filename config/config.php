@@ -152,6 +152,8 @@ $baseConfig = [
     'task_max_process' => apollo('application', 'task_max_process') ?: 1000,
     // 任务处理时限（超过该时限还在“处理中”的任务将重新入列），任务投递时也可以指定该参数。该值在自定义进程中使用的，修改后需要人工重启服务（无法reload）
     'max_exec_time' => apollo('application', 'max_exec_time') ?: 5400,
+    // 主服务器 ip，主服务器上会执行守卫程序
+    'master_server' => apollo('application', 'master_server'),
 ];
 
 return array_merge(

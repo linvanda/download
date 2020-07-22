@@ -30,4 +30,11 @@ interface ITaskRepository
      * @return bool 是否修改成功
      */
     public function changeTaskStatus(Task $task, int $oldStatus): bool;
+
+    /**
+     * 归档 $beforeTime 之前的数据
+     * @param int $beforeTime 归档此时间之前的数据（unix timestamp）
+     * @param bool $optimize 是否执行 optimize table 整理表碎片
+     */
+    public function fileTask(int $beforeTime, bool $optimize);
 }

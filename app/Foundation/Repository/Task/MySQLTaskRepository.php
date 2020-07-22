@@ -121,6 +121,16 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         return $this->query->affectedRows() > 0;
     }
 
+    public function fileTask(int $beforeTime, bool $optimize)
+    {
+        $this->query->execute('insert into task_history select * from task where ctime<:time', ['time' => $beforeTime]);
+        $this->query->execute('delete from task where ctime<:time', ['time' => $beforeTime]);
+
+        if ($optimize) {
+            $this->query->execute("optimize table task");
+        }
+    }
+
     protected function buildTaskDTO(array $info): ?DBTaskDTO
     {
         $meta = isset($info['obj_meta']) ? unserialize($info['obj_meta']) : [];

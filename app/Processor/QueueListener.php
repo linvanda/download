@@ -19,6 +19,8 @@ class QueueListener
 
     public static function listen()
     {
+        //测试
+        return;
         /**
          * task 队列监听
          */
