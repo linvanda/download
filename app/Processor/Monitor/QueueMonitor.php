@@ -56,7 +56,7 @@ class QueueMonitor
         ];
     }
 
-    public function check()
+    public function watch()
     {
         try {
             $size = Queue::instance(Config::getInstance()->getConf('task_queue'))->size();

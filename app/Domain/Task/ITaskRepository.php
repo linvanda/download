@@ -26,6 +26,15 @@ interface ITaskRepository
     public function getTaskDTOsByProjId(string $projectId, int $page, int $pageSize = 20, int $status = 0): Array;
 
     /**
+     * 查询可能需要重试的任务列表
+     * @param array $status 状态列表
+     * @param int $startTime 任务创建时间起始
+     * @param int $endTime 任务创建时间结束
+     * @return array DBTaskDTO 对象数组
+     */
+    public function getTaskDTOsToRetry(array $status, int $startTime, int $endTime): Array;
+
+    /**
      * 修改任务状态
      * @return bool 是否修改成功
      */

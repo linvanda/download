@@ -6,6 +6,7 @@ use App\Bootstrap;
 use App\Domain\Task\ITaskRepository;
 use App\Foundation\File\LocalFile;
 use App\Processor\Monitor\QueueMonitor;
+use App\Processor\Monitor\TaskRetry;
 use EasySwoole\Component\Process\AbstractProcess;
 use EasySwoole\EasySwoole\Config;
 use WecarSwoole\Container;
@@ -40,9 +41,9 @@ class Defender extends AbstractProcess
         $this->logger->info('启动守卫程序');
 
         // 10 秒一次，执行失败重试
-        Timer::tick(10000, Closure::fromCallable([$this, 'retryTask']));
+        Timer::tick(10000, Closure::fromCallable([TaskRetry::getInstance(), 'watch']));
         // 30 秒一次，检测队列状态
-        Timer::tick(30000, Closure::fromCallable([QueueMonitor::getInstance(), 'check']));
+        Timer::tick(30000, Closure::fromCallable([QueueMonitor::getInstance(), 'watch']));
         // 30 分钟一次，清理目录中的无用文件
         Timer::tick(1800000, Closure::fromCallable([$this, 'clearDir']));
         // 3 小时一次，归档 task 数据
@@ -57,20 +58,6 @@ class Defender extends AbstractProcess
     public function onReceive(string $str)
     {
         // nothing
-    }
-
-    /**
-     * 任务失败重试
-     * 以下状态需要重试：
-     *  1. 待处理（状态码：1，未入列）：
-     *      a. 入列失败；
-     *      b. 入列成功但改状态失败；
-     *      c. 从其它异常状态转成待处理状态的；
-     *    重试方案：
-     */
-    private function retryTask()
-    {
-        
     }
 
     /**

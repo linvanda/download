@@ -100,6 +100,27 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         return $list;
     }
 
+    /**
+     * 查询可能需要重试的任务列表
+     * @param array $status 状态列表
+     * @param int $startTime 任务创建时间起始
+     * @param int $endTime 任务创建时间结束
+     * @return array DBTaskDTO 对象数组
+     */
+    public function getTaskDTOsToRetry(array $status, int $startTime, int $endTime): Array
+    {
+        $list = $this->query
+        ->select('*')
+        ->from('task')
+        ->where(['status' => $status])
+        ->where("ctime>=:s_ctime and ctime<=:e_ctime", ['s_ctime' => $startTime, 'e_ctime' => $endTime])
+        ->list();
+
+        return array_map(function (array $item) {
+            return $this->buildTaskDTO($item);
+        }, $list);
+    }
+
     public function changeTaskStatus(Task $task, int $oldStatus): bool
     {
         // 注意 where 条件要加上 old status 判断，做乐观锁控制（防止并发修改导致数据错误）
