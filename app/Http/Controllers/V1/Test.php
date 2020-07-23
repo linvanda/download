@@ -474,7 +474,7 @@ class Test extends Controller
             'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
             'footer' => ['负责人' => '松林', '总监签名' => '          ', 'CEO 签名' => '        '],
             'template' => [
-                'row' => [
+                'row_' => [
                     [
                         'title' => '云研发',
                         'children' => [
@@ -516,7 +516,7 @@ class Test extends Controller
                         ]
                     ]
                 ],
-                'col' => [
+                'col_' => [
                     [
                         'title' => '人员',
                         'children' => [
@@ -588,6 +588,17 @@ class Test extends Controller
                             ]
                         ]
                     ],
+                ],
+                'col' => [
+                    'name' => '名字',
+                    'age' => '年龄',
+                    'sex' => '性别',
+                    'love_in' => '室内爱好',
+                    'love_out_land' => '室外陆地爱好',
+                    'love_out_sky' => '室外空中爱好',
+                    'city' => '城市',
+                    'area' => '区域',
+                    'building' => '小区',
                 ]
             ]
         ]);

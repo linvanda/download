@@ -27,13 +27,30 @@ trait TplBuilder
             throw new Exception("模板格式不合法", ErrCode::TPL_FMT_ERR);
         }
 
-        $rowCfg = $tplCfg['row'] ?? [];
-        $colCfg = $tplCfg['col'] ?? $tplCfg;
+        $rowCfg = self::formatConf($tplCfg['row'] ?? []);
+        $colCfg = self::formatConf($tplCfg['col'] ?? $tplCfg);
 
         $colHead = self::buildColHead($colCfg);
         $rowHead = self::buildRowHead($rowCfg);
 
         return new Tpl($colHead, $rowHead);
+    }
+
+    /**
+     * 格式化配置数组
+     */
+    private static function formatConf(array $conf): array
+    {
+        // 如果是一维数组，格式化为二维数组
+        if (!is_array(reset($conf))) {
+            $newConf = [];
+            foreach ($conf as $key => $val) {
+                $newConf[] = ['name' => $key, 'title' => $val];
+            }
+            return $newConf;
+        }
+
+        return $conf;
     }
 
     private static function buildRowHead(array $rowCfg): ?RowHead
