@@ -4,6 +4,7 @@ namespace EasySwoole\EasySwoole;
 
 use App\Bootstrap;
 use App\Processor\Defender;
+use App\Processor\DownloadNotice;
 use App\Processor\QueueListener;
 use EasySwoole\EasySwoole\Swoole\EventRegister;
 use EasySwoole\EasySwoole\AbstractInterface\Event;
@@ -35,25 +36,25 @@ class EasySwooleEvent implements Event
 
         // 设置 web socket 处理程序
         $server->on("message", function ($server, $frame) {
-            //todo
+            DownloadNotice::watch($frame->fd, $frame->data);
         });
 
         // 热重启(仅用在非生产环境)
-        // if (Core::getInstance()->isDev()) {
-        //     $server->addProcess(
-        //         (new HotReload(
-        //             'HotReload',
-        //             [
-        //                 'disableInotify' => true,
-        //                 'monitorDirs' => [
-        //                     EASYSWOOLE_ROOT . '/app',
-        //                     EASYSWOOLE_ROOT . '/mock',
-        //                     CONFIG_ROOT
-        //                 ]
-        //             ]
-        //         ))->getProcess()
-        //     );
-        // }
+        if (Core::getInstance()->isDev()) {
+            $server->addProcess(
+                (new HotReload(
+                    'HotReload',
+                    [
+                        'disableInotify' => true,
+                        'monitorDirs' => [
+                            EASYSWOOLE_ROOT . '/app',
+                            EASYSWOOLE_ROOT . '/mock',
+                            CONFIG_ROOT
+                        ]
+                    ]
+                ))->getProcess()
+            );
+        }
 
         // worker 进程启动脚本
         $register->add(EventRegister::onWorkerStart, function ($server) {

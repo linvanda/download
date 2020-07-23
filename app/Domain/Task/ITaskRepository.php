@@ -46,4 +46,9 @@ interface ITaskRepository
      * @param bool $optimize 是否执行 optimize table 整理表碎片
      */
     public function fileTask(int $beforeTime, bool $optimize);
+
+    /**
+     * 查询任务状态
+     */
+    public function getTaskStatus(string $taskId): int;
 }

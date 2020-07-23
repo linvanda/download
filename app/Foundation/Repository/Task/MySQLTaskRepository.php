@@ -154,6 +154,11 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         }
     }
 
+    public function getTaskStatus(string $taskId): int
+    {
+        return $this->query->select('status')->from('task')->where(['id' => $taskId])->column() ?: 0;
+    }
+
     protected function buildTaskDTO(array $info): ?DBTaskDTO
     {
         $meta = isset($info['obj_meta']) ? unserialize($info['obj_meta']) : [];

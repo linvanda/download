@@ -35,12 +35,9 @@ class Download
 
     private function zipFile(string $origFile): string
     {
-        switch (Config::getInstance()->getConf('zip_type')) {
-            case COMPRESS_TYPE_ZIP:
-            default:
-                $ext = 'zip';
-                break;
-        }
+        $ext = [
+            COMPRESS_TYPE_ZIP => 'zip',
+        ][Config::getInstance()->getConf('zip_type')];
 
         return explode('.', $origFile)[0] . '.' . $ext;
     }

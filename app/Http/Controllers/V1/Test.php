@@ -461,6 +461,13 @@ class Test extends Controller
         //     ];
         // }
 
+        $arr = [
+            [
+                'name' => 'pay_type',
+                'title' => '支付类型',
+            ],
+        ];
+
         $this->return([
             'data' => $data,
             'total' => 10000,
