@@ -2,6 +2,8 @@
 
 namespace App\Domain\Transfer;
 
+use App\Domain\Source\SourceService;
+use App\Domain\Target\TargetService;
 use App\Domain\Task\Task;
 use App\ErrCode;
 use App\Foundation\File\LocalFile;
@@ -14,14 +16,15 @@ use WecarSwoole\Exceptions\Exception;
  */
 class TransferService
 {
-    /**
-     * @var ITransferRepository
-     */
     private $transferRepository;
+    private $sourceService;
+    private $targetService;
 
-    public function __construct(ITransferRepository $transferRepository)
+    public function __construct(ITransferRepository $transferRepository, SourceService $sourceService, TargetService $targetService)
     {
         $this->transferRepository = $transferRepository;
+        $this->sourceService = $sourceService;
+        $this->targetService = $targetService;
     }
 
     /**
@@ -39,13 +42,30 @@ class TransferService
      * 从远程或本地存储下载目标文件
      * @return string 本地文件名称
      */
-    public function fetchToLocal(Task $task): string
+    public function download(Task $task, bool $isValidate = true): string
     {
-        if (!$task->isSuccessed()) {
-            throw new Exception("任务未处理成功：{$task->id()}", ErrCode::TASK_NOT_EXISTS);
+        if ($isValidate) {
+            $this->checkDownloadValidity($task);
         }
 
-        return (new Download())->pull($task->id(), $task->target()->targetFileName());
+        $downloadedFile = (new Download())->pull($task->id(), $task->target()->targetFileName());
+        $this->incrDownloadTimes($task->id());
+
+        return $downloadedFile;
+    }
+
+    /**
+     * 同步下载
+     * @return string 本地文件名称
+     */
+    public function syncDownload(Task $task): string
+    {
+        // 获取源数据
+        $this->sourceService->fetch($task->source(), $task->target());
+        // 生成目标数据
+        $this->targetService->generate($task->source(), $task->target());
+        // 下载
+        return $this->download($task, false);
     }
 
     /**
@@ -62,13 +82,9 @@ class TransferService
     /**
      * 检查下载请求的合法性，防止恶意攻击
      */
-    public function checkDownloadValidity(Task $task)
+    private function checkDownloadValidity(Task $task)
     {
         $taskId = $task->id();
-
-        if (!$task->isSuccessed()) {
-            throw new Exception("download fail:task is not done:$taskId", ErrCode::DOWNLOAD_FAILED);
-        }
 
         $limitFor10min = Config::getInstance()->getConf('download_10m_limit');
         $downloadExpire = Config::getInstance()->getConf('download_expire');
@@ -87,7 +103,7 @@ class TransferService
     /**
      * 记录任务下载次数
      */
-    public function incrDownloadTimes(string $taskId)
+    private function incrDownloadTimes(string $taskId)
     {
         if (!$downloadTimer = $this->transferRepository->getDownloadTimer($taskId)) {
             $downloadTimer = new DownloadTimer($taskId);

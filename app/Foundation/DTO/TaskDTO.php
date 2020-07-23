@@ -21,6 +21,7 @@ class TaskDTO extends DTO
     public $template;
     public $title;
     public $summary;
+    public $isSync;
     public $defaultWidth;// Excel 默认列宽度，单位 pt
     public $defaultHeight;// Excel 默认行高，单位 pt
     public $maxExecTime;// 任务处理时限（超过该时限还在“处理中”的任务将重新入列）

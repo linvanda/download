@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\Domain\Transfer\TransferService;
+use App\Foundation\DTO\TaskDTO;
 use App\Http\Service\DownloadService;
 use EasySwoole\EasySwoole\Config;
 use WecarSwoole\Container;
@@ -24,12 +25,13 @@ class Download extends Controller
                 'ticket' => ['required', 'lengthMax' => 100],
             ],
             'syncGetData' => [
-                'source' => ['required', 'url', 'lengthMin' => 2, 'lengthMax' => 5000],
+                'source_url' => ['required', 'url', 'lengthMin' => 2, 'lengthMax' => 5000],
+                'name' => ['required', 'lengthMin' => 2, 'lengthMax' => 60],
                 'project_id' => ['required', 'lengthMax' => 40],
                 'file_name' => ['lengthMax' => 120],
-                'type' => ['inArray' => ['csv', 'excel']],
-                'step' => ['integer', 'between' => [100, 1000]],
-                'operator' => ['lengthMax' => 120],
+                'type' => ['inArray' => [null, 'csv', 'excel']],
+                'callback' => ['lengthMax' => 300],
+                'operator_id' => ['lengthMax' => 120],
                 'template' => ['lengthMax' => 8000],
                 'title' => ['lengthMax' => 200],
                 'summary' => ['lengthMax' => 8000],
@@ -73,6 +75,6 @@ class Download extends Controller
      */
     public function syncGetData()
     {
-
+        Container::get(DownloadService::class)->syncDownload(new TaskDTO($this->params()), $this->response());
     }
 }

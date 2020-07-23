@@ -2,10 +2,13 @@
 
 namespace App\Http\Service;
 
+use App\Domain\Project\IProjectRepository;
 use App\Domain\Task\ITaskRepository;
+use App\Domain\Task\TaskFactory;
 use App\Domain\Transfer\ITransferRepository;
 use App\Domain\Transfer\TransferService;
 use App\ErrCode;
+use App\Foundation\DTO\TaskDTO;
 use EasySwoole\Http\Response;
 use WecarSwoole\Container;
 use WecarSwoole\Exceptions\Exception;
@@ -16,29 +19,28 @@ use WecarSwoole\Exceptions\Exception;
  */
 class DownloadService
 {
+    private $transferService;
+    private $taskRepository;
+    private $transferRepository;
+
+    public function __construct(TransferService $transferService, ITaskRepository $taskRepository, ITransferRepository $transferRepository)
+    {
+        $this->transferService = $transferService;
+        $this->transferRepository = $transferRepository;
+        $this->taskRepository = $taskRepository;
+    }
+
     /**
      * 下载文件
      */
     public function download(string $taskId, Response $response)
     {
-        $transferService = Container::get(TransferService::class);
-
-        if (!$task = Container::get(ITaskRepository::class)->getTaskById($taskId)) {
+        if (!$task = $this->taskRepository->getTaskById($taskId)) {
             throw new Exception("任务不存在：{$taskId}", ErrCode::DOWNLOAD_FAILED);
         }
 
-        // $transferService->checkDownloadValidity($task);
-
-        $localFile = $transferService->fetchToLocal($task);
-        $downloadName = explode('.', $task->target()->downloadFileName())[0] . '.' . explode('.', $localFile)[1];
-
-        set_time_limit(0);
-        $response->withHeader("Content-type", "application/octet-stream");
-        $response->withHeader("Content-Disposition", "attachment; filename=$downloadName");
-        $response->sendFile($localFile);
-
-        // 记录下载次数
-        $transferService->incrDownloadTimes($taskId);
+        $localFile = $this->transferService->download($task);
+        $this->output($localFile, $task->target()->downloadFileName(), $response);
     }
 
     /**
@@ -46,7 +48,7 @@ class DownloadService
      */
     public function downloadWithTicket(string $ticketId, Response $response)
     {
-        if (!$ticket = Container::get(ITransferRepository::class)->getDownloadTicket($ticketId)) {
+        if (!$ticket = $this->transferRepository->getDownloadTicket($ticketId)) {
             throw new Exception("download fail:ticket not exist or expired", ErrCode::DOWNLOAD_FAILED);
         }
 
@@ -55,5 +57,26 @@ class DownloadService
         }
 
         $this->download($ticket->taskId(), $response);
+    }
+
+    /**
+     * 同步下载文件（任务投递和下载一体化，用于下载小文件）
+     * 同步下载的任务不存储到数据库
+     */
+    public function syncDownload(TaskDTO $taskDTO, Response $response)
+    {
+        $task = TaskFactory::create($taskDTO, Container::get(IProjectRepository::class));
+        $localFile = $this->transferService->syncDownload($task);
+        $this->output($localFile, $task->target()->downloadFileName(), $response);
+    }
+
+    private function output(string $localFile, string $downloadName, Response $response)
+    {
+        $downloadName = explode('.', $downloadName)[0] . '.' . explode('.', $localFile)[1];
+
+        set_time_limit(0);
+        $response->withHeader("Content-type", "application/octet-stream");
+        $response->withHeader("Content-Disposition", "attachment; filename=$downloadName");
+        $response->sendFile($localFile);
     }
 }

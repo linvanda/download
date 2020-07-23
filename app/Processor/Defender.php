@@ -21,8 +21,6 @@ use Psr\Log\LoggerInterface;
  */
 class Defender extends AbstractProcess
 {
-    private $queueSizeBucket = [];
-
     /**
      * @var LoggerInterface
      */
@@ -40,8 +38,8 @@ class Defender extends AbstractProcess
         $this->logger = Container::get(LoggerInterface::class);
         $this->logger->info('启动守卫程序');
 
-        // 10 秒一次，执行失败重试
-        Timer::tick(10000, Closure::fromCallable([TaskRetry::getInstance(), 'watch']));
+        // 15 秒一次，执行失败重试
+        Timer::tick(3000, Closure::fromCallable([TaskRetry::getInstance(), 'watch']));
         // 30 秒一次，检测队列状态
         Timer::tick(30000, Closure::fromCallable([QueueMonitor::getInstance(), 'watch']));
         // 30 分钟一次，清理目录中的无用文件
@@ -90,11 +88,14 @@ class Defender extends AbstractProcess
      */
     private function fileData()
     {
-        $optimize = false;
-        $hour = date('H');
-        if ($hour >= 2 && $hour <= 5) {
-            $optimize = mt_rand(0, 100) > 90 ? true : false;
+        $hour = intval(date('G'));
+
+        // 只在晚上 0 - 6 点处理
+        if ($hour > 6) {
+            return;
         }
+
+        $optimize = mt_rand(0, 100) > 95 ? true : false;
 
         try {
             Container::get(ITaskRepository::class)->fileTask(time() - 86400 * 30 * 6, $optimize);

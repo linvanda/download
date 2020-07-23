@@ -77,6 +77,8 @@ class Task extends Entity
     protected $retryNum;
     // 处理失败原因
     protected $failedReason;
+    // 是否同步任务
+    protected $isSync;
 
     public function __construct(
         string $id,
@@ -86,7 +88,8 @@ class Task extends Entity
         Target $target,
         URI $callback = null,
         string $operator = '',
-        int $maxExecTime = 0
+        int $maxExecTime = 0,
+        int $isSync = 0
     ) {
         $this->id = $id;
         $this->name = $name;
@@ -104,6 +107,7 @@ class Task extends Entity
         $this->retryNum = 0;
         $this->failedReason = '';
         $this->maxExecTime = $maxExecTime;
+        $this->isSync = $isSync;
     }
 
     public function id(): string
@@ -154,6 +158,11 @@ class Task extends Entity
     public function finishedTime(): int
     {
         return $this->finishedTime;
+    }
+
+    public function isSync(): bool
+    {
+        return boolval($this->isSync);
     }
 
     /**

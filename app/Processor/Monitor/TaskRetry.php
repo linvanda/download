@@ -82,10 +82,10 @@ class TaskRetry
         
         foreach ($taskDTOs as $taskDTO) {
             try {
-                if (!$this->willRetry($taskDTO)) {
+                if ($taskDTO->isSync || !$this->willRetry($taskDTO)) {
                     continue;
                 }
-
+                
                 // 需要重新处理
                 $task = TaskFactory::create($taskDTO, $this->projRepos);
                 // 先将任务状态改成“待处理”，否则后面状态切换会失败

@@ -35,6 +35,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'max_exec_time' => $task->maxExecTime(),
             'status' => $task->status,
             'retry_num' => 0,
+            'is_sync' => $task->isSync,
             'ctime' => $task->createTime,
             'utime' => $task->createTime,
             'etime' => $task->lastExecTime,
@@ -113,6 +114,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         ->select('*')
         ->from('task')
         ->where(['status' => $status])
+        ->where(['is_sync' => 0])
         ->where("ctime>=:s_ctime and ctime<=:e_ctime", ['s_ctime' => $startTime, 'e_ctime' => $endTime])
         ->list();
 

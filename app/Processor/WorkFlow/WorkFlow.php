@@ -5,7 +5,6 @@ namespace App\Processor\WorkFlow;
 use App\Domain\Task\Task;
 use App\Processor\TaskManager;
 use App\Processor\WorkFlow\Handler\TargetReadyHandler;
-use App\Processor\WorkFlow\Handler\ReDoHandler;
 use App\Processor\WorkFlow\Handler\SourceReadyHandler;
 use App\Processor\WorkFlow\Handler\ToDoHandler;
 use App\Processor\WorkFlow\Handler\UploadSuccessHandler;
@@ -134,8 +133,7 @@ class WorkFlow
         $workFlow->addHandler(new ToDoHandler($workFlow))
              ->addHandler(new SourceReadyHandler($workFlow))
              ->addHandler(new TargetReadyHandler($workFlow))
-             ->addHandler(new UploadSuccessHandler($workFlow))
-             ->addHandler(new ReDoHandler($workFlow));
+             ->addHandler(new UploadSuccessHandler($workFlow));
 
         return $workFlow;
     }
