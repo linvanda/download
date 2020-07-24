@@ -75,10 +75,16 @@ class Excel extends Target
     {
         $this->title = $metaData['title'] ?? $this->title;
         $this->summary = $metaData['summary'] ?? $this->summary;
-        $this->header = $metaData['header'] ?? $this->header;
-        $this->footer = $metaData['footer'] ?? $this->footer;
         $this->defaultWidth = $metaData['default_width'] ?? $this->defaultWidth;
         $this->defaultHeight = $metaData['default_height'] ?? $this->defaultHeight;
+
+        if (isset($metaData['header']) && $metaData['header']) {
+            $this->header = is_string($metaData['header']) ? json_decode($metaData['header'], true) : $metaData['header'];
+        }
+        
+        if (isset($metaData['footer']) && $metaData['footer']) {
+            $this->footer = is_string($metaData['footer']) ? json_decode($metaData['footer'], true) : $metaData['footer'];
+        }
 
         if (isset($metaData['template'])) {
             $this->setTpl($metaData['template']);

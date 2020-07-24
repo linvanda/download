@@ -30,22 +30,16 @@ class Defender extends AbstractProcess
     {
         Bootstrap::boot();
 
-        // 只有主服才执行守卫程序
-        if (!in_array(Config::getInstance()->getConf('master_server'), swoole_get_local_ip())) {
-            return;
-        }
-
         $this->logger = Container::get(LoggerInterface::class);
         $this->logger->info('启动守卫程序');
 
-        // 15 秒一次，执行失败重试
-        Timer::tick(3000, Closure::fromCallable([TaskRetry::getInstance(), 'watch']));
-        // 30 秒一次，检测队列状态
-        Timer::tick(30000, Closure::fromCallable([QueueMonitor::getInstance(), 'watch']));
+        // 只有主服才执行的逻辑
+        if (in_array(Config::getInstance()->getConf('master_server'), swoole_get_local_ip())) {
+            $this->masterDefender();
+        }
+        
         // 30 分钟一次，清理目录中的无用文件
         Timer::tick(1800000, Closure::fromCallable([$this, 'clearDir']));
-        // 3 小时一次，归档 task 数据
-        Timer::tick(10800000, Closure::fromCallable([$this, 'fileData']));
     }
 
     public function onShutDown()
@@ -56,6 +50,16 @@ class Defender extends AbstractProcess
     public function onReceive(string $str)
     {
         // nothing
+    }
+
+    private function masterDefender()
+    {
+        // 15 秒一次，执行失败重试
+        Timer::tick(3000, Closure::fromCallable([TaskRetry::getInstance(), 'watch']));
+        // 30 秒一次，检测队列状态
+        Timer::tick(30000, Closure::fromCallable([QueueMonitor::getInstance(), 'watch']));
+        // 3 小时一次，归档 task 数据
+        Timer::tick(10800000, Closure::fromCallable([$this, 'fileData']));
     }
 
     /**

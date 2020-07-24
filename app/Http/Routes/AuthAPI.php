@@ -42,6 +42,11 @@ class AuthAPI extends Route
          *      template string 可选。表头格式定义。仅对 excel 生效
          *      title string 可选。表格标题。仅对 excel 生效
          *      summary string 可选。表格摘要。仅对 excel 生效
+         *      header  array 可选。表格 header。仅对 excel 生效
+         *      footer array 可选。表格 footer。仅对 excel 生效
+         *      default_width int 可选。表格列宽度，单位 pt。仅对 excel 生效
+         *      default_height int 可选。表格行高度，单位 pt。仅对 excel 生效
+         *      max_exec_time int 可选。任务处理时限（超过该时限还在“处理中”的任务将重新入列），单位秒
          */
         $this->post("/v1/task", "/V1/Task/deliver");
 

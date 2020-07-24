@@ -461,17 +461,10 @@ class Test extends Controller
         //     ];
         // }
 
-        $arr = [
-            [
-                'name' => 'pay_type',
-                'title' => '支付类型',
-            ],
-        ];
-
         $this->return([
             'data' => $data,
             'total' => 10000,
-            'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
+            // 'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
             'footer' => ['负责人' => '松林', '总监签名' => '          ', 'CEO 签名' => '        '],
             'template' => [
                 'row_' => [
@@ -491,7 +484,7 @@ class Test extends Controller
                         ]
                     ],
                     [
-                        'title' => '线下',
+                        'title' => 'OS及智能设备',
                         'children' => [
                             [
                                 'title' => 'OS',
@@ -516,7 +509,7 @@ class Test extends Controller
                         ]
                     ]
                 ],
-                'col_' => [
+                'col' => [
                     [
                         'title' => '人员',
                         'children' => [
@@ -589,7 +582,7 @@ class Test extends Controller
                         ]
                     ],
                 ],
-                'col' => [
+                'col_' => [
                     'name' => '名字',
                     'age' => '年龄',
                     'sex' => '性别',

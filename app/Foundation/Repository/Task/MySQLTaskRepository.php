@@ -59,9 +59,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             return null;
         }
 
-        $task = TaskFactory::create($this->buildTaskDTO($info), Container::get(IProjectRepository::class));
-
-        return $task;
+        return TaskFactory::create($this->buildTaskDTO($info), Container::get(IProjectRepository::class));
     }
 
     public function getTaskDTOById(string $id): ?DBTaskDTO
@@ -170,6 +168,8 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
                     'template' => $meta['template'] ?? null,
                     'title' => $meta['title'] ?? '',
                     'summary' => $meta['summary'] ?? '',
+                    'header' => $meta['header'],
+                    'footer' => $meta['footer'],
                     'type' => array_flip(self::FILE_TYPE_MAP)[$info['type']],
                     'default_width' => $meta['default_width'] ?? 0,
                     'default_height' => $meta['default_height'] ?? 0,

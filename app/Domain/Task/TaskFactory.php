@@ -74,6 +74,8 @@ class TaskFactory
                         'template' => $taskDTO->template ?: null,
                         'title' => $taskDTO->title ?: '',
                         'summary' => $taskDTO->summary ?: '',
+                        'header' => $taskDTO->header ?: '',
+                        'footer' => $taskDTO->footer ?: '',
                         'default_width' => $taskDTO->defaultWidth,
                         'default_height' => $taskDTO->defaultHeight,
                     ]
