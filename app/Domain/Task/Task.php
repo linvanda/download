@@ -108,6 +108,13 @@ class Task extends Entity
         $this->failedReason = '';
         $this->maxExecTime = $maxExecTime;
         $this->isSync = $isSync;
+
+        // 同步任务直接将状态设置为 suc
+        if ($isSync) {
+            $this->status = self::STATUS_SUC;
+            $this->retryNum = 1;
+            $this->lastExecTime = $this->finishedTime = $this->lastChangeStatusTime = $this->createTime;
+        }
     }
 
     public function id(): string

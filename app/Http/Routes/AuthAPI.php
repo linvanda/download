@@ -3,8 +3,9 @@
 namespace App\Http\Routes;
 
 use WecarSwoole\Http\ApiRoute;
+use WecarSwoole\Http\Route;
 
-class AuthAPI extends ApiRoute
+class AuthAPI extends Route
 {
     public function map()
     {
@@ -36,7 +37,7 @@ class AuthAPI extends ApiRoute
          *      file_name string 可选。下载文件的名称，默认根据日期加随机数生成
          *      type string 可选。可选值：csv|excel。默认 csv
          *      callback string 可选。处理完成后回调通知 url
-         *      step int 可选。下载数据时每次取多少数据（步长），默认 500，可设置范围：100 - 1000
+         *      step int 可选。下载数据时每次取多少数据（步长），默认 1000，可设置范围：100 - 5000
          *      operator_id string 可选。操作员编号，存根用
          *      template string 可选。表头格式定义。仅对 excel 生效
          *      title string 可选。表格标题。仅对 excel 生效
@@ -58,6 +59,11 @@ class AuthAPI extends ApiRoute
 
         /**
          * 根据项目查询任务列表
+         * params:
+         *      project_id string 必填。项目 id
+         *      page int 必填。页码，从 0 开始
+         *      page_size int 必填。步长，最多 200
+         *      status string 可选。多个状态用英文逗号隔开，默认全部状态
          */
         $this->get('/v1/tasks', '/V1/Task/list');
 

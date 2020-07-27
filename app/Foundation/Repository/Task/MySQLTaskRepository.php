@@ -34,7 +34,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'step' => $task->source()->step,
             'max_exec_time' => $task->maxExecTime(),
             'status' => $task->status,
-            'retry_num' => 0,
+            'retry_num' => $task->retryNum,
             'is_sync' => $task->isSync,
             'ctime' => $task->createTime,
             'utime' => $task->createTime,
@@ -71,7 +71,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         return $this->buildTaskDTO($info);
     }
 
-    public function getTaskDTOsByProjId(string $projectId, int $page, int $pageSize = 20, int $status = 0): Array
+    public function getTaskDTOsByProjId(string $projectId, int $page, int $pageSize = 20, array $status = []): Array
     {
         // 安全起见，一次最多允许查询 200 个
         $pageSize = $pageSize > 200 ? 200 : $pageSize;

@@ -29,8 +29,9 @@ class UploadSuccessHandler extends WorkHandler
                 $conf = Config::getInstance();
                 API::simpleInvoke(
                     $callback->url(),
-                    'GET',
+                    'POST',
                     [
+                        'task_id' => $this->task()->id(),
                         'download_url' => Url::assemble($conf->getConf('backend_download_url'), $conf->getConf('base_url'), ['task_id' => $this->task()->id()])
                     ],
                     'weicheche'

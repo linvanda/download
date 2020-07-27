@@ -32,8 +32,8 @@ class Task extends Controller
             ],
             'list' => [
                 'project_id' => ['required', 'lengthMax' => 100],
-                'page' => ['integer', 'min' => 0],
-                'page_size' => ['integer', 'max' => 50],
+                'page' => ['required', 'integer', 'min' => 0],
+                'page_size' => ['optional', 'integer', 'max' => 50],
             ],
         ];
     }
@@ -57,7 +57,7 @@ class Task extends Controller
             return $this->return([], ErrCode::TASK_NOT_EXISTS, '任务不存在');
         }
 
-        return $this->return($taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary']));
+        return $this->return($taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']));
     }
 
     /**
@@ -68,8 +68,8 @@ class Task extends Controller
         $data = Container::get(ITaskRepository::class)->getTaskDTOsByProjId(
             $this->params('project_id'),
             $this->params('page'),
-            $this->params('page_size'),
-            $this->params('status') ?: 0
+            $this->params('page_size') ?: 20,
+            $this->params('status') ? explode(',', $this->params('status')) : []
         );
 
         if (!$data['total']) {
@@ -77,7 +77,7 @@ class Task extends Controller
         }
 
         $data['data'] = array_map(function (TaskDTO $taskDTO) {
-            return $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary']);
+            return $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
         }, $data['data']);
 
         return $this->return($data);

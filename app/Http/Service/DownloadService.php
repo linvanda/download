@@ -2,15 +2,13 @@
 
 namespace App\Http\Service;
 
-use App\Domain\Project\IProjectRepository;
 use App\Domain\Task\ITaskRepository;
-use App\Domain\Task\TaskFactory;
+use App\Domain\Task\TaskService;
 use App\Domain\Transfer\ITransferRepository;
 use App\Domain\Transfer\TransferService;
 use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
 use EasySwoole\Http\Response;
-use WecarSwoole\Container;
 use WecarSwoole\Exceptions\Exception;
 
 /**
@@ -20,12 +18,18 @@ use WecarSwoole\Exceptions\Exception;
 class DownloadService
 {
     private $transferService;
+    private $taskService;
     private $taskRepository;
     private $transferRepository;
 
-    public function __construct(TransferService $transferService, ITaskRepository $taskRepository, ITransferRepository $transferRepository)
-    {
+    public function __construct(
+        TransferService $transferService,
+        TaskService $taskService,
+        ITaskRepository $taskRepository,
+        ITransferRepository $transferRepository
+    ) {
         $this->transferService = $transferService;
+        $this->taskService = $taskService;
         $this->transferRepository = $transferRepository;
         $this->taskRepository = $taskRepository;
     }
@@ -61,11 +65,11 @@ class DownloadService
 
     /**
      * 同步下载文件（任务投递和下载一体化，用于下载小文件）
-     * 同步下载的任务不存储到数据库
      */
     public function syncDownload(TaskDTO $taskDTO, Response $response)
     {
-        $task = TaskFactory::create($taskDTO, Container::get(IProjectRepository::class));
+        $taskDTO->isSync = 1;
+        $task = $this->taskService->create($taskDTO);
         $localFile = $this->transferService->syncDownload($task);
         $this->output($localFile, $task->target()->downloadFileName(), $response);
     }
