@@ -83,7 +83,7 @@
 
 当能预判数据量不会太大时，可以使用同步下载模式。
 
-![image-20200723201837789](/Users/linvanda/Library/Application Support/typora-user-images/image-20200723201837789.png)
+![同步下载](./readme/sync_download.png)
 
 **说明：**
 
