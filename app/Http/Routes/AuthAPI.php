@@ -3,9 +3,8 @@
 namespace App\Http\Routes;
 
 use WecarSwoole\Http\ApiRoute;
-use WecarSwoole\Http\Route;
 
-class AuthAPI extends Route
+class AuthAPI extends ApiRoute
 {
     public function map()
     {
