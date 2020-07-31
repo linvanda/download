@@ -11,6 +11,7 @@ use WecarSwoole\Container;
 /**
  * 队列监控程序
  * 使用双向链表记录每次检查的信息
+ * （也可以用单向链表：向表尾插入新元素，从表头删除旧元素）
  */
 class QueueMonitor
 {
