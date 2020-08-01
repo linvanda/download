@@ -25,10 +25,10 @@ class UploadSuccessHandler extends WorkHandler
     protected function exec()
     {
         try {
-            if ($callback = $this->task()->callbackURI()) {
+            if ($callback = $this->task()->callbackURI()->url()) {
                 $conf = Config::getInstance();
                 API::simpleInvoke(
-                    $callback->url(),
+                    $callback,
                     'POST',
                     [
                         'task_id' => $this->task()->id(),

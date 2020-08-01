@@ -42,7 +42,7 @@ class TaskFactory
         // 目标
         $target = self::buildTarget($taskDTO);
         // 回调
-        $callback = $taskDTO->callback ? new URI($taskDTO->callback) : null;
+        $callback = new URI($taskDTO->callback ?: '');
 
         // 基于 DTO 创建 Task 对象
         $task = new Task($id, $taskDTO->name, $project, $source, $target, $callback, $taskDTO->operatorId ?: '', $taskDTO->maxExecTime ?: 0, $taskDTO->isSync ?: 0);
