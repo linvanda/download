@@ -8,7 +8,9 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use WecarSwoole\Http\Controller;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use WecarSwoole\Client\API;
 use WecarSwoole\Util\File;
+use WecarSwoole\Util\Url;
 
 class Test extends Controller
 {
@@ -446,24 +448,24 @@ class Test extends Controller
             ],
         ];
         $page = $this->params('page') ?: 0;
-        // $data = [];
-        // for ($i = 0; $i < 3000; $i++) {
-        //     $data[] = [
-        //         'name' => "张三{$i}-{$page}",
-        //         'age' => mt_rand(10, 100),
-        //         'sex' => ['男', '女'][mt_rand(0,1)],
-        //         'love_in' => ['乒乓球', '羽毛球'][mt_rand(0,1)],
-        //         'love_out_land' => ['跑步', '爬山'][mt_rand(0,1)],
-        //         'love_out_sky' => '跳伞',
-        //         'city' => ['深圳', '上海'][mt_rand(0,1)],
-        //         'area' => '区域名称',
-        //         'building' => '小区名'
-        //     ];
-        // }
+        $data = [];
+        for ($i = 0; $i < 1000; $i++) {
+            $data[] = [
+                'name' => "张三{$i}-{$page}",
+                'age' => mt_rand(10, 100),
+                'sex' => ['男', '女'][mt_rand(0,1)],
+                'love_in' => ['乒乓球', '羽毛球'][mt_rand(0,1)],
+                'love_out_land' => ['跑步', '爬山'][mt_rand(0,1)],
+                'love_out_sky' => '跳伞',
+                'city' => ['深圳', '上海'][mt_rand(0,1)],
+                'area' => '区域名称',
+                'building' => '小区名'
+            ];
+        }
 
         $this->return([
             'data' => $data,
-            'total' => 10000,
+            'total' => 1000,
             // 'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
             'footer' => ['负责人' => '松林', '总监签名' => '          ', 'CEO 签名' => '        '],
             'template' => [
@@ -634,5 +636,18 @@ class Test extends Controller
     public function notify()
     {
         $this->return(['type' => 'notify', 'url' => $this->params('download_url')]);
+    }
+
+    /**
+     * 测试同步下载
+     */
+    public function testSyncDownload()
+    {
+        $params = [
+            'source_url' => Url::assemble('/v1/test/source', 'XZ'),
+            'project_id' => 'bf1fd528-b505-baef-c19b-865f98ae6048',
+            'name' => '测试任务',
+        ];
+        $this->response()->write(API::invoke('weicheche:test.sync', $params));
     }
 }

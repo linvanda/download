@@ -20,6 +20,11 @@ return [
             'server' => 'DX',
             'path' => 'v1.0/sms/send',
             'method' => 'POST'
-        ]
+        ],
+        'test.sync' => [
+            'server' => 'http://localhost:9588',
+            'path' => '/v1/download/sync',
+            'method' => 'GET'
+        ],
     ]
 ];
