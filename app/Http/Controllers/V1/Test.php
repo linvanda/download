@@ -644,10 +644,60 @@ class Test extends Controller
     public function testSyncDownload()
     {
         $params = [
-            'source_url' => Url::assemble('/v1/test/source', 'XZ'),
+            'source_url' => Url::assemble('/v1/test/source', 'http://localhost:9588'),
             'project_id' => 'bf1fd528-b505-baef-c19b-865f98ae6048',
             'name' => '测试任务',
+            'type' => 'excel',
         ];
-        $this->response()->write(API::invoke('weicheche:test.sync', $params));
+        $url = "http://localhost:9588/v1/download/sync?".http_build_query($params);
+        $this->response()->withHeader("Content-type", "application/octet-stream");
+        $this->response()->withHeader("Content-Disposition", "attachment; filename=124.xlsx");
+
+        // $this->response()->write(file_get_contents($url));
+        $this->output($url);
+    }
+
+    private function output($url, $params = [])
+    {
+        if ($params) {
+            $url .= (strpos($url, '?') === false ? '?' : '&') . http_build_query($params);
+        }
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_TIMEOUT , 60);
+        // 自定义流处理函数
+        curl_setopt($curl, CURLOPT_WRITEFUNCTION, array($this, 'streamingWriteCallback'));
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_exec($curl);
+        curl_close($curl);
+    }
+
+    public function streamingWriteCallback($curl_handle, $data)
+    {
+        // $f = fopen('php://output', 'a');
+        // $code = curl_getinfo($curl_handle, CURLINFO_HTTP_CODE);
+        
+        // if (intval(intval($code) / 100) != 2) {
+        //     echo "err:$data";
+        //     return strlen($data);
+        // }
+
+        // $length = strlen($data);
+        // $written_total = 0;
+        // $written_last = 0;
+        
+        // while ($written_total < $length) {
+        //     $written_last = fwrite($f, substr($data, $written_total));
+
+        //     if ($written_last === false) {
+        //         return $written_total;
+        //     }
+
+        //     $written_total += $written_last;
+        // }
+
+        // return $written_total;
+        $this->response()->write($data);
+        return strlen($data);
     }
 }

@@ -83,7 +83,7 @@ class Defender extends AbstractProcess
                 LocalFile::deleteDir($realDir);
             }
         } catch (\Exception $e) {
-            $this->logger->error("守卫进程执行异常：{$e->getMessage()}");
+            $this->logger->error("守卫进程执行异常。msg:{$e->getMessage()},trace:" . $e->getTraceAsString());
         }
     }
 
@@ -104,7 +104,7 @@ class Defender extends AbstractProcess
         try {
             Container::get(ITaskRepository::class)->fileTask(time() - 86400 * 30 * 6, $optimize);
         } catch (\Exception $e) {
-            $this->logger->error("守卫进程执行异常：{$e->getMessage()}");
+            $this->logger->error("守卫进程执行异常。msg:{$e->getMessage()},trace:" . $e->getTraceAsString());
         }
     }
 }

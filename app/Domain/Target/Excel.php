@@ -34,32 +34,32 @@ class Excel extends Target
 
     public function getTitle(): string
     {
-        return $this->title ?? '';
+        return $this->title ?: '';
     }
 
     public function getSummary(): string
     {
-        return $this->summary ?? '';
+        return $this->summary ?: '';
     }
 
     public function getHeader(): array
     {
-        return $this->header ?? [];
+        return $this->header ?: [];
     }
 
     public function getFooter(): array
     {
-        return $this->footer ?? [];
+        return $this->footer ?: [];
     }
 
     public function getDefaultWidth(): int
     {
-        return $this->defaultWidth ?? 14;
+        return $this->defaultWidth ?: 14;
     }
 
     public function getDefaultHeight(): int
     {
-        return $this->defaultHeight ?? 14;
+        return $this->defaultHeight ?: 14;
     }
 
     public function getTpl(): Tpl
