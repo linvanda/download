@@ -71,18 +71,28 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         return $this->buildTaskDTO($info);
     }
 
-    public function getTaskDTOsByProjId(string $projectId, int $page, int $pageSize = 20, array $status = []): Array
+    public function getTaskDTOs(array $projectIds, int $page, int $pageSize = 20, array $status = [], $operatorId = '', $taskName = ''): Array
     {
         // 安全起见，一次最多允许查询 200 个
         $pageSize = $pageSize > 200 ? 200 : $pageSize;
 
         $builder = $this->query
         ->select('*')
-        ->from('task')->where(['project_id' => $projectId, 'is_deleted' => 0])
-        ->orderBy("incr_id desc")->limit($pageSize, $page);
+        ->from('task')
+        ->where(['project_id' => array_filter($projectIds), 'is_deleted' => 0])
+        ->orderBy("incr_id desc")
+        ->limit($pageSize, $page);
 
         if ($status) {
-            $builder->where(['status' => $status]);
+            $builder->where(['status' => array_filter($status)]);
+        }
+
+        if ($operatorId) {
+            $builder->where(['operator_id' => $operatorId]);
+        }
+
+        if ($taskName) {
+            $builder->where("name like '%:task_name%'", ['task_name' => $taskName]);
         }
 
         $list = $builder->page();

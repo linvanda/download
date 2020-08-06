@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\Domain\Task\ITaskRepository;
+use App\Domain\Task\Task as DlTask;
 use App\Domain\Task\TaskService;
 use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
@@ -31,9 +32,9 @@ class Task extends Controller
                 'task_id' => ['required', 'lengthMax' => 100],
             ],
             'list' => [
-                'project_id' => ['required', 'lengthMax' => 100],
+                'project_ids' => ['required', 'lengthMax' => 1000],
                 'page' => ['required', 'integer', 'min' => 0],
-                'page_size' => ['optional', 'integer', 'max' => 50],
+                'page_size' => ['optional', 'integer', 'max' => 100],
             ],
         ];
     }
@@ -57,19 +58,37 @@ class Task extends Controller
             return $this->return([], ErrCode::TASK_NOT_EXISTS, '任务不存在');
         }
 
-        return $this->return($taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']));
+        $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
+        // 状态处理
+        $taskArr['status'] = [
+            DlTask::STATUS_TODO => DlTask::STATUS_DOING,
+            DlTask::STATUS_ENQUEUED => DlTask::STATUS_DOING,
+            DlTask::STATUS_DOING => DlTask::STATUS_DOING,
+            DlTask::STATUS_FAILED => DlTask::STATUS_DOING,
+            DlTask::STATUS_SUC => DlTask::STATUS_SUC,
+            DlTask::STATUS_ERR => DlTask::STATUS_ERR,
+        ][$taskArr['status']];
+        $taskArr['status_name'] = [
+            DlTask::STATUS_DOING => '处理中',
+            DlTask::STATUS_SUC => '处理成功',
+            DlTask::STATUS_ERR => '处理失败',
+        ][$taskArr['status']];
+
+        return $this->return();
     }
 
     /**
-     * 查询某项目下的任务列表
+     * 查询任务列表
      */
     public function list()
     {
-        $data = Container::get(ITaskRepository::class)->getTaskDTOsByProjId(
-            $this->params('project_id'),
-            $this->params('page'),
-            $this->params('page_size') ?: 20,
-            $this->params('status') ? explode(',', $this->params('status')) : []
+        $data = Container::get(ITaskRepository::class)->getTaskDTOs(
+            explode(',', $this->params('project_ids')),
+            intval($this->params('page')),
+            $this->params('page_size') ? intval($this->params('page_size')) : 20,
+            $this->params('status') ? explode(',', $this->params('status')) : [],
+            $this->params('operator_id') ?: '',
+            $this->params('task_name') ?: ''
         );
 
         if (!$data['total']) {
@@ -77,7 +96,23 @@ class Task extends Controller
         }
 
         $data['data'] = array_map(function (TaskDTO $taskDTO) {
-            return $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
+            $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
+            // 状态处理
+            $taskArr['status'] = [
+                DlTask::STATUS_TODO => DlTask::STATUS_DOING,
+                DlTask::STATUS_ENQUEUED => DlTask::STATUS_DOING,
+                DlTask::STATUS_DOING => DlTask::STATUS_DOING,
+                DlTask::STATUS_FAILED => DlTask::STATUS_DOING,
+                DlTask::STATUS_SUC => DlTask::STATUS_SUC,
+                DlTask::STATUS_ERR => DlTask::STATUS_ERR,
+            ][$taskArr['status']];
+            $taskArr['status_name'] = [
+                DlTask::STATUS_DOING => '处理中',
+                DlTask::STATUS_SUC => '处理成功',
+                DlTask::STATUS_ERR => '处理失败',
+            ][$taskArr['status']];
+
+            return $taskArr;
         }, $data['data']);
 
         return $this->return($data);
