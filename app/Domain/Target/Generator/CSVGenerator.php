@@ -4,12 +4,10 @@ namespace App\Domain\Target\Generator;
 
 use App\Foundation\File\ICompress;
 use App\Domain\Target\CSV;
-use App\Domain\Target\Template\Excel\RowHead;
 use App\Domain\Source\Source;
 use App\ErrCode;
 use App\Exceptions\FileException;
 use EasySwoole\EasySwoole\Config;
-use Exception;
 use WecarSwoole\Util\File;
 
 /**
@@ -20,7 +18,7 @@ class CSVGenerator
     /**
      * CSV 目标文件生成方式
      */
-    public function generate(Source $source, CSV $target, ICompress $compress)
+    public function generate(Source $source, CSV $target, ICompress $compress = null)
     {
         $sourceFileName = $source->fileName();
         if (!$sourceFileName || !file_exists($sourceFileName)) {
@@ -33,7 +31,7 @@ class CSVGenerator
         }
 
         // 压缩
-        if ($source->size() > Config::getInstance()->getConf("zip_threshold")) {
+        if ($compress && $source->size() > Config::getInstance()->getConf("zip_threshold")) {
             $newTargetFileName = $compress->compress(File::join($target->getBaseDir(), 'target'), [$target->targetFileName()]);
             // 重新设置目标文件名字
             $target->setTargetFileName($newTargetFileName);

@@ -31,14 +31,15 @@ use App\ErrCode;
  */
 class ExcelGenerator
 {
-    public function generate(Source $source, Excel $target, ICompress $compress)
+    public function generate(Source $source, Excel $target, ICompress $compress = null)
     {
         if (!file_exists($source->fileName())) {
             throw new FileException("源文件不存在：{$source->fileName()}", ErrCode::FILE_OP_FAILED);
         }
 
         // 计算需要生成多少个文件，每个文件最大多少行，并算出每个文件名称
-        list($fileCount, $fileRowCount) = $this->calcFileCount($source, $target->getTpl()->rowHead() ? true : false);
+        // 注意：只有提供了压缩器的情况下才有可能分文件，没有压缩器则不分割
+        list($fileCount, $fileRowCount) = !$compress ? [1, PHP_INT_MAX] : $this->calcFileCount($source, $target->getTpl()->rowHead() ? true : false);
         $fileNames = $this->calcFileNames($target->targetFileName(), $fileCount);
 
         if (!$sourceFile = @fopen($source->fileName(), 'r')) {
@@ -63,7 +64,7 @@ class ExcelGenerator
         }
 
         // 压缩
-        if (count($fileNames) > 1 || $source->size() > Config::getInstance()->getConf("zip_threshold")) {
+        if ($compress && count($fileNames) > 1 || $source->size() > Config::getInstance()->getConf("zip_threshold")) {
             $newTargetFileName = $compress->compress(File::join($target->getBaseDir(), 'target'), $fileNames);
             // 重新设置目标文件名字
             $target->setTargetFileName($newTargetFileName);

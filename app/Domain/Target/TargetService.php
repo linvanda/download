@@ -18,7 +18,7 @@ class TargetService
     /**
      * 生成目标文件
      */
-    public function generate(Source $source, Target $target)
+    public function generate(Source $source, Target $target, bool $compressFile = true)
     {
         // 生成器
         switch ($target->type()) {
@@ -33,13 +33,17 @@ class TargetService
         }
 
         // 压缩器
-        switch (Config::getInstance()->getConf('zip_type')) {
-            case COMPRESS_TYPE_ZIP:
-            default:
-                $compress = new Zip();
-                break;
+        if ($compressFile) {
+            switch (Config::getInstance()->getConf('zip_type')) {
+                case COMPRESS_TYPE_ZIP:
+                default:
+                    $compress = new Zip();
+                    break;
+            }
+        } else {
+            $compress = null;
         }
-
+        
         $generator->generate($source, $target, $compress);
     }
 }

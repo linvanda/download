@@ -63,7 +63,7 @@ class TransferService
         // 获取源数据
         $this->sourceService->fetch($task->source(), $task->target());
         // 生成目标数据
-        $this->targetService->generate($task->source(), $task->target());
+        $this->targetService->generate($task->source(), $task->target(), false);
         // 下载
         return $this->download($task, false);
     }
