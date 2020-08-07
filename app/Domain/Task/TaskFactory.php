@@ -55,7 +55,7 @@ class TaskFactory
             $taskDTO->operatorId ?: '',
             $taskDTO->maxExecTime ?: 0,
             $taskDTO->isSync ?: 0,
-            new Merchant($taskDTO->merchantId ?: 0, $taskDTO->merchantType ?: 0)
+            new Merchant($taskDTO->merchantId ? intval($taskDTO->merchantId) : 0, $taskDTO->merchantType ? intval($taskDTO->merchantType) : 0)
         );
 
         if ($taskDTO instanceof DBTaskDTO) {

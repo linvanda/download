@@ -25,6 +25,8 @@ class Task extends Controller
                 'type' => ['inArray' => [null, 'csv', 'excel']],
                 'callback' => ['lengthMax' => 300],
                 'operator_id' => ['lengthMax' => 120],
+                'merchant_id' => ['required'],
+                'merchant_type' => ['required'],
                 'template' => ['lengthMax' => 8000],
                 'title' => ['lengthMax' => 200],
                 'summary' => ['lengthMax' => 8000],
