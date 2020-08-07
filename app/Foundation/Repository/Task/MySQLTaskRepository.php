@@ -104,7 +104,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             $builder->where(['operator_id' => $operatorId]);
         }
 
-        if ($merchant && $merchant->id() !== 0) {
+        if ($merchant) {
             $builder->where(['merchant_id' => $merchant->id(), 'merchant_type' => $merchant->type()]);
         }
 
