@@ -3,9 +3,8 @@
 namespace App\Http\Routes;
 
 use WecarSwoole\Http\ApiRoute;
-use WecarSwoole\Http\Route;
 
-class AuthAPI extends Route
+class AuthAPI extends ApiRoute
 {
     public function map()
     {
@@ -66,6 +65,14 @@ class AuthAPI extends Route
          *      status string 可选。多个状态用英文逗号隔开，默认全部状态
          */
         $this->get('/v1/tasks', '/V1/Task/list');
+
+        /**
+         * 删除任务
+         * params:
+         *      task_ids string 要删除的任务列表，多个用英文逗号隔开
+         *      project_ids string 任务所在的项目，多个用英文逗号隔开
+         */
+        $this->post('/v1/tasks/delete', 'V1/Task/delete');
 
         /**
          * 取数据（获取异步生成好的数据）
