@@ -27,6 +27,8 @@ class Task extends Entity
     public const STATUS_FAILED = 5;
     // 处理失败，该失败不可重试
     public const STATUS_ERR = 6;
+    // 已过期（该状态是程序算出来的，不会写入数据库）
+    public const STATUS_EXPIRED = 100;
     // 最大处理次数
     public const MAX_RETRY_NUM = 3;
 

@@ -53,4 +53,12 @@ interface ITaskRepository
      * 查询任务状态
      */
     public function getTaskStatus(string $taskId): int;
+
+    /**
+     * 删除任务
+     * 可以一次删除多个
+     * @param array $taskIds 需要删除的任务列表
+     * @param array $projectIds 限制只能删除这些项目的任务
+     */
+    public function delete(array $taskIds, array $projectIds);
 }

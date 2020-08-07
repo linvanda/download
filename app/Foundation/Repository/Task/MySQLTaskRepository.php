@@ -71,6 +71,9 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         return $this->buildTaskDTO($info);
     }
 
+    /**
+     * 目前只查询异步任务列表
+     */
     public function getTaskDTOs(array $projectIds, int $page, int $pageSize = 20, array $status = [], $operatorId = '', $taskName = ''): Array
     {
         // 安全起见，一次最多允许查询 200 个
@@ -79,7 +82,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         $builder = $this->query
         ->select('*')
         ->from('task')
-        ->where(['project_id' => array_filter($projectIds), 'is_deleted' => 0])
+        ->where(['project_id' => array_filter($projectIds), 'is_deleted' => 0, 'is_sync' => 0])
         ->orderBy("incr_id desc")
         ->limit($pageSize, $page);
 
@@ -121,8 +124,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         $list = $this->query
         ->select('*')
         ->from('task')
-        ->where(['status' => $status])
-        ->where(['is_sync' => 0])
+        ->where(['status' => $status, 'is_deleted' => 0, 'is_sync' => 0])
         ->where("ctime>=:s_ctime and ctime<=:e_ctime", ['s_ctime' => $startTime, 'e_ctime' => $endTime])
         ->list();
 
@@ -165,6 +167,15 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
     public function getTaskStatus(string $taskId): int
     {
         return $this->query->select('status')->from('task')->where(['id' => $taskId])->column() ?: 0;
+    }
+
+    public function delete(array $taskIds, array $projectIds)
+    {
+        $this->query
+        ->update('task')
+        ->set(['is_deleted' => 1, 'utime' => time()])
+        ->where(['id' => $taskIds, 'project_id' => $projectIds])
+        ->execute();
     }
 
     protected function buildTaskDTO(array $info): ?DBTaskDTO

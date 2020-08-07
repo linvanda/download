@@ -36,6 +36,10 @@ class Task extends Controller
                 'page' => ['required', 'integer', 'min' => 0],
                 'page_size' => ['optional', 'integer', 'max' => 100],
             ],
+            'delete' => [
+                'task_ids' => ['required', 'lengthMax' => 50000],
+                'project_ids' => ['required', 'lengthMax' => 1000],
+            ]
         ];
     }
 
@@ -59,22 +63,7 @@ class Task extends Controller
         }
 
         $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
-        // 状态处理
-        $taskArr['status'] = [
-            DlTask::STATUS_TODO => DlTask::STATUS_DOING,
-            DlTask::STATUS_ENQUEUED => DlTask::STATUS_DOING,
-            DlTask::STATUS_DOING => DlTask::STATUS_DOING,
-            DlTask::STATUS_FAILED => DlTask::STATUS_DOING,
-            DlTask::STATUS_SUC => DlTask::STATUS_SUC,
-            DlTask::STATUS_ERR => DlTask::STATUS_ERR,
-        ][$taskArr['status']];
-        $taskArr['status_name'] = [
-            DlTask::STATUS_DOING => '处理中',
-            DlTask::STATUS_SUC => '处理成功',
-            DlTask::STATUS_ERR => '处理失败',
-        ][$taskArr['status']];
-
-        return $this->return();
+        return $this->return($this->formateTask($taskArr));
     }
 
     /**
@@ -97,124 +86,45 @@ class Task extends Controller
 
         $data['data'] = array_map(function (TaskDTO $taskDTO) {
             $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
-            // 状态处理
-            $taskArr['status'] = [
-                DlTask::STATUS_TODO => DlTask::STATUS_DOING,
-                DlTask::STATUS_ENQUEUED => DlTask::STATUS_DOING,
-                DlTask::STATUS_DOING => DlTask::STATUS_DOING,
-                DlTask::STATUS_FAILED => DlTask::STATUS_DOING,
-                DlTask::STATUS_SUC => DlTask::STATUS_SUC,
-                DlTask::STATUS_ERR => DlTask::STATUS_ERR,
-            ][$taskArr['status']];
-            $taskArr['status_name'] = [
-                DlTask::STATUS_DOING => '处理中',
-                DlTask::STATUS_SUC => '处理成功',
-                DlTask::STATUS_ERR => '处理失败',
-            ][$taskArr['status']];
-
-            return $taskArr;
+            return $this->formateTask($taskArr);
         }, $data['data']);
 
         return $this->return($data);
     }
 
-    public function test()
+    /**
+     * 删除任务
+     */
+    public function delete()
     {
-        // 标准二维数组
-        $a = [
-            [
-                'wx_micropay' => 130,
-                'wx_pay' => 150,
-                'ali_micropay' => 100,
-                'ali_pay' => 200,
-            ],
-            [
-                'wx_micropay' => 30,
-                'wx_pay' => 23,
-                'ali_micropay' => 111,
-                'ali_pay' => 56,
-            ],
-        ];
+        Container::get(ITaskRepository::class)->delete(explode(',', $this->params('task_ids')), explode(',', $this->params('project_ids')));
+        return $this->return();
+    }
 
-        // 三维数组，注意：三维数组时，total是第三维数据数量
-        $b = [
-            'self_screen' => [
-                [
-                    'wx_micropay' => 130,
-                    'wx_pay' => 150,
-                    'ali_micropay' => 100,
-                    'ali_pay' => 200,
-                ],
-                [
-                    'wx_micropay' => '20%',
-                    'wx_pay' => '10%',
-                    'ali_micropay' => '30%',
-                    'ali_pay' => '40%',
-                ],
-            ],
-            'pos' => [
-                [
-                    'wx_micropay' => 130,
-                    'wx_pay' => 150,
-                    'ali_micropay' => 100,
-                    'ali_pay' => 200,
-                ],
-                [
-                    'wx_micropay' => '20%',
-                    'wx_pay' => '10%',
-                    'ali_micropay' => '30%',
-                    'ali_pay' => '40%',
-                ],
-            ],
-            'other' => [
-                'wx_micropay' => '20%',
-                'wx_pay' => '10%',
-                'ali_micropay' => '30%',
-                'ali_pay' => '40%',
-            ],
-        ];
+    private function formateTask(array $task): array
+    {
+        // 创建时间超过 7 天的认为已过期，不可下载
+        if (time() - $task['ctime'] >= 86400 * 7) {
+            $task['status'] = DlTask::STATUS_EXPIRED;
+        }
 
-        // 三维数组也可以用二维表示法：
-        $bb = [
-            [
-                '_row_head_' => 'self_screen',
-                'wx_micropay' => 130,
-                'wx_pay' => 150,
-                'ali_micropay' => 100,
-                'ali_pay' => 200,
-            ],
-            [
-                '_row_head_' => 'self_screen',
-                'wx_micropay' => '20%',
-                'wx_pay' => '10%',
-                'ali_micropay' => '30%',
-                'ali_pay' => '40%',
-            ],
-            [
-                '_row_head_' => 'pos',
-                'wx_micropay' => 130,
-                'wx_pay' => 150,
-                'ali_micropay' => 100,
-                'ali_pay' => 200,
-            ],
-        ];
+        // 状态处理
+        $task['status'] = [
+            DlTask::STATUS_TODO => DlTask::STATUS_DOING,
+            DlTask::STATUS_ENQUEUED => DlTask::STATUS_DOING,
+            DlTask::STATUS_DOING => DlTask::STATUS_DOING,
+            DlTask::STATUS_FAILED => DlTask::STATUS_DOING,
+            DlTask::STATUS_SUC => DlTask::STATUS_SUC,
+            DlTask::STATUS_ERR => DlTask::STATUS_ERR,
+            DlTask::STATUS_EXPIRED => DlTask::STATUS_EXPIRED,
+        ][$task['status']];
+        $task['status_name'] = [
+            DlTask::STATUS_DOING => '处理中',
+            DlTask::STATUS_SUC => '处理成功',
+            DlTask::STATUS_ERR => '处理失败',
+            DlTask::STATUS_EXPIRED => '已过期',
+        ][$task['status']];
 
-        // 没有行表头的二维数组是三维的一种特殊形式，其 _row_head_ 为🈳️字符串：
-        $aa = [
-            [
-                '_row_head_' => '',
-                'wx_micropay' => 130,
-                'wx_pay' => 150,
-                'ali_micropay' => 100,
-                'ali_pay' => 200,
-            ],
-            [
-                '_row_head_' => '',
-                'wx_micropay' => 30,
-                'wx_pay' => 23,
-                'ali_micropay' => 111,
-                'ali_pay' => 56,
-            ],
-        ];
+        return $task;
     }
 }
