@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\Domain\Task\ITaskRepository;
+use App\Domain\Task\Merchant;
 use App\Domain\Task\Task as DlTask;
 use App\Domain\Task\TaskService;
 use App\ErrCode;
@@ -77,6 +78,7 @@ class Task extends Controller
             $this->params('page_size') ? intval($this->params('page_size')) : 20,
             $this->params('status') ? explode(',', $this->params('status')) : [],
             $this->params('operator_id') ?: '',
+            $this->params('merchant_id') ? new Merchant($this->params('merchant_id'), $this->params('merchant_type')) : null,
             $this->params('task_name') ?: ''
         );
 

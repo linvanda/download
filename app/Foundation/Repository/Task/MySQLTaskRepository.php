@@ -5,6 +5,7 @@ namespace App\Foundation\Repository\Task;
 use App\Domain\Project\IProjectRepository;
 use WecarSwoole\Repository\MySQLRepository;
 use App\Domain\Task\ITaskRepository;
+use App\Domain\Task\Merchant;
 use App\Domain\Task\Task;
 use App\Domain\Task\TaskFactory;
 use App\Foundation\DTO\DBTaskDTO;
@@ -30,6 +31,8 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'type' => self::FILE_TYPE_MAP[$task->target()->type()],
             'file_name' => $task->target()->downloadFileName(),
             'operator_id' => $task->operator,
+            'merchant_id' => $task->merchant->id(),
+            'merchant_type' => $task->merchant->type(),
             'callback' => $task->callbackURI()->url(),
             'step' => $task->source()->step,
             'max_exec_time' => $task->maxExecTime(),
@@ -74,8 +77,15 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
     /**
      * 目前只查询异步任务列表
      */
-    public function getTaskDTOs(array $projectIds, int $page, int $pageSize = 20, array $status = [], $operatorId = '', $taskName = ''): Array
-    {
+    public function getTaskDTOs(
+        array $projectIds,
+        int $page,
+        int $pageSize = 20,
+        array $status = [],
+        $operatorId = '',
+        Merchant $merchant = null,
+        $taskName = ''
+    ): Array {
         // 安全起见，一次最多允许查询 200 个
         $pageSize = $pageSize > 200 ? 200 : $pageSize;
 
@@ -92,6 +102,10 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
 
         if ($operatorId) {
             $builder->where(['operator_id' => $operatorId]);
+        }
+
+        if ($merchant && $merchant->id() !== 0) {
+            $builder->where(['merchant_id' => $merchant->id(), 'merchant_type' => $merchant->type()]);
         }
 
         if ($taskName) {

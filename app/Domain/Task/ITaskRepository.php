@@ -21,11 +21,12 @@ interface ITaskRepository
      * @param array $status 任务状态列表，空数组表示全部状态
      * @param int $page 分页，从 0 开始
      * @param int $pageSize 每页数
-     * @param mixed $operatorId 操作员 id
+     * @param mixed $operatorId 操作员
+     * @param Merchant $merchant 商户
      * @param string $taskName 任务名称
      * @return Array DBTaskDTO 数组
      */
-    public function getTaskDTOs(array $projectIds, int $page, int $pageSize = 20, array $status = [], $operatorId = '', $taskName = ''): Array;
+    public function getTaskDTOs(array $projectIds, int $page, int $pageSize = 20, array $status = [], $operatorId = '', Merchant $merchant = null, $taskName = ''): Array;
 
     /**
      * 查询可能需要重试的任务列表

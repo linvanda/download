@@ -18,6 +18,8 @@ class TaskDTO extends DTO
     public $callback;
     public $step;
     public $operatorId;
+    public $merchantId;
+    public $merchantType;
     public $template;
     public $title;
     public $summary;

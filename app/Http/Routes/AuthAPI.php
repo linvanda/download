@@ -63,6 +63,8 @@ class AuthAPI extends ApiRoute
          *      page int 必填。页码，从 0 开始
          *      page_size int 必填。步长，最多 200
          *      status string 可选。多个状态用英文逗号隔开，默认全部状态
+         *      merchant_id int 可选。商户 id
+         *      merchant_type int 可选。商户类型
          */
         $this->get('/v1/tasks', '/V1/Task/list');
 

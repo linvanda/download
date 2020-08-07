@@ -45,7 +45,18 @@ class TaskFactory
         $callback = new URI($taskDTO->callback ?: '');
 
         // 基于 DTO 创建 Task 对象
-        $task = new Task($id, $taskDTO->name, $project, $source, $target, $callback, $taskDTO->operatorId ?: '', $taskDTO->maxExecTime ?: 0, $taskDTO->isSync ?: 0);
+        $task = new Task(
+            $id,
+            $taskDTO->name,
+            $project,
+            $source,
+            $target,
+            $callback,
+            $taskDTO->operatorId ?: '',
+            $taskDTO->maxExecTime ?: 0,
+            $taskDTO->isSync ?: 0,
+            new Merchant($taskDTO->merchantId ?: 0, $taskDTO->merchantType ?: 0)
+        );
 
         if ($taskDTO instanceof DBTaskDTO) {
             // 来自存储层的数据，需要设置其他属性

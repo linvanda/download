@@ -61,6 +61,8 @@ class Task extends Entity
     protected $callback;
     // 操作者编号
     protected $operator;
+    // 商户
+    protected $merchant;
     // 任务执行时限
     protected $maxExecTime;
     // 任务创建时间
@@ -91,7 +93,8 @@ class Task extends Entity
         URI $callback = null,
         string $operator = '',
         int $maxExecTime = 0,
-        int $isSync = 0
+        int $isSync = 0,
+        Merchant $merchant
     ) {
         $this->id = $id;
         $this->name = $name;
@@ -110,6 +113,7 @@ class Task extends Entity
         $this->failedReason = '';
         $this->maxExecTime = $maxExecTime;
         $this->isSync = $isSync;
+        $this->merchant = $merchant;
 
         // 同步任务直接将状态设置为 suc
         if ($isSync) {
