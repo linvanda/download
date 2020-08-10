@@ -185,6 +185,10 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
 
     public function delete(array $taskIds, array $projectIds)
     {
+        if (!$taskIds || !$projectIds) {
+            return;
+        }
+        
         $this->query
         ->update('task')
         ->set(['is_deleted' => 1, 'utime' => time()])

@@ -40,8 +40,8 @@ class Task extends Controller
                 'page_size' => ['optional', 'integer', 'max' => 100],
             ],
             'delete' => [
-                'task_ids' => ['required', 'lengthMax' => 50000],
-                'project_ids' => ['required', 'lengthMax' => 1000],
+                'task_ids' => ['required', 'lengthMax' => 50000, 'lengthMin' => 5,],
+                'project_ids' => ['required', 'lengthMax' => 1000, 'lengthMin' => 5,],
             ]
         ];
     }
@@ -117,7 +117,7 @@ class Task extends Controller
         if (in_array(DlTask::STATUS_DOING, $status)) {
             $status = array_merge($status, [DlTask::STATUS_TODO, DlTask::STATUS_ENQUEUED, DlTask::STATUS_FAILED]);
         }
-        
+
         return array_unique(array_filter($status));
     }
 
