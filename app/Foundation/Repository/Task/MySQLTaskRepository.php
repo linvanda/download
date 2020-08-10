@@ -183,17 +183,22 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         return $this->query->select('status')->from('task')->where(['id' => $taskId])->column() ?: 0;
     }
 
-    public function delete(array $taskIds, array $projectIds)
+    public function delete(array $taskIds, array $projectIds, $operatorId = '')
     {
         if (!$taskIds || !$projectIds) {
             return;
         }
-        
-        $this->query
+
+        $builder = $this->query
         ->update('task')
         ->set(['is_deleted' => 1, 'utime' => time()])
-        ->where(['id' => $taskIds, 'project_id' => $projectIds])
-        ->execute();
+        ->where(['id' => $taskIds, 'project_id' => $projectIds]);
+
+        if ($operatorId) {
+            $builder->where(['operator_id' => $operatorId]);
+        }
+
+        $builder->execute();
     }
 
     protected function buildTaskDTO(array $info): ?DBTaskDTO

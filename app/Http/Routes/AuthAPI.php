@@ -71,8 +71,9 @@ class AuthAPI extends ApiRoute
         /**
          * 删除任务
          * params:
-         *      task_ids string 要删除的任务列表，多个用英文逗号隔开
-         *      project_ids string 任务所在的项目，多个用英文逗号隔开
+         *      task_ids string 必填。要删除的任务列表，多个用英文逗号隔开
+         *      project_ids string 必填。任务所在的项目，多个用英文逗号隔开
+         *      operator_id string 可选。指定删除哪个操作员的任务
          */
         $this->post('/v1/tasks/delete', 'V1/Task/delete');
 

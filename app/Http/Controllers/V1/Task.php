@@ -42,6 +42,7 @@ class Task extends Controller
             'delete' => [
                 'task_ids' => ['required', 'lengthMax' => 50000, 'lengthMin' => 5,],
                 'project_ids' => ['required', 'lengthMax' => 1000, 'lengthMin' => 5,],
+                'operator_id' => ['optional', 'lengthMax' => 200,],
             ]
         ];
     }
@@ -101,7 +102,11 @@ class Task extends Controller
      */
     public function delete()
     {
-        Container::get(ITaskRepository::class)->delete(explode(',', $this->params('task_ids')), explode(',', $this->params('project_ids')));
+        Container::get(ITaskRepository::class)->delete(
+            explode(',', $this->params('task_ids')),
+            explode(',', $this->params('project_ids')),
+            $this->params('operator_id') ?: ''
+        );
         return $this->return();
     }
 
