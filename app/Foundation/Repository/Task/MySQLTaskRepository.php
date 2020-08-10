@@ -94,7 +94,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         ->from('task')
         ->where(['project_id' => array_filter($projectIds), 'is_deleted' => 0, 'is_sync' => 0])
         ->orderBy("incr_id desc")
-        ->limit($pageSize, $page);
+        ->limit($pageSize, $page * $pageSize);
 
         if ($status) {
             $builder->where(['status' => array_filter($status)]);

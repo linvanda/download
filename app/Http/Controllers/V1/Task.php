@@ -78,7 +78,7 @@ class Task extends Controller
             explode(',', $this->params('project_ids')),
             intval($this->params('page')),
             $this->params('page_size') ? intval($this->params('page_size')) : 20,
-            $this->params('status') ? explode(',', $this->params('status')) : [],
+            $this->formateStatus(array_filter(explode(',', $this->params('status')))),
             $this->params('operator_id') ?: '',
             $this->params('merchant_id') !== null ? new Merchant($this->params('merchant_id'), $this->params('merchant_type')) : null,
             $this->params('task_name') ?: ''
@@ -103,6 +103,22 @@ class Task extends Controller
     {
         Container::get(ITaskRepository::class)->delete(explode(',', $this->params('task_ids')), explode(',', $this->params('project_ids')));
         return $this->return();
+    }
+
+    /**
+     * 处理状态：外部只支持传入 3,4,6
+     */
+    private function formateStatus(array $status): array
+    {
+        if (!$status) {
+            return [];
+        }
+
+        if (in_array(DlTask::STATUS_DOING, $status)) {
+            $status = array_merge($status, [DlTask::STATUS_TODO, DlTask::STATUS_ENQUEUED, DlTask::STATUS_FAILED]);
+        }
+        
+        return array_unique(array_filter($status));
     }
 
     private function formateTask(array $task): array
