@@ -109,7 +109,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         }
 
         if ($taskName) {
-            $builder->where("name like '%:task_name%'", ['task_name' => $taskName]);
+            $builder->where("name like :task_name", ['task_name' => "%{$taskName}%"]);
         }
 
         $list = $builder->page();
