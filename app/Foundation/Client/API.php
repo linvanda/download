@@ -8,6 +8,8 @@ use WecarSwoole\Client\API as BaseAPI;
 use WecarSwoole\Client\Response;
 use WecarSwoole\Exceptions\Exception;
 use Swoole\Coroutine as Co;
+use WecarSwoole\Client\Http\Component\JsonResponseParser;
+use WecarSwoole\Client\Http\Component\WecarWithNoZipHttpRequestAssembler;
 use WecarSwoole\Container;
 
 class API
@@ -53,7 +55,17 @@ class API
         $result = null;
         while ($this->retryNum++ < self::MAX_RETRY_NUM) {
             try {
-                $result = BaseAPI::simpleInvoke($this->url, $this->method, $params, '_', ['timeout' => 5]);
+                $result = BaseAPI::simpleInvoke(
+                    $this->url,
+                    $this->method,
+                    $params,
+                    '_',
+                    [
+                        'timeout' => 5,
+                        'request_assembler' => WecarWithNoZipHttpRequestAssembler::class,
+                        'response_parser' => JsonResponseParser::class,
+                    ]
+                );
 
                 if ($result && $result->getStatus() >= 200 && $result->getStatus() < 300) {
                     $this->lastErrNo = 0;
