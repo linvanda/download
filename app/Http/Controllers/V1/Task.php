@@ -9,6 +9,7 @@ use App\Domain\Task\TaskService;
 use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
 use App\Processor\TaskManager;
+use EasySwoole\EasySwoole\Config;
 use WecarSwoole\Container;
 use WecarSwoole\Http\Controller;
 
@@ -128,8 +129,7 @@ class Task extends Controller
 
     private function formateTask(array $task): array
     {
-        // 创建时间超过 7 天的认为已过期，不可下载
-        if (time() - $task['ctime'] >= 86400 * 7) {
+        if (time() - $task['ctime'] >= Config::getInstance()->getConf('download_expire')) {
             $task['status'] = DlTask::STATUS_EXPIRED;
         }
 
