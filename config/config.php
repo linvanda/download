@@ -7,7 +7,7 @@ $baseConfig = [
     'app_name' => '下载中心',
     // 应用标识
     'app_flag' => 'XZ',
-    'app_id' => 1008633,
+    'app_id' => 10049,
     'request_id_key' => 'wcc-request-id',
     'server' => [
         'modules' => apollo('fw.modules'),
