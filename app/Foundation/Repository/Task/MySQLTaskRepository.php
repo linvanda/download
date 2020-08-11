@@ -154,7 +154,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         ->update('task')
         ->set([
             'status' => $task->status(),
-            'failed_reason' => $task->failedReason,
+            'failed_reason' => mb_substr($task->failedReason, 0, 2000),// 最多存储 2000 字符
             'utime' => time(),
             'etime' => $task->lastExecTime,
             'ftime' => $task->finishedTime,
