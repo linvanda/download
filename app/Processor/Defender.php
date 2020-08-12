@@ -55,7 +55,7 @@ class Defender extends AbstractProcess
     private function masterDefender()
     {
         // 15 秒一次，执行失败重试
-        Timer::tick(3000, Closure::fromCallable([TaskRetry::getInstance(), 'watch']));
+        Timer::tick(15000, Closure::fromCallable([TaskRetry::getInstance(), 'watch']));
         // 30 秒一次，检测队列状态
         Timer::tick(30000, Closure::fromCallable([QueueMonitor::getInstance(), 'watch']));
         // 3 小时一次，归档 task 数据
