@@ -67,6 +67,7 @@ class API
                     ]
                 );
 
+                // HTTP 状态码不是 20X 则重试
                 if ($result && $result->getStatus() >= 200 && $result->getStatus() < 300) {
                     $this->lastErrNo = 0;
                     $this->lastErrMsg = '';
