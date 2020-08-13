@@ -33,9 +33,10 @@ interface ITaskRepository
      * @param array $status 状态列表
      * @param int $startTime 任务创建时间起始
      * @param int $endTime 任务创建时间结束
+     * @param int $maxRetry 最大重试次数限制
      * @return array DBTaskDTO 对象数组
      */
-    public function getTaskDTOsToRetry(array $status, int $startTime, int $endTime): Array;
+    public function getTaskDTOsToRetry(array $status, int $startTime, int $endTime, int $maxRetry): Array;
 
     /**
      * 修改任务状态

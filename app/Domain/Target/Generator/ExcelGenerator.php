@@ -42,20 +42,22 @@ class ExcelGenerator
         list($fileCount, $fileRowCount) = !$compress ? [1, PHP_INT_MAX] : $this->calcFileCount($source, $target->getTpl()->rowHead() ? true : false);
         $fileNames = $this->calcFileNames($target->targetFileName(), $fileCount);
 
-        if (!$sourceFile = @fopen($source->fileName(), 'r')) {
+        if (!$sourceFile = @fopen($source->fileName(), 'rb')) {
             throw new FileException("打开源文件失败：{$source->fileName()}", ErrCode::FILE_OP_FAILED);
         }
 
         try {
             // 先从第一行读取列标题
-            $colTitles = fgetcsv($sourceFile);
+            if (!$colTitles = fgetcsv($sourceFile)) {
+                throw new \Exception("生成 Excel 失败：未读取到源数据", ErrCode::FETCH_SOURCE_FAILED);
+            }
 
             foreach ($fileNames as $index => $fileName) {
                 // 生成 excel。最后一个文件的 row 不做限制
                 $maxRow = $index < count($fileNames) - 1 ? $fileRowCount : PHP_INT_MAX;
                 $this->createExcel($sourceFile, $fileName, $maxRow, $colTitles, $target);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new TargetException($e->getMessage(), $e->getCode());
         } finally {
             fclose($sourceFile);

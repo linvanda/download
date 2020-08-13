@@ -75,11 +75,11 @@ class Source
         $invoker->setUrl($this->uri->url());
         $page = $n = $cnt = $total = 0;
         
-        while ($n++ < 1000000) {
+        while ($n++ < 100000) {
             $result = $this->invokeData($invoker, $page, $this->step);
 
-            if (!$data = $result['data']) {
-                continue;
+            if (!isset($result['data']) || !$data = $result['data']) {
+                break;
             }
 
             $data = $this->formatSourceData($data, $targetType);

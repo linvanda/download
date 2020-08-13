@@ -73,7 +73,8 @@ class TaskRetry
         $taskDTOs = $this->taskRepos->getTaskDTOsToRetry(
             [Task::STATUS_TODO, Task::STATUS_ENQUEUED, Task::STATUS_DOING, Task::STATUS_FAILED],
             $now - 86400,
-            $now - 60
+            $now - 60,
+            Task::MAX_RETRY_NUM
         );
 
         if (!$taskDTOs) {

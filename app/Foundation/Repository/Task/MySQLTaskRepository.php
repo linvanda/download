@@ -131,15 +131,16 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
      * @param array $status 状态列表
      * @param int $startTime 任务创建时间起始
      * @param int $endTime 任务创建时间结束
+     * @param int $maxRetry 最大重试次数限制
      * @return array DBTaskDTO 对象数组
      */
-    public function getTaskDTOsToRetry(array $status, int $startTime, int $endTime): Array
+    public function getTaskDTOsToRetry(array $status, int $startTime, int $endTime, int $maxRetry): Array
     {
         $list = $this->query
         ->select('*')
         ->from('task')
         ->where(['status' => $status, 'is_deleted' => 0, 'is_sync' => 0])
-        ->where("ctime>=:s_ctime and ctime<=:e_ctime", ['s_ctime' => $startTime, 'e_ctime' => $endTime])
+        ->where("retry_num<=$maxRetry and ctime>=:s_ctime and ctime<=:e_ctime", ['s_ctime' => $startTime, 'e_ctime' => $endTime])
         ->list();
 
         return array_map(function (array $item) {
