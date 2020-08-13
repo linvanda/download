@@ -101,7 +101,7 @@
 
    **参数：**
 
-   - **source_url** string 必填。数据源 url，下载中心从此 url 循环拉取数据（GET 请求，会带上 page 和 page_size 参数，page 从 0 开始）。
+   - **source_url** string 必填。数据源 url，下载中心从此 url 循环拉取数据（GET 请求，会带上 page、page_size、_task_id 参数，page 从 0 开始）。
    - **project_id** string 必填。项目 id，由下载中心分配。
    - **name** string 必填。任务名称。
    - **file_name** string 可选。下载文件的名称，默认根据日期加随机数生成。

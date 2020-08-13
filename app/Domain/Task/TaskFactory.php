@@ -37,6 +37,7 @@ class TaskFactory
         $source = new Source(
             new URI($taskDTO->sourceUrl),
             File::join(Config::getInstance()->getConf('local_file_base_dir'), $id),
+            $id,
             intval($taskDTO->step) ?: Source::STEP_DEFAULT
         );
         // 目标

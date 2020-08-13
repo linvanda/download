@@ -33,12 +33,20 @@ class Source
     private $count;
     // 源文件大小
     private $size;
+    private $taskId;
 
-    public function __construct(URI $uri, string $dir, int $step = 500)
+    /**
+     * @param URI $uri 数据源 url
+     * @param string $dir 本地文件存储基路径
+     * @param string $taskId 关联的任务编号。此处存储 taskId 而不是 Task 主要避免循环依赖
+     * @param int $step 取数步长（每页取多少）
+     */
+    public function __construct(URI $uri, string $dir, string $taskId, int $step = self::STEP_DEFAULT)
     {
         $this->uri = $uri;
         $this->setStep($step);
         $this->setFileName($dir);
+        $this->taskId = $taskId;
     }
 
     /**
@@ -157,7 +165,7 @@ class Source
 
     private function invokeData(API $invoker, int $page, int $pageSize): array
     {
-        $result = $invoker->invoke(['page' => $page, 'page_size' => $pageSize,]);
+        $result = $invoker->invoke(['page' => $page, 'page_size' => $pageSize, '_task_id' => $this->taskId]);
          
         if (!$result || !isset($result['status']) || $result['status'] !== 200) {
             throw new SourceException(
