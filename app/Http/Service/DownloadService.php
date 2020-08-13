@@ -77,10 +77,14 @@ class DownloadService
     private function output(string $localFile, string $downloadName, Response $response)
     {
         $downloadName = explode('.', $downloadName)[0] . '.' . explode('.', $localFile)[1];
-
+        
         set_time_limit(0);
         $response->withHeader("Content-type", "application/octet-stream");
         $response->withHeader("Content-Disposition", "attachment; filename=$downloadName");
+        $response->withHeader("Cache-Control", "no-cache, must-revalidate");
+        $response->withHeader("Pragma", "no-cache");
+        $response->withHeader("Content-Length", filesize($localFile));
+        $response->withHeader("Content-Transfer-Encoding", "binary");
         $response->sendFile($localFile);
     }
 }
