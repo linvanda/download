@@ -135,7 +135,7 @@ class ExcelGenerator
         }
 
         // 将 colOffset 偏移到结束位置
-        $colOffset += in_array(RowHead::NODE_ROW_HEADER_COL, $colTitles) ? count($colTitles) - 1 : count($colTitles);
+        $colOffset += count($colMap);
 
         // 设置整个表格边框
         $activeSheet->getStyle('A1' . ':' . Coordinate::stringFromColumnIndex($colOffset) . $rowOffset)
