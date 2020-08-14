@@ -1065,11 +1065,11 @@
         },
         {
             "name": "framework/wecarswoole",
-            "version": "v1.0.62",
+            "version": "v1.0.63",
             "source": {
                 "type": "git",
                 "url": "https://gitlab4.weicheche.cn/framework/wecarswoole.git",
-                "reference": "bd5b16d086239554f1caa3b14210afe0399a7407"
+                "reference": "d7d133076a463f52c3dbc9dc1d54de45502c3ed3"
             },
             "require": {
                 "dev/locker": "^1.0",
@@ -1101,7 +1101,7 @@
                 }
             },
             "description": "wecheche foundational web framework",
-            "time": "2020-08-14T04:20:04+00:00"
+            "time": "2020-08-14T06:28:30+00:00"
         },
         {
             "name": "jeremeamia/superclosure",
@@ -4642,6 +4642,7 @@
             "keywords": [
                 "tokenizer"
             ],
+            "abandoned": true,
             "time": "2019-09-17T06:23:10+00:00"
         },
         {
