@@ -109,6 +109,8 @@
    - **callback** string 可选。处理完成后回调通知 url。
    - **step** int 可选。下载数据时每次取多少数据（步长），默认 1000，可设置范围：100 - 5000。
    - **operator_id** string 可选。操作员编号，存根用。
+   - **merchant_type** int 必填。商户类型：0 平台，1 单站，2 集团，3 油站组
+   - **merchant_id** int 必填。商户编号
    - **template** json string 可选。表头格式定义。仅对 excel 生效，json。详见后面说明。template 也可以在 source_url 返回的数据中动态提供。
    - **title** string 可选。表格标题。仅对 excel 生效。
    - **summary** string 可选。表格摘要。仅对 excel 生效。
