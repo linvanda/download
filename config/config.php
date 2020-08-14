@@ -154,6 +154,8 @@ $baseConfig = [
     'max_exec_time' => apollo('application', 'max_exec_time') ?: 3600,
     // 主服务器 ip，主服务器上会执行守卫程序
     'master_server' => apollo('application', 'master_server'),
+    // 是否对相关接口进行 token 校验（继承 ApiRoute 的接口）。默认需要验证，此参数主要用来临时取消验证进行测试
+    'auth_request' => apollo('application', 'auth_request') ?? 1,
 ];
 
 return array_merge(
