@@ -35,6 +35,8 @@ class Defender extends AbstractProcess
 
         // 只有主服才执行的逻辑
         if (in_array(Config::getInstance()->getConf('master_server'), swoole_get_local_ip())) {
+            $this->logger->info("启动主服守卫程序");
+            self::addMasterFlag();
             $this->masterDefender();
         }
         
@@ -50,6 +52,18 @@ class Defender extends AbstractProcess
     public function onReceive(string $str)
     {
         // nothing
+    }
+
+    public static function addMasterFlag()
+    {
+        file_put_contents(File::join(STORAGE_ROOT, 'temp/master_defender.txt'), date('Y-m-d H:i:s'));
+    }
+
+    public static function removeMasterFlag()
+    {
+        if (file_exists($file = File::join(STORAGE_ROOT, 'temp/master_defender.txt'))) {
+            unlink($file);
+        }
     }
 
     private function masterDefender()

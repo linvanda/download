@@ -46,11 +46,11 @@ class QueueMonitor
     private $fifteenPoint;
     // 30 分钟指针
     private $thirtyPoint;
-    private $sizeBuckets;
+    private $sizeInfo;
 
     public function __construct()
     {
-        $this->sizeBuckets = [
+        $this->sizeInfo = [
             self::T_FIVE => [0, 0],// 格:[total_size, count]，均值算法：total_size/count
             self::T_FIFTEEN => [0, 0],
             self::T_THIRTY => [0, 0],
@@ -99,7 +99,7 @@ class QueueMonitor
         }
 
         // 计算均值，记录次数小于 2 的不考虑
-        $bk = $this->sizeBuckets;
+        $bk = $this->sizeInfo;
         $fiveAvg = $bk[self::T_FIVE][1] < 3 ? 0 : $bk[self::T_FIVE][0] / $bk[self::T_FIVE][1];
         $fifteenAvg = $bk[self::T_FIFTEEN][1] < 3 ? 0 : $bk[self::T_FIFTEEN][0] / $bk[self::T_FIFTEEN][1];
         $thirtyAvg = $bk[self::T_THIRTY][1] < 3 ? 0 : $bk[self::T_THIRTY][0] / $bk[self::T_THIRTY][1];
@@ -164,11 +164,11 @@ class QueueMonitor
      */
     private function updateBucket(int $flag, int $incrSize, int $incrCount = 1)
     {
-        if (!isset($this->sizeBuckets[$flag])) {
+        if (!isset($this->sizeInfo[$flag])) {
             return;
         }
 
-        $this->sizeBuckets[$flag][0] += $incrSize;
-        $this->sizeBuckets[$flag][1] += $incrCount;
+        $this->sizeInfo[$flag][0] += $incrSize;
+        $this->sizeInfo[$flag][1] += $incrCount;
     }
 }

@@ -67,6 +67,11 @@ class EasySwooleEvent implements Event
             }
         });
 
+        // 服务器关闭时试图清理 master flag 文件
+        $register->add(EventRegister::onShutdown, function ($server) {
+            Defender::removeMasterFlag();
+        });
+
         // Apollo 配置变更监听程序
         $server->addProcess((new ApolloWatcher())->getProcess());
         // 任务守卫程序
