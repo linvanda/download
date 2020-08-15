@@ -519,8 +519,8 @@ class ExcelGenerator
             return [1, PHP_INT_MAX];
         }
 
-        $maxSize = Config::getInstance()->getConf("excel_max_size");
-        $maxCount = Config::getInstance()->getConf("excel_max_count");
+        $maxSize = intval(Config::getInstance()->getConf("excel_max_size")) ?: 50 * 1024 * 1024;
+        $maxCount = intval(Config::getInstance()->getConf("excel_max_count")) ?: 10000;
         $sourceSize = $source->size();
         $sourceCount = $source->count();
 
