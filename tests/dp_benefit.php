@@ -34,7 +34,7 @@ class BfNode
      */
     public $bMoney;
     /**
-     * 本次状态的上一个状态来源
+     * 本次状态的上一个状态来源，用来回溯选中的优惠策略
      */
     public $prevNodeKey;
 
@@ -293,25 +293,27 @@ $sts1 = [
     new CouponStrategy(new Coupon('c', 200, 20)),
 ];
 
-// 场景二：
+// 场景二：选取 a b c
 $sts2 = [
     new CouponStrategy(new Coupon('a', 200, 20)),
     new CouponStrategy(new Coupon('b', 200, 0, 0.6, Coupon::TYPE_DISCOUNT)),
     new CouponStrategy(new Coupon('c', 100, 20)),
 ];
 
-// 场景三：
+// 场景三：选取：d e f g h
 $sts3 = [
     new CouponStrategy(new Coupon('a', 200, 20)),
     new CouponStrategy(new Coupon('b', 200, 30)),
     new CouponStrategy(new Coupon('c', 200, 25)),
     new CouponStrategy(new Coupon('d', 150, 50)),
     new CouponStrategy(new Coupon('e', 100, 30)),
-    new CouponStrategy(new Coupon('f', 60, 50)),
+    new CouponStrategy(new Coupon('f', 40, 30)),
+    new CouponStrategy(new Coupon('g', 50, 40)),
+    new CouponStrategy(new Coupon('h', 10, 20)),
 ];
 
 // 计算
-$engine = new BenefitEngine($origMoney, $sts3);
+$engine = new BenefitEngine($origMoney, $sts2);
 $result = $engine->maxBenefit();
 
 echo "money:" . $result[0] . "\n";
