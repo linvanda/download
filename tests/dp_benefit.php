@@ -314,13 +314,14 @@ $sts3 = [
     new CouponStrategy(new Coupon('c', 200, 25)),
     new CouponStrategy(new Coupon('d', 150, 50)),
     new CouponStrategy(new Coupon('e', 100, 30)),
-    new CouponStrategy(new Coupon('f', 40, 30)),
+    new CouponStrategy(new Coupon('f', 40, 40)),
     new CouponStrategy(new Coupon('g', 50, 40)),
     new CouponStrategy(new Coupon('h', 10, 20)),
+    new CouponStrategy(new Coupon('i', 420, 160)),
 ];
 
 // 计算
-$engine = new BenefitEngine($origMoney, $sts2);
+$engine = new BenefitEngine($origMoney, $sts3);
 $result = $engine->maxBenefit();
 
 echo "money:" . $result[0] . "\n";

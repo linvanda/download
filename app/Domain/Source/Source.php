@@ -95,7 +95,7 @@ class Source
 
             // 第一次获取数据时将 key 写入
             if ($n == 1 && count($data)) {
-                $total = $result['total'] ?? count($data);
+                $total = $result['total'] ?? PHP_INT_MAX;// 如果没有提供 total，则会不停地循环拉数据直到拉完
                 $file->saveAsCsv(array_keys($data[0]));
             }
 
