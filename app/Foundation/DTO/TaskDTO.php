@@ -12,6 +12,7 @@ class TaskDTO extends DTO
     public $id;
     public $name;
     public $sourceUrl;
+    public $sourceData;
     public $projectId;
     public $fileName;
     public $type;

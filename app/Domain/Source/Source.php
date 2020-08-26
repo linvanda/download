@@ -25,6 +25,7 @@ class Source
     public const SOURCE_FNAME = 'source.csv';
 
     protected $uri;
+    protected $data;
     protected $step;
 
     // 生成的本地文件名
@@ -37,13 +38,15 @@ class Source
 
     /**
      * @param URI $uri 数据源 url
+     * @param array $data 源数据。data 和 url 至少有一个，以 data 优先（即有 data 则不再从 url 拉取数据）
      * @param string $dir 本地文件存储基路径
      * @param string $taskId 关联的任务编号。此处存储 taskId 而不是 Task 主要避免循环依赖
      * @param int $step 取数步长（每页取多少）
      */
-    public function __construct(URI $uri, string $dir, string $taskId, int $step = self::STEP_DEFAULT)
+    public function __construct(URI $uri, array $data, string $dir, string $taskId, int $step = self::STEP_DEFAULT)
     {
         $this->uri = $uri;
+        $this->setData($data);
         $this->setStep($step);
         $this->setFileName($dir);
         $this->taskId = $taskId;
@@ -80,33 +83,36 @@ class Source
      */
     public function fetch(API $invoker, LocalFile $file, string $targetType = Target::TYPE_CSV)
     {
-        $invoker->setUrl($this->uri->url());
-        $page = $n = $cnt = $total = 0;
+        $cnt = 0;
         
-        while ($n++ < 100000) {
-            $result = $this->invokeData($invoker, $page, $this->step);
+        if ($this->data) {
+            // 投递任务时提供了 data
+            $cnt += $this->saveToFile($file, $this->data, $targetType, true);
+        } else {
+            // 循环拉取数据
+            $page = $n = $total = 0;
+            $invoker->setUrl($this->uri->url());
 
-            if (!isset($result['data']) || !$data = $result['data']) {
-                break;
+            while ($n++ < 100000) {
+                $result = $this->invokeData($invoker, $page, $this->step);
+    
+                if (!isset($result['data']) || !$data = $result['data']) {
+                    break;
+                }
+
+                // 保存到文件
+                $cnt += $this->saveToFile($file, $data, $targetType, $n == 1 && count($data));
+
+                if ($n == 1) {
+                    $total = $result['total'] ?? PHP_INT_MAX;// 如果没有提供 total，则会不停地循环拉数据直到拉完
+                }
+    
+                // 为了健壮性，此处做了两方面的检测，防止对方接口有 bug 导致一直拉取数据
+                if (count($data) < $this->step || $cnt >= $total) {
+                    break;
+                }
+                $page++;
             }
-
-            $data = $this->formatSourceData($data, $targetType);
-            $cnt += count($data);
-
-            // 第一次获取数据时将 key 写入
-            if ($n == 1 && count($data)) {
-                $total = $result['total'] ?? PHP_INT_MAX;// 如果没有提供 total，则会不停地循环拉数据直到拉完
-                $file->saveAsCsv(array_keys($data[0]));
-            }
-
-            // 存储数据
-            $file->saveAsCsv($data);
-
-            // 为了健壮性，此处做了两方面的检测，防止对方接口有 bug 导致一直拉取数据
-            if (count($data) < $this->step || $cnt >= $total) {
-                break;
-            }
-            $page++;
         }
 
         $file->close();
@@ -120,8 +126,31 @@ class Source
      */
     public function fetchMeta(API $invoker): array
     {
+        if ($this->data) {
+            return ['data' => $this->data];
+        }
+
         $invoker->setUrl($this->uri->url());
         return $this->invokeData($invoker, 0, 1);
+    }
+
+    /**
+     * 将数据存储到本地文件系统
+     * @return int 保存的行数（不包括标题行）
+     */
+    private function saveToFile(LocalFile $file, array $data, string $targetType, bool $saveFields): int
+    {
+        $data = $this->formatSourceData($data, $targetType);
+
+        // 将 key 写入
+        if ($saveFields) {
+            $file->saveAsCsv(array_keys($data[0]));
+        }
+
+        // 存储数据
+        $file->saveAsCsv($data);
+
+        return count($data);
     }
 
     /**
@@ -182,6 +211,19 @@ class Source
         }
 
         return $result['data'];
+    }
+
+    private function setData(array $data)
+    {
+        if (!$data) {
+            return;
+        }
+
+        if (count($data) > 20000) {
+            throw new \Exception("static data can not large than 20000", ErrCode::FETCH_SOURCE_FAILED);
+        }
+
+        $this->data = $data;
     }
 
     private function setFileName(string $dir)

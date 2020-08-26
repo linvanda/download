@@ -26,7 +26,7 @@ class ToDoHandler extends WorkHandler
             // 获取数据
             Container::get(SourceService::class)->fetch($this->task()->source(), $this->task()->target());
             $this->notify(WorkFlow::WF_SOURCE_READY);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Container::get(LoggerInterface::class)->error($e->getMessage(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);
             $this->notify(WorkFlow::WF_SOURCE_FAILED, $e->getMessage());
         }

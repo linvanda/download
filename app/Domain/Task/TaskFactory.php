@@ -32,10 +32,16 @@ class TaskFactory
         $idGen = $idGenerator ?: Container::get(IIDGenerator::class);
         $id = $taskDTO->id ?? $idGen->id();
         $taskDTO->id = $id;
+
+        // 处理 source_data
+        if ($taskDTO->sourceData) {
+            $taskDTO->sourceData = is_string($taskDTO->sourceData) ? json_decode($taskDTO->sourceData, true) : $taskDTO->sourceData;
+        }
         
         // 源
         $source = new Source(
             new URI($taskDTO->sourceUrl),
+            $taskDTO->sourceData ?: [],
             File::join(Config::getInstance()->getConf('local_file_base_dir'), $id),
             $id,
             intval($taskDTO->step) ?: Source::STEP_DEFAULT

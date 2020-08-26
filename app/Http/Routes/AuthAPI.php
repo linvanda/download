@@ -95,7 +95,9 @@ class AuthAPI extends ApiRoute
          * 同步获取数据（即不需要投递任务，而是直接调该接口生成并下载目标文件）
          * 该接口仅支持获取少量数据（具体的数据条数限制取决于配置）
          * 接口参数同 POST /v1/task 的，除了没有其中的关于异步相关的参数（如 callback）
+         * 支持 GET 和 POST 两种方式
          */
         $this->get('/v1/download/sync', '/V1/Download/syncGetData');
+        $this->post('/v1/download/sync', '/V1/Download/syncGetData');
     }
 }
