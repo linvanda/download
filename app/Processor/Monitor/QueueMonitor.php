@@ -10,8 +10,7 @@ use WecarSwoole\Container;
 
 /**
  * 队列监控程序
- * 使用双向链表记录每次检查的信息
- * （也可以用单向链表：向表尾插入新元素，从表头删除旧元素）
+ * 用链表记录每次检查的信息
  */
 class QueueMonitor
 {
@@ -66,7 +65,7 @@ class QueueMonitor
             }
             $this->latestSize = $size;
 
-            $this->addToHead(new SizeNode($size, time()));
+            $this->addNode(new SizeNode($size, time()));
 
             // 更新 bucket 数据
             $this->updateBucket(self::T_FIVE, $size, 1);
@@ -87,16 +86,7 @@ class QueueMonitor
         $this->updatePoint(self::T_FIFTEEN, $this->fifteenPoint);
         $this->updatePoint(self::T_THIRTY, $this->thirtyPoint);
 
-        // 删除多余的节点（最大游标后面的节点）
-        while (1) {
-            if (!$this->tail || !$this->tail->prev() || $this->tail === $this->thirtyPoint) {
-                break;
-            }
-
-            // 将 tail 前移
-            $this->tail->prev()->setNext(null);
-            $this->tail = $this->tail->prev();
-        }
+        $this->removeExpiredNode();
 
         // 计算均值，记录次数小于 2 的不考虑
         $bk = $this->sizeInfo;
@@ -111,52 +101,62 @@ class QueueMonitor
         }
     }
 
+    private function removeExpiredNode()
+    {
+        // 删除多余的节点（最大游标后面的节点）
+        while (1) {
+            if (!$this->head || !$this->head->next() || $this->head === $this->thirtyPoint) {
+                break;
+            }
+
+            // 将 head 后移
+            $this->head = $this->head->next();
+        }
+    }
+
     /**
      * 更新分时游标的位置，保证游标指向的元素以及其前面的元素在分时有效期内
      */
     private function updatePoint(int $flag, SizeNode &$pointer)
     {
         if (!$pointer) {
-            $pointer = $this->tail;
+            $pointer = $this->head;
             return;
         }
 
         $currNode = $pointer;
         $now = time();
         while (1) {
-            if ($currNode->time() > $now - 60 * $flag || !$currNode->prev()) {
+            if ($currNode->time() > $now - 60 * $flag || !$currNode->next()) {
                 break;
             }
 
-            // 需要向头部迁移，迁移前从 bucket 中减掉相应的 size 和次数
+            // 需要向尾部迁移，迁移前从 bucket 中减掉相应的 size 和次数
             $this->updateBucket($flag, $currNode->size() * -1, -1);
-            $currNode = $currNode->prev();
+            $currNode = $currNode->next();
         }
 
         $pointer = $currNode;
     }
 
     /**
-     * 在双向链表头部增加元素
+     * 将元素添加到链表中
      */
-    private function addToHead(SizeNode $node)
+    private function addNode(SizeNode $node)
     {
-        // 将新节点加到表头位置
+        // 将新节点加到表尾巴
         if (!$this->head) {
             $this->head = $node;
-        } else {
-            $node->setNext($this->head);
-            $this->head->setPrev($node);
-            $this->head = $node;
-        }
-
-        // 设置尾指针
-        if (!$this->tail) {
             $this->tail = $node;
             $this->fivePoint = $node;
             $this->fifteenPoint = $node;
             $this->thirtyPoint = $node;
+            return;
         }
+
+        // 移动尾指针
+        $this->tail->setNext($node);
+        $this->tail = $node;
     }
 
     /**

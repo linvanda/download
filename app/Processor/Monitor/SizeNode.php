@@ -3,14 +3,13 @@
 namespace App\Processor\Monitor;
 
 /**
- * 双向链表节点
+ * 链表节点
  */
 class SizeNode
 {
     private $size;
     private $time;
     private $next;
-    private $prev;
 
     public function __construct(int $size, int $time)
     {
@@ -33,18 +32,8 @@ class SizeNode
         return $this->next;
     }
 
-    public function prev(): ?SizeNode
-    {
-        return $this->prev;
-    }
-
     public function setNext(SizeNode $node = null)
     {
         $this->next = $node;
-    }
-
-    public function setPrev(SizeNode $node = null)
-    {
-        $this->prev = $node;
     }
 }
