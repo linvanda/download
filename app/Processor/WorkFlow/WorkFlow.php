@@ -123,6 +123,14 @@ class WorkFlow
     }
 
     /**
+     * 由于 WorkFlow 和 WorkHandler 之间存在双向（循环）引用，因而需要手动销毁工作流，解除循环引用
+     */
+    public function destroy()
+    {
+        $this->head = $this->tail = $this->task = null;
+    }
+
+    /**
      * 创建一个新的工作流
      */
     public static function newWorkFlow(Task $task): WorkFlow
