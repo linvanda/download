@@ -23,6 +23,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use WecarSwoole\Util\File;
 use SplQueue;
 use App\ErrCode;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 /**
  * Excel 文件生成器
@@ -48,14 +49,15 @@ class ExcelGenerator
 
         try {
             // 先从第一行读取列标题
-            if (!$colTitles = fgetcsv($sourceFile)) {
+            if (!$fieldsAndTypes = fgetcsv($sourceFile)) {
                 throw new \Exception("生成 Excel 失败：未读取到源数据", ErrCode::FETCH_SOURCE_FAILED);
             }
+            list($colTitles, $colTypes) = $this->extractFieldsAndTypes($fieldsAndTypes);
 
             foreach ($fileNames as $index => $fileName) {
                 // 生成 excel。最后一个文件的 row 不做限制
                 $maxRow = $index < count($fileNames) - 1 ? $fileRowCount : PHP_INT_MAX;
-                $this->createExcel($sourceFile, $fileName, $maxRow, $colTitles, $target);
+                $this->createExcel($sourceFile, $fileName, $maxRow, $colTitles, $colTypes, $target);
             }
         } catch (\Throwable $e) {
             throw new TargetException($e->getMessage(), $e->getCode());
@@ -74,14 +76,30 @@ class ExcelGenerator
     }
 
     /**
+     * 
+     */
+    private function extractFieldsAndTypes(array $csvFieldsArr): array
+    {
+        $fields = $types = [];
+        foreach ($csvFieldsArr as $ft) {
+            $val = explode('|', $ft);
+            $fields[] = $val[0];
+            $types[] = $val[1] ?? 'string';
+        }
+
+        return [$fields, $types];
+    }
+
+    /**
      * 生成 excel 文件
      * @param resource $sourceFile 源数据文件，资源对象
      * @param string $targetFileName 目标文件名
      * @param int $maxRow 最大读取行数
      * @param array $colTitles 列名数组
+     * @param array $colTypes 列数据类型：string、number
      * @param Excel $target 目标对象
      */
-    private function createExcel($sourceFile, string $targetFileName, int $maxRow, array $colTitles, Excel $target)
+    private function createExcel($sourceFile, string $targetFileName, int $maxRow, array $colTitles, array $colTypes, Excel $target)
     {
         $spreadSheet = new Spreadsheet();
         $activeSheet = $spreadSheet->getActiveSheet();
@@ -126,8 +144,9 @@ class ExcelGenerator
                 if (!$theColNum = ($colMap[$colTitles[$index]] ?? 0)) {
                     continue;
                 }
-
-                $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum)->setValue($val);
+                
+                $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum)
+                ->setValueExplicit($val, $colTypes[$index] == 'number' ? DataType::TYPE_NUMERIC : DataType::TYPE_STRING);
             }
 
             // 设置行高度（使用默认行高度无效）

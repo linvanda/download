@@ -142,9 +142,14 @@ class Source
     {
         $data = $this->formatSourceData($data, $targetType);
 
-        // 将 key 写入
+        // 将 key 写入，同时写入每列的类型（目前仅支持 number、string 两种类型）
+        // 存入格式：field|type，如 age|number,uname|string
         if ($saveFields) {
-            $file->saveAsCsv(array_keys($data[0]));
+            $fields = [];
+            foreach ($data[0] as $field => $value) {
+                $fields[] = $field . '|' . (is_int($value) || is_float($value) ? 'number' : 'string');
+            }
+            $file->saveAsCsv($fields);
         }
 
         // 存储数据
