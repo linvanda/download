@@ -39,12 +39,17 @@ class TaskManager
      * @var LoggerInterface
      */
     private $logger;
+    /**
+     * @var TaskService
+     */
+    private $taskSvr;
     private $status;
 
     private function __construct()
     {
         $this->procCount = 0;
         $this->logger = Container::get(LoggerInterface::class);
+        $this->taskSvr = Container::get(TaskService::class);
         $this->status = self::STATUS_WORKING;
     }
 
@@ -56,7 +61,7 @@ class TaskManager
         $job = new Job();
         $job->setJobData(['task_id' => $task->id(), 'enqueue_time' => time()]);
         Queue::instance(Config::getInstance()->getConf('task_queue'))->producer()->push($job);
-        Container::get(TaskService::class)->switchStatus($task, Task::STATUS_ENQUEUED);
+        $this->taskSvr->switchStatus($task, Task::STATUS_ENQUEUED);
         $this->logger->info("投递任务到消息队列：{$task->id()}");
     }
 
@@ -72,8 +77,7 @@ class TaskManager
         go(function () use ($task) {
             try {
                 // 将任务状态改成正在执行中
-                Container::get(TaskService::class)->switchStatus($task, Task::STATUS_DOING);
-
+                $this->taskSvr->switchStatus($task, Task::STATUS_DOING);
                 $this->logger->info("开始处理任务：{$task->id()}");
                 $this->getWorkFlow($task)->start();
             } catch (\Exception $e) {
@@ -92,7 +96,7 @@ class TaskManager
     public function finish(Task $task, int $result = 1, string $msg = '')
     {
         // 修改任务状态
-        Container::get(TaskService::class)->switchStatus($task, $result == 1 ? Task::STATUS_SUC : Task::STATUS_FAILED, $msg);
+        $this->taskSvr->switchStatus($task, $result == 1 ? Task::STATUS_SUC : Task::STATUS_FAILED, $msg);
         // 清理
         $this->clear($task);
         // 归还 ticket
@@ -107,7 +111,7 @@ class TaskManager
 
     private function tryToReboot()
     {
-        if ($this->status != self::STATUS_WORKING || $this->procCount < Config::getInstance()->getConf('task_max_process')) {
+        if ($this->status != self::STATUS_WORKING || $this->procCount < intval(Config::getInstance()->getConf('task_max_process'))) {
             return;
         }
 
@@ -165,6 +169,7 @@ class TaskManager
         // 清理工作流
         if (isset($this->workFlows[$task->id()])) {
             $this->logger->info("清理工作流，任务{$task->id()}，工作流状态：" . $this->workFlows[$task->id()]->status());
+            $this->workFlows[$task->id()]->destroy();
             unset($this->workFlows[$task->id()]);
         }
     }
