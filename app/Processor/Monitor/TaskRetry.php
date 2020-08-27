@@ -51,10 +51,6 @@ class TaskRetry
      */
     private $taskRepos;
     /**
-     * @var IProjectRepository
-     */
-    private $projRepos;
-    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -63,7 +59,6 @@ class TaskRetry
     {
         $this->taskSvr = Container::get(TaskService::class);
         $this->taskRepos = Container::get(ITaskRepository::class);
-        $this->projRepos = Container::get(IProjectRepository::class);
         $this->logger = Container::get(LoggerInterface::class);
     }
 
@@ -88,7 +83,7 @@ class TaskRetry
                 }
                 
                 // 需要重新处理
-                $task = TaskFactory::create($taskDTO, $this->projRepos);
+                $task = TaskFactory::create($taskDTO);
                 // 先将任务状态改成“待处理”，否则后面状态切换会失败
                 if ($taskDTO->status != Task::STATUS_TODO) {
                     $this->taskSvr->switchStatus($task, Task::STATUS_TODO);

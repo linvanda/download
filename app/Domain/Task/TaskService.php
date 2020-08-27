@@ -13,7 +13,6 @@ use WecarSwoole\Exceptions\Exception;
 class TaskService
 {
     private $taskRepository;
-    private $projectRepository;
 
     public function __construct(ITaskRepository $taskRepository, IProjectRepository $projectRepository)
     {
@@ -27,7 +26,7 @@ class TaskService
      */
     public function create(TaskDTO $taskDTO): Task
     {
-        $task = TaskFactory::create($taskDTO, $this->projectRepository);
+        $task = TaskFactory::create($taskDTO);
 
         // 存储到数据库
         $this->taskRepository->addTask($task);

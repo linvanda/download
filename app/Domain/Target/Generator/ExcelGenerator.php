@@ -80,9 +80,6 @@ class ExcelGenerator
         }
     }
 
-    /**
-     * 
-     */
     private function extractFieldsAndTypes(array $csvFieldsArr): array
     {
         $fields = $types = [];

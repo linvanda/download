@@ -59,6 +59,16 @@ class Task extends Controller
     }
 
     /**
+     * 投递任务：多表格模式
+     */
+    public function deliverMultiple()
+    {
+        $task = Container::get(TaskService::class)->create(new TaskDTO(array_merge(['multi_type' => 'page'], $this->params())));
+        TaskManager::getInstance()->deliver($task);
+        $this->return(['task_id' => $task->id()]);
+    }
+
+    /**
      * 查询某个任务详情
      */
     public function one()

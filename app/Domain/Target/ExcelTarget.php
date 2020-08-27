@@ -6,50 +6,58 @@ use App\Domain\Target\Template\Excel\Tpl;
 
 /**
  * 目标文件：Excel
+ * 为了处理上的一致性，将 multi_type = single（单表格模式）情况下的元数据也转成数组格式
  */
 class ExcelTarget extends Target
 {
-    // 表格标题
-    protected $title;
-    // 摘要
-    protected $summary;
-    // 表头
-    protected $header;
-    // 表尾
-    protected $footer;
+    // multi_type：page 模式，一个页面多个表格
+    public const MT_PAGE = 'page';
+    // multi_type：tab 模式，一个 excel 多个 tab，每个 tab 一个表格
+    public const MT_TAB = 'tab';
+    // multi_type：single 模式，只有一个表格（默认模式）
+    public const MT_SINGLE = 'single';
+
+    // 表格标题，一维数组
+    protected $titles;
+    // 摘要，一维数组
+    protected $summaries;
+    // 表头，二维数组
+    protected $headers;
+    // 表尾，二维数组
+    protected $footers;
+    // 表格模板，一维数组（元素是 Tpl）
+    protected $templates;
     // 默认列宽度
     protected $defaultWidth;
     // 默认行高度
     protected $defaultHeight;
-    /**
-     * 表格模板
-     * @var Tpl
-     */
-    protected $template;
+    // 多表格类型：page、tab、single
+    protected $multiType;
 
-    public function __construct(string $baseDir, string $downloadFileName = '')
+    public function __construct(string $baseDir, string $downloadFileName = '', string $multiType = self::MT_SINGLE)
     {
+        $this->setMultiType($multiType);
         parent::__construct($baseDir, $downloadFileName, self::TYPE_EXCEL);
     }
 
-    public function getTitle(): string
+    public function getTitles(): array
     {
-        return $this->title ?: '';
+        return $this->titles ?? [];
     }
 
-    public function getSummary(): string
+    public function getSummaries(): array
     {
-        return $this->summary ?: '';
+        return $this->summaries ?? [];
     }
 
-    public function getHeader(): array
+    public function getHeaders(): array
     {
-        return $this->header ?: [];
+        return $this->headers ?: [];
     }
 
-    public function getFooter(): array
+    public function getFooters(): array
     {
-        return $this->footer ?: [];
+        return $this->footers ?: [];
     }
 
     public function getDefaultWidth(): int
@@ -62,9 +70,14 @@ class ExcelTarget extends Target
         return $this->defaultHeight ?: 14;
     }
 
-    public function getTpl(): Tpl
+    public function getTpls(): array
     {
-        return $this->template;
+        return $this->templates;
+    }
+
+    public function getMultiType(): string
+    {
+        return $this->multiType;
     }
 
     /**
@@ -73,24 +86,37 @@ class ExcelTarget extends Target
      */
     public function setMeta(array $metaData)
     {
-        $this->title = $metaData['title'] ?? $this->title;
-        $this->summary = $metaData['summary'] ?? $this->summary;
+        $metaData = $this->formateMetaData($metaData);
+
+        $this->multiType = $this->multiType ?? $metaData['multi_type'] ?? self::MT_SINGLE;
         $this->defaultWidth = $metaData['default_width'] ?? $this->defaultWidth;
         $this->defaultHeight = $metaData['default_height'] ?? $this->defaultHeight;
 
-        if (isset($metaData['header']) && $metaData['header']) {
-            $this->header = is_string($metaData['header']) ? json_decode($metaData['header'], true) : $metaData['header'];
+        if (isset($metaData['titles']) && $metaData['titles']) {
+            $this->titles = is_string($metaData['titles']) ? [$metaData['titles']] : $metaData['titles'];
+        }
+
+        if (isset($metaData['summaries']) && $metaData['summaries']) {
+            $this->summaries = is_string($metaData['summaries']) ? [$metaData['summaries']] : $metaData['summaries'];
+        }
+
+        if (isset($metaData['headers']) && $metaData['headers']) {
+            $metaData['headers'] = is_string($metaData['headers']) ? json_decode($metaData['headers'], true) : $metaData['headers'];
+            // 确保是二维数组
+            $this->headers = is_array(reset($metaData['headers'])) ? $metaData['headers'] : [$metaData['headers']];
         }
         
-        if (isset($metaData['footer']) && $metaData['footer']) {
-            $this->footer = is_string($metaData['footer']) ? json_decode($metaData['footer'], true) : $metaData['footer'];
+        if (isset($metaData['footers']) && $metaData['footers']) {
+            $metaData['footers'] = is_string($metaData['footers']) ? json_decode($metaData['footers'], true) : $metaData['footers'];
+            // 确保是二维数组
+            $this->footers = is_array(reset($metaData['footers'])) ? $metaData['footers'] : [$metaData['footers']];
         }
 
         if (isset($metaData['template'])) {
-            $this->setTpl($metaData['template']);
+            $this->setTpls($metaData['template']);
         } elseif (isset($metaData['data']) && !$this->template) {
             // 如果没有静态 template，且有提供源数据，则试图从源数据解析出模板
-            $this->setTpl(Tpl::getDefaultTplFromData($metaData['data']));
+            $this->setTpls(Tpl::getDefaultTplFromData($metaData['data']));
         }
 
         $this->metaData = $this->getMeta();
@@ -102,11 +128,12 @@ class ExcelTarget extends Target
     public function getMeta(string $key = '')
     {
         $data = [
-            'title' => $this->title,
-            'summary' => $this->summary,
-            'header' => $this->header,
-            'footer' => $this->footer,
-            'template' => $this->template,
+            'titles' => $this->titles,
+            'summaries' => $this->summaries,
+            'headers' => $this->headers,
+            'footers' => $this->footers,
+            'templates' => $this->templates,
+            'multi_type' => $this->multiType,
             'default_width' => $this->getDefaultWidth(),
             'default_height' => $this->getDefaultHeight(),
         ];
@@ -115,10 +142,77 @@ class ExcelTarget extends Target
     }
 
     /**
+     * 由于 ExcelTarget 内部使用复数表示，但外面传入的可能是单数（单表格和多表格模式对外面的接口参数是一致的），此处需要做兼容处理
+     */
+    private function formateMetaData(array $meta): array
+    {
+        $meta['titles'] = $meta['titles'] ?? $meta['title'] ?? [];
+        $meta['summaries'] = $meta['summaries'] ?? $meta['summary'] ?? [];
+        $meta['headers'] = $meta['headers'] ?? $meta['header'] ?? [];
+        $meta['footers'] = $meta['footers'] ?? $meta['footer'] ?? [];
+        $meta['templates'] = $meta['templates'] ?? $meta['template'] ?? [];
+
+        return $meta;
+    }
+
+    /**
      * 表格模板
      */
-    private function setTpl($template)
+    private function setTpls($templates)
     {
-        $this->template = $template === null || $template instanceof Tpl ? $template : Tpl::build($template);
+        if (!$templates) {
+            $this->templates = [];
+            return;
+        }
+        
+        if ($templates instanceof Tpl) {
+            $this->templates = [$templates];
+            return;
+        }
+
+        if (is_string($templates)) {
+            $templates = json_decode($templates, true);
+        }
+
+        // 数组里面是 Tpl 实例
+        if (reset($templates) instanceof Tpl) {
+            $this->templates = $templates;
+            return;
+        }
+
+        // 如果是单模板，则转成兼容模式
+        if ($this->isSingleTplCfg($templates)) {
+            $templates = [$templates];
+        }
+
+        $this->templates = [];
+        foreach ($templates as $tpl) {
+            $this->templates[] = Tpl::build($tpl);
+        }
+    }
+
+    /**
+     * 判断是否单模板配置
+     */
+    private function isSingleTplCfg(array $cfg): bool
+    {
+        if (isset($cfg['col']) || isset($cfg['row'])) {
+            return true;
+        }
+
+        $firstEle = reset($cfg);
+        if (isset($firstEle['title']) || isset($firstEle['name']) || isset($firstEle['children'])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function setMultiType(string $multiType)
+    {
+        if (!in_array($multiType, [self::MT_PAGE, self::MT_SINGLE, self::MT_TAB])) {
+            $multiType = self::MT_SINGLE;
+        }
+        $this->multiType = $multiType;
     }
 }

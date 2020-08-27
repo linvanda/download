@@ -16,6 +16,7 @@ class TaskDTO extends DTO
     public $projectId;
     public $fileName;
     public $type;
+    public $multiType;// 多表格类型：page、tab、single（单表格模式，默认）
     public $callback;
     public $step;
     public $operatorId;

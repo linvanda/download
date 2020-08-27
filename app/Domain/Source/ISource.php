@@ -28,9 +28,8 @@ interface ISource
     /**
      * 从源拉取数据并保存到本地
      * @param API $invoker 源数据调用程序
-     * @param LocalFile $file 获取的数据将存储到这里
      */
-    public function fetch(API $invoker, LocalFile $file, string $targetType);
+    public function fetch(API $invoker);
 
     /**
      * 从源拉取元数据

@@ -23,25 +23,27 @@ use App\Foundation\DTO\DBTaskDTO;
  */
 class TaskFactory
 {
-    public static function create(TaskDTO $taskDTO, IProjectRepository $projectRepository, IIDGenerator $idGenerator = null): Task
+    public static function create(TaskDTO $taskDTO): Task
     {
         if (!$taskDTO->sourceUrl && !$taskDTO->sourceData) {
             throw new Exception("创建任务失败：source_url 和 source_data 需要提供一个", ErrCode::PARAM_VALIDATE_FAIL);
         }
 
-        if (!$project = $projectRepository->getProjectById($taskDTO->projectId)) {
+        if (!$project = Container::get(IProjectRepository::class)->getProjectById($taskDTO->projectId)) {
             throw new Exception("创建任务失败：项目不存在", ErrCode::PROJ_NOT_EXISTS);
         }
 
         // 此处并没有对外界传入的 id 做唯一性校验，有调用方保证
-        $idGen = $idGenerator ?: Container::get(IIDGenerator::class);
-        $id = $taskDTO->id ?? $idGen->id();
+        $id = $taskDTO->id ?? Container::get(IIDGenerator::class)->id();
         $taskDTO->id = $id;
 
         // 处理 source_data
         if ($taskDTO->sourceData) {
             $taskDTO->sourceData = is_string($taskDTO->sourceData) ? json_decode($taskDTO->sourceData, true) : $taskDTO->sourceData;
         }
+
+        // multiType
+        $taskDTO->multiType = $taskDTO->multiType ?? 'single';
         
         // 源
         $source = self::buildSource($taskDTO, $taskDTO->type ?? 'csv');
@@ -104,14 +106,14 @@ class TaskFactory
             case Target::TYPE_CSV:
                 return new CSVTarget($baseDir, $taskDTO->fileName ?: '');
             case Target::TYPE_EXCEL:
-                $excel = new ExcelTarget($baseDir, $taskDTO->fileName ?: '');
+                $excel = new ExcelTarget($baseDir, $taskDTO->fileName ?: '', $taskDTO->multiType);
                 $excel->setMeta(
                     [
-                        'template' => $taskDTO->template ?: null,
-                        'title' => $taskDTO->title ?: '',
-                        'summary' => $taskDTO->summary ?: '',
-                        'header' => $taskDTO->header ?: '',
-                        'footer' => $taskDTO->footer ?: '',
+                        'templates' => $taskDTO->template ?: null,
+                        'titles' => $taskDTO->title ?: '',
+                        'summaries' => $taskDTO->summary ?: '',
+                        'headers' => $taskDTO->header ?: '',
+                        'footers' => $taskDTO->footer ?: '',
                         'default_width' => $taskDTO->defaultWidth,
                         'default_height' => $taskDTO->defaultHeight,
                     ]
