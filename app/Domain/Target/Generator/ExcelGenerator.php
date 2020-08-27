@@ -2,14 +2,15 @@
 
 namespace App\Domain\Target\Generator;
 
+use App\Domain\Source\CSVSource;
 use App\Foundation\File\ICompress;
-use App\Domain\Target\Excel;
+use App\Domain\Target\ExcelTarget;
 use App\Domain\Target\Template\Excel\Tpl;
 use App\Domain\Target\Template\Excel\ColHead;
 use App\Domain\Target\Template\Excel\Node;
 use App\Domain\Target\Template\Excel\RowHead;
 use App\Domain\Target\Template\Excel\Style;
-use App\Domain\Source\Source;
+use App\Domain\Source\ISource;
 use App\Exceptions\FileException;
 use App\Exceptions\TargetException;
 use EasySwoole\EasySwoole\Config;
@@ -32,8 +33,12 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
  */
 class ExcelGenerator
 {
-    public function generate(Source $source, Excel $target, ICompress $compress = null)
+    public function generate(ISource $source, ExcelTarget $target, ICompress $compress = null)
     {
+        if (!$source instanceof CSVSource) {
+            throw new \Exception("generate csv error:need CSVSource type", ErrCode::SOURCE_TYPE_ERR);
+        }
+
         if (!file_exists($source->fileName())) {
             throw new FileException("源文件不存在：{$source->fileName()}", ErrCode::FILE_OP_FAILED);
         }
@@ -97,9 +102,9 @@ class ExcelGenerator
      * @param int $maxRow 最大读取行数
      * @param array $colTitles 列名数组
      * @param array $colTypes 列数据类型：string、number
-     * @param Excel $target 目标对象
+     * @param ExcelTarget $target 目标对象
      */
-    private function createExcel($sourceFile, string $targetFileName, int $maxRow, array $colTitles, array $colTypes, Excel $target)
+    private function createExcel($sourceFile, string $targetFileName, int $maxRow, array $colTitles, array $colTypes, ExcelTarget $target)
     {
         $spreadSheet = new Spreadsheet();
         $activeSheet = $spreadSheet->getActiveSheet();
@@ -176,7 +181,7 @@ class ExcelGenerator
      * 生成 excel 模板
      * @return array [当前行号, 当前列号, 行映射, 列映射]
      */
-    private function createSheetTpl(Worksheet $activeSheet, Excel $target): array
+    private function createSheetTpl(Worksheet $activeSheet, ExcelTarget $target): array
     {
         // 必须有 template
         if (!$tpl = $target->getTpl()) {
@@ -493,7 +498,7 @@ class ExcelGenerator
     /**
      * 设置 Excel 默认样式
      */
-    private function setDefaultStyle(Spreadsheet $workSheet, Excel $target)
+    private function setDefaultStyle(Spreadsheet $workSheet, ExcelTarget $target)
     {
         $workSheet->getActiveSheet()->getDefaultColumnDimension()->setWidth($target->getDefaultWidth());
         $workSheet->getActiveSheet()->getDefaultRowDimension()->setRowHeight($target->getDefaultHeight());
@@ -531,7 +536,7 @@ class ExcelGenerator
      * 计算目标文件数目以及每个文件最大行数
      * @return array [文件数目, 最大行数]
      */
-    private function calcFileCount(Source $source, bool $hasRowHead = false): array
+    private function calcFileCount(ISource $source, bool $hasRowHead = false): array
     {
         // 有行标题的情况下只生成一个文件
         if ($hasRowHead) {

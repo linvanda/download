@@ -25,7 +25,7 @@ class Download extends Controller
                 'ticket' => ['required', 'lengthMax' => 100],
             ],
             'syncGetData' => [
-                'source_url' => ['required', 'url', 'lengthMin' => 2, 'lengthMax' => 5000],
+                'source_url' => ['optional', 'url', 'lengthMin' => 2, 'lengthMax' => 5000],
                 'name' => ['required', 'lengthMin' => 2, 'lengthMax' => 60],
                 'project_id' => ['required', 'lengthMax' => 40],
                 'file_name' => ['lengthMax' => 120],

@@ -25,4 +25,5 @@ class ErrCode extends BaseErrCode
     public const FILE_OP_FAILED = 511; // 操作文件失败
     public const SOURCE_DATA_EMPTY = 512;
     public const DOWNLOAD_FAILED = 513;
+    public const SOURCE_TYPE_ERR = 514;
 }

@@ -2,7 +2,7 @@
 
 namespace App\Domain\Target;
 
-use App\Domain\Source\Source;
+use App\Domain\Source\ISource;
 use App\Foundation\File\Zip;
 use App\Domain\Target\Generator\CSVGenerator;
 use App\Domain\Target\Generator\ExcelGenerator;
@@ -18,7 +18,7 @@ class TargetService
     /**
      * 生成目标文件
      */
-    public function generate(Source $source, Target $target, bool $compressFile = true)
+    public function generate(ISource $source, Target $target, bool $compressFile = true)
     {
         // 生成器
         switch ($target->type()) {

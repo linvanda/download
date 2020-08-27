@@ -4,7 +4,7 @@ namespace App\Domain\Task;
 
 use App\Domain\Target\Target;
 use App\Domain\Project\Project;
-use App\Domain\Source\Source;
+use App\Domain\Source\ISource;
 use App\Domain\URI;
 use App\ErrCode;
 use WecarSwoole\Entity;
@@ -88,7 +88,7 @@ class Task extends Entity
         string $id,
         string $name,
         Project $project,
-        Source $source,
+        ISource $source,
         Target $target,
         URI $callback = null,
         string $operator = '',
@@ -138,7 +138,7 @@ class Task extends Entity
         return $this->project;
     }
 
-    public function source(): Source
+    public function source(): ISource
     {
         return $this->source;
     }

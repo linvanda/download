@@ -2,9 +2,10 @@
 
 namespace App\Domain\Target\Generator;
 
+use App\Domain\Source\CSVSource;
 use App\Foundation\File\ICompress;
-use App\Domain\Target\CSV;
-use App\Domain\Source\Source;
+use App\Domain\Target\CSVTarget;
+use App\Domain\Source\ISource;
 use App\ErrCode;
 use App\Exceptions\FileException;
 use EasySwoole\EasySwoole\Config;
@@ -18,8 +19,12 @@ class CSVGenerator
     /**
      * CSV 目标文件生成方式
      */
-    public function generate(Source $source, CSV $target, ICompress $compress = null)
+    public function generate(ISource $source, CSVTarget $target, ICompress $compress = null)
     {
+        if (!$source instanceof CSVSource) {
+            throw new \Exception("generate csv error:need CSVSource type", ErrCode::SOURCE_TYPE_ERR);
+        }
+
         $sourceFileName = $source->fileName();
         if (!$sourceFileName || !file_exists($sourceFileName)) {
             throw new FileException("CSV 目标文件生成失败：源文件不存在。source：{$sourceFileName}", ErrCode::FILE_OP_FAILED);
