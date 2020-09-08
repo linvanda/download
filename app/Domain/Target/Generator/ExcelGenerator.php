@@ -11,7 +11,6 @@ use App\Domain\Target\Template\Excel\Node;
 use App\Domain\Target\Template\Excel\RowHead;
 use App\Domain\Target\Template\Excel\Style;
 use App\Domain\Source\ISource;
-use App\Domain\Target\CSVTarget;
 use App\Exceptions\FileException;
 use App\Exceptions\TargetException;
 use EasySwoole\EasySwoole\Config;
@@ -199,6 +198,7 @@ class ExcelGenerator
 
     /**
      * 生成 excel 文件
+     * 一个 excel 中可能会生成多个 table
      * @param resource $sourceFile 源数据文件，资源对象
      * @param string $targetFileName 目标文件名
      * @param int $maxRow 最大读取行数

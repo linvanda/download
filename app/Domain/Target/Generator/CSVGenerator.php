@@ -30,7 +30,25 @@ class CSVGenerator
             throw new FileException("CSV 目标文件生成失败：源文件不存在。source：{$sourceFileName}", ErrCode::FILE_OP_FAILED);
         }
 
-        // 直接通过 rename 生成目标文件
+        // $sourceFile = fopen($sourceFileName, 'rb');
+        // if ($sourceFile === false) {
+        //     throw new FileException("open source file failed:{$sourceFileName}", ErrCode::FILE_OP_FAILED);
+        // }
+
+        // $targetFile = fopen($target->targetFileName(), 'wb');
+        // if ($targetFile === false) {
+        //     throw new FileException("open target file failed:{$target->targetFileName()}", ErrCode::FILE_OP_FAILED);
+        // }
+
+        // $num = 0;
+        // while (!feof($sourceFile)) {
+        //     // 第一行标题特殊处理
+        //     $lineValues = fgetcsv($sourceFile);
+        //     if ($num === 0) {
+
+        //     }
+        // }
+
         if (rename($sourceFileName, $target->targetFileName()) === false) {
             throw new FileException("generate target file fail.rename failed.", ErrCode::FILE_OP_FAILED);
         }

@@ -88,8 +88,9 @@ class CSVSource implements ISource
      * 从源拉取数据并保存到本地
      * 多表格模式（多源）的情况下仅支持通过 source_data 提供数据
      * @param API $invoker 源数据调用程序
+     * @param bool $recordColType 是否记录列类型
      */
-    public function fetch(API $invoker)
+    public function fetch(API $invoker, bool $recordColType = true)
     {
         $cnt = 0;
         $size = 0;
@@ -99,7 +100,7 @@ class CSVSource implements ISource
         try {
             if ($this->data) {
                 // 投递任务时提供了 data
-                list($cnt, $size) = $this->saveToFile($file, $this->data, true);
+                list($cnt, $size) = $this->saveToFile($file, $this->data, $recordColType, true);
             } else {
                 // 循环拉取数据
                 $page = $n = $total = 0;
@@ -113,7 +114,7 @@ class CSVSource implements ISource
                     }
     
                     // 保存到文件
-                    list($tCnt, $tSize) = $this->saveToFile($file, $data, $n == 1 && count($data));
+                    list($tCnt, $tSize) = $this->saveToFile($file, $data, $recordColType, $n == 1 && count($data));
                     $cnt += $tCnt;
                     $size += $tSize;
     
@@ -159,7 +160,7 @@ class CSVSource implements ISource
      * @param bool $saveFields
      * @return array [保存的行数（不包括标题行）, 文件大小]
      */
-    private function saveToFile(LocalFile $file, array $data, bool $saveFields = false): array
+    private function saveToFile(LocalFile $file, array $data, bool $recordColType, bool $saveFields = false): array
     {
         list($sourceType, $data) = $this->formatSourceData($data);
         if (!$data) {
@@ -169,12 +170,12 @@ class CSVSource implements ISource
         $cnt = 0;
         if ($sourceType === self::SOURCE_TYPE_SIMPLE) {
             // 单源
-            $this->innerSaveToFile($file, $data, $saveFields);
+            $this->innerSaveToFile($file, $data, $recordColType, $saveFields);
             $cnt += count($data);
         } else {
             // 多源
             foreach ($data as $sData) {
-                $this->innerSaveToFile($file, $sData, true);
+                $this->innerSaveToFile($file, $sData, $recordColType, true);
                 // 源数据之间增加分隔符
                 $file->saveAsCsv(array_pad([], count($sData[0]), self::SPLIT_LINE));
                 $cnt += count($sData);
@@ -184,14 +185,18 @@ class CSVSource implements ISource
         return [$cnt, $file->size()];
     }
 
-    private function innerSaveToFile(LocalFile $file, array $data, bool $saveFields)
+    private function innerSaveToFile(LocalFile $file, array $data, bool $recordColType, bool $saveFields)
     {
         // 将 key 写入，同时写入每列的类型（目前仅支持 number、string 两种类型）
         // 存入格式：field|type，如 age|number,uname|string
         if ($saveFields) {
             $fields = [];
             foreach ($data[0] as $field => $value) {
-                $fields[] = $field . '|' . (is_int($value) || is_float($value) ? 'number' : 'string');
+                if ($recordColType) {
+                    $fields[] = $field . '|' . (is_int($value) || is_float($value) ? 'number' : 'string');
+                } else {
+                    $fields[] = $field;
+                }
             }
             $file->saveAsCsv($fields);
         }

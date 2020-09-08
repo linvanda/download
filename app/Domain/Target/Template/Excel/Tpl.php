@@ -2,6 +2,8 @@
 
 namespace App\Domain\Target\Template\Excel;
 
+use App\Domain\Source\CSVSource;
+
 /**
  * Excel 表格模板
  */
@@ -47,7 +49,7 @@ class Tpl
         $cfg = [];
 
         foreach ($data as $key => $val) {
-            if ($key == RowHead::NODE_ROW_HEADER_COL) {
+            if ($key == CSVSource::EXT_FIELD) {
                 continue;
             }
             
