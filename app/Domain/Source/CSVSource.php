@@ -12,6 +12,7 @@ use WecarSwoole\Util\GetterSetter;
 
 /**
  * CSV 数据源，将源数据存储为 CSV 格式
+ * 支持多源，多个源数据之间通过 SPLIT_LINE 分割
  */
 class CSVSource implements ISource
 {
@@ -22,6 +23,9 @@ class CSVSource implements ISource
     public const STEP_DEFAULT = 1000;
     public const SOURCE_FNAME = 'source.csv';
     public const EXT_FIELD = '_row_head_';
+    public const SPLIT_LINE = '-#-=@=-#-';
+    public const SOURCE_TYPE_SIMPLE = 1;
+    public const SOURCE_TYPE_MULTI = 2;
 
     protected $uri;
     protected $data;
@@ -82,6 +86,7 @@ class CSVSource implements ISource
 
     /**
      * 从源拉取数据并保存到本地
+     * 多表格模式（多源）的情况下仅支持通过 source_data 提供数据
      * @param API $invoker 源数据调用程序
      */
     public function fetch(API $invoker)
@@ -89,39 +94,46 @@ class CSVSource implements ISource
         $cnt = 0;
         $size = 0;
         
-        if ($this->data) {
-            // 投递任务时提供了 data
-            list($cnt, $size) = $this->saveToFile($this->data, true);
-        } else {
-            // 循环拉取数据
-            $page = $n = $total = 0;
-            $invoker->setUrl($this->uri->url());
+        $file = new LocalFile($this->fileName());
 
-            while ($n++ < 100000) {
-                $result = $this->invokeData($invoker, $page, $this->step);
+        try {
+            if ($this->data) {
+                // 投递任务时提供了 data
+                list($cnt, $size) = $this->saveToFile($file, $this->data, true);
+            } else {
+                // 循环拉取数据
+                $page = $n = $total = 0;
+                $invoker->setUrl($this->uri->url());
     
-                if (!isset($result['data']) || !$data = $result['data']) {
-                    break;
-                }
-
-                // 保存到文件
-                list($tCnt, $tSize) = $this->saveToFile($data, $n == 1 && count($data));
-                $cnt += $tCnt;
-                $size += $tSize;
-
-                if ($n == 1) {
-                    $total = $result['total'] ?? PHP_INT_MAX;// 如果没有提供 total，则会不停地循环拉数据直到拉完
-                }
+                while ($n++ < 100000) {
+                    $result = $this->invokeData($invoker, $page, $this->step);
+        
+                    if (!isset($result['data']) || !$data = $result['data']) {
+                        break;
+                    }
     
-                // 为了健壮性，此处做了两方面的检测，防止对方接口有 bug 导致一直拉取数据
-                if (count($data) < $this->step || $cnt >= $total) {
-                    break;
+                    // 保存到文件
+                    list($tCnt, $tSize) = $this->saveToFile($file, $data, $n == 1 && count($data));
+                    $cnt += $tCnt;
+                    $size += $tSize;
+    
+                    if ($n == 1) {
+                        $total = $result['total'] ?? PHP_INT_MAX;// 如果没有提供 total，则会不停地循环拉数据直到拉完
+                    }
+        
+                    // 为了健壮性，此处做了两方面的检测，防止对方接口有 bug 导致一直拉取数据
+                    if (count($data) < $this->step || $cnt >= $total) {
+                        break;
+                    }
+                    $page++;
                 }
-                $page++;
             }
+        } catch (\Throwable $e) {
+            throw new SourceException($e->getMessage(), $e->getCode());
+        } finally {
+            $file->close();
         }
-
-        $this->closeFiles();
+        
 
         $this->count = $cnt;
         $this->size = $size;
@@ -142,57 +154,50 @@ class CSVSource implements ISource
 
     /**
      * 将数据存储到本地文件系统
-     * @param array $data 三维数组，第一维表示源文件
+     * @param LocalFile $file
+     * @param array $data 源数据
+     * @param bool $saveFields
      * @return array [保存的行数（不包括标题行）, 文件大小]
      */
-    private function saveToFile(array $data, bool $saveFields): array
+    private function saveToFile(LocalFile $file, array $data, bool $saveFields = false): array
     {
-        if (!$data = $this->formatSourceData($data)) {
-            return 0;
-        }
+        list($sourceType, $data) = $this->formatSourceData($data);
+        if (!$data) {
+            return [0, 0];
+        } 
 
-        $cnt = $size = 0;
-        foreach ($data as $index => $sData) {
-            $file = $this->file($index);
-
-            // 将 key 写入，同时写入每列的类型（目前仅支持 number、string 两种类型）
-            // 存入格式：field|type，如 age|number,uname|string
-            if ($saveFields) {
-                $fields = [];
-                foreach ($sData[0] as $field => $value) {
-                    $fields[] = $field . '|' . (is_int($value) || is_float($value) ? 'number' : 'string');
-                }
-                $file->saveAsCsv($fields);
-            }
-
-            // 存储数据
-            $file->saveAsCsv($sData);
-
-            $cnt += count($sData);
-            $size += $file->size();
-        }
-
-        return [$cnt, $size];
-    }
-
-    private function file(int $index): LocalFile
-    {
-        if (!isset($this->localFiles[$index])) {
-            $this->localFiles[$index] = new LocalFile($this->fileName());
-        }
-
-        return $this->localFiles[$index];
-    }
-
-    private function closeFiles()
-    {
-        foreach ($this->localFiles as $file) {
-            if ($file instanceof LocalFile) {
-                $file->close();
+        $cnt = 0;
+        if ($sourceType === self::SOURCE_TYPE_SIMPLE) {
+            // 单源
+            $this->innerSaveToFile($file, $data, $saveFields);
+            $cnt += count($data);
+        } else {
+            // 多源
+            foreach ($data as $sData) {
+                $this->innerSaveToFile($file, $sData, true);
+                // 源数据之间增加分隔符
+                $file->saveAsCsv(array_pad([], count($sData[0]), self::SPLIT_LINE));
+                $cnt += count($sData);
             }
         }
 
-        $this->localFiles = [];
+        return [$cnt, $file->size()];
+    }
+
+    private function innerSaveToFile(LocalFile $file, array $data, bool $saveFields)
+    {
+        // 将 key 写入，同时写入每列的类型（目前仅支持 number、string 两种类型）
+        // 存入格式：field|type，如 age|number,uname|string
+        if ($saveFields) {
+            $fields = [];
+            foreach ($data[0] as $field => $value) {
+                $fields[] = $field . '|' . (is_int($value) || is_float($value) ? 'number' : 'string');
+            }
+            $file->saveAsCsv($fields);
+        }
+
+        // 存储数据
+        $file->saveAsCsv($data);
     }
 
     /**
@@ -232,12 +237,23 @@ class CSVSource implements ISource
      *                      ]
      *                  ]
      *              ]
-     * @return 格式化后的三维数组
+     * @return 格式化后的数组：
+     * [数据类型：1 单源/2 多源, 格式化后的数据：单源类型则是二维数组，多源模式是三维数组]
+     * 多源模式返回的数据格式：
+     * [
+     *      [
+     *          ["name" => "张三", "age" => 18]
+     *      ]
+     * ]
+     * 单源模式返回的数据格式：
+     * [
+     *      ["name" => "张三", "age" => 18]
+     * ]
      */
     private function formatSourceData(array $data): array
     {
         if (!$data) {
-            return [];
+            return [self::SOURCE_TYPE_SIMPLE, []];
         }
 
         $firstEle = reset($data);
@@ -246,12 +262,12 @@ class CSVSource implements ISource
          * 单源二维数组
          */
         if (!$firstEle || !is_array($firstEle)) {
-            return [];
+            return [self::SOURCE_TYPE_SIMPLE, []];
         }
 
         // 判断第二维数组的第一个元素
         if (!is_array(reset($firstEle))) {
-            return [$data];
+            return [self::SOURCE_TYPE_SIMPLE, $data];
         }
 
         /**
@@ -266,7 +282,7 @@ class CSVSource implements ISource
                 }
             }
 
-            return [$newData];
+            return [self::SOURCE_TYPE_SIMPLE, $newData];
         }
 
         /**
@@ -275,7 +291,7 @@ class CSVSource implements ISource
 
         // 情况一
         if (is_int(key($firstEle))) {
-            return $data;
+            return [self::SOURCE_TYPE_MULTI, $data];
         }
 
         // 情况二
@@ -288,7 +304,7 @@ class CSVSource implements ISource
 
             $data[$k] = array_values($v);
         }
-        return $data;
+        return [self::SOURCE_TYPE_MULTI, $data];
     }
 
     private function invokeData(API $invoker, int $page, int $pageSize): array

@@ -40,24 +40,49 @@ class ExcelTarget extends Target
         parent::__construct($baseDir, $downloadFileName, self::TYPE_EXCEL);
     }
 
-    public function getTitles(): array
+    public function getTitles($index = null)
     {
-        return $this->titles ?? [];
+        if ($index === null) {
+            return $this->titles ?? [];
+        } else {
+            return $this->titles  && isset($this->titles[$index]) ? $this->titles[$index] : '';
+        }
     }
 
-    public function getSummaries(): array
+    public function getSummaries($index = null)
     {
-        return $this->summaries ?? [];
+        if ($index === null) {
+            return $this->summaries ?? [];
+        } else {
+            return $this->summaries  && isset($this->summaries[$index]) ? $this->summaries[$index] : '';
+        }
     }
 
-    public function getHeaders(): array
+    public function getHeaders($index = null)
     {
-        return $this->headers ?: [];
+        if ($index === null) {
+            return $this->headers ?? [];
+        } else {
+            return $this->headers  && isset($this->headers[$index]) ? $this->headers[$index] : [];
+        }
     }
 
-    public function getFooters(): array
+    public function getFooters($index = null)
     {
-        return $this->footers ?: [];
+        if ($index === null) {
+            return $this->footers ?? [];
+        } else {
+            return $this->footers  && isset($this->footers[$index]) ? $this->footers[$index] : [];
+        }
+    }
+
+    public function getTpls($index = null)
+    {
+        if ($index === null) {
+            return $this->templates ?? [];
+        } else {
+            return $this->templates  && isset($this->templates[$index]) ? $this->templates[$index] : null;
+        }
     }
 
     public function getDefaultWidth(): int
@@ -68,11 +93,6 @@ class ExcelTarget extends Target
     public function getDefaultHeight(): int
     {
         return $this->defaultHeight ?: 14;
-    }
-
-    public function getTpls(): array
-    {
-        return $this->templates;
     }
 
     public function getMultiType(): string
