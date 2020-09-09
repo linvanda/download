@@ -25,7 +25,7 @@ class SourceReadyHandler extends WorkHandler
         try {
             Container::get(TargetService::class)->generate($this->task()->source(), $this->task()->target(), true);
             $this->notify(WorkFlow::WF_OBJECT_READY);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Container::get(LoggerInterface::class)->error($e->getMessage(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);
             $this->notify(WorkFlow::WF_OBJECT_FAILED, $e->getMessage());
         }

@@ -25,7 +25,7 @@ class Download extends Controller
                 'ticket' => ['required', 'lengthMax' => 100],
             ],
             'syncGetData' => [
-                'source_url' => ['required', 'url', 'lengthMin' => 2, 'lengthMax' => 5000],
+                'source_url' => ['optional', 'url', 'lengthMin' => 2, 'lengthMax' => 5000],
                 'name' => ['required', 'lengthMin' => 2, 'lengthMax' => 60],
                 'project_id' => ['required', 'lengthMax' => 40],
                 'file_name' => ['lengthMax' => 120],
@@ -36,6 +36,18 @@ class Download extends Controller
                 'title' => ['lengthMax' => 200],
                 'summary' => ['lengthMax' => 8000],
             ],
+            'syncGetDataMultiple' => [
+                'source_url' => ['optional', 'url', 'lengthMin' => 2, 'lengthMax' => 5000],
+                'name' => ['required', 'lengthMin' => 2, 'lengthMax' => 60],
+                'project_id' => ['required', 'lengthMax' => 40],
+                'file_name' => ['lengthMax' => 120],
+                'type' => ['inArray' => [null, 'excel']],
+                'callback' => ['lengthMax' => 300],
+                'operator_id' => ['lengthMax' => 120],
+                'template' => ['lengthMax' => 8000],
+                'title' => ['lengthMax' => 6000],
+                'summary' => ['lengthMax' => 8000],
+            ]
         ];
     }
 
@@ -75,6 +87,16 @@ class Download extends Controller
      */
     public function syncGetData()
     {
-        Container::get(DownloadService::class)->syncDownload(new TaskDTO($this->params()), $this->response());
+        Container::get(DownloadService::class)
+        ->syncDownload(new TaskDTO($this->params()), $this->response());
+    }
+
+    /**
+     * 同步下载多表数据
+     */
+    public function syncGetDataMultiple()
+    {
+        Container::get(DownloadService::class)
+        ->syncDownload(new TaskDTO(array_merge(['multi_type' => 'page'], $this->params())), $this->response());
     }
 }

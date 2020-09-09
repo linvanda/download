@@ -5,7 +5,7 @@ namespace App\Domain\Target;
 /**
  * 目标文件：CSV
  */
-class CSV extends Target
+class CSVTarget extends Target
 {
     public function __construct(string $baseDir, string $downloadFileName = '')
     {

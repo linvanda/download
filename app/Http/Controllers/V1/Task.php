@@ -19,7 +19,7 @@ class Task extends Controller
     {
         return [
             'deliver' => [
-                'source_url' => ['required', 'url', 'lengthMin' => 2, 'lengthMax' => 100000],
+                'source_url' => ['optional', 'url', 'lengthMin' => 2, 'lengthMax' => 100000],
                 'name' => ['required', 'lengthMin' => 2, 'lengthMax' => 60],
                 'project_id' => ['required', 'lengthMax' => 40],
                 'file_name' => ['lengthMax' => 120],
@@ -54,6 +54,16 @@ class Task extends Controller
     public function deliver()
     {
         $task = Container::get(TaskService::class)->create(new TaskDTO($this->params()));
+        TaskManager::getInstance()->deliver($task);
+        $this->return(['task_id' => $task->id()]);
+    }
+
+    /**
+     * 投递任务：多表格模式
+     */
+    public function deliverMultiple()
+    {
+        $task = Container::get(TaskService::class)->create(new TaskDTO(array_merge(['multi_type' => 'page'], $this->params())));
         TaskManager::getInstance()->deliver($task);
         $this->return(['task_id' => $task->id()]);
     }
