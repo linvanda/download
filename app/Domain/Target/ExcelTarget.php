@@ -183,6 +183,8 @@ class ExcelTarget extends Target
             $this->templates = [];
             return;
         }
+
+        $templates = $this->formatSimpleTplConf($templates);
         
         if ($templates instanceof Tpl) {
             $this->templates = [$templates];
@@ -208,6 +210,20 @@ class ExcelTarget extends Target
         foreach ($templates as $tpl) {
             $this->templates[] = Tpl::build($tpl);
         }
+    }
+
+    private function formatSimpleTplConf(array $conf): array
+    {
+        // 如果是一维数组，格式化为二维数组
+        if (!is_array(reset($conf))) {
+            $newConf = [];
+            foreach ($conf as $key => $val) {
+                $newConf[] = ['name' => $key, 'title' => $val];
+            }
+            return $newConf;
+        }
+
+        return $conf;
     }
 
     /**
