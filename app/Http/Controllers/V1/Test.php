@@ -447,7 +447,7 @@ class Test extends Controller
                 '_row_head_' => 'screen',
             ],
         ];
-        // $page = $this->params('page') ?: 0;
+        $page = $this->params('page') ?: 0;
         // $data = [];
         // for ($i = 0; $i < 1000; $i++) {
         //     $data[] = [
@@ -465,7 +465,7 @@ class Test extends Controller
 
         $this->return([
             'data' => $data,
-            'total' => 1000,
+            'total' => 2000,
             'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],
             'footer' => ['负责人' => '松林', '总监签名' => '          ', 'CEO 签名' => '        '],
             'template' => [

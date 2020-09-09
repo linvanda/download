@@ -38,14 +38,45 @@ class Tpl
 
     /**
      * 从数据中解析默认模板
-     * @param array $data 一维或二维数组，如 ["name" => "张三", "age" => 89]，[["name" => "张三", "age" => 89]]
+     * $data 可以是一维、二维或者三维数组
+     * 一维、二维数组会解析出一维模板，三维数组（多表模式）会解析出二维模板（多表模板）
+     * $data:
+     * 一维数组：
+     * ["name" => "张三", "age" => 89]
+     * 二维数组：
+     * [["name" => "张三", "age" => 89]]
+     * 三维数组：
+     * [[["name" => "张三", "age" => 89]],[["name" => "张三", "age" => 89]]]
      */
     public static function getDefaultTplFromData(array $data): array
     {
-        if (isset($data[0]) && is_array($data[0])) {
-            $data = $data[0];
+        if (!$data) {
+            return [];
         }
 
+        $firstEle = reset($data);
+        
+        // 一维数组
+        if (!is_array($firstEle)) {
+            return self::extractTplFromData($data);
+        }
+
+        // 二维数组
+        if (!is_array(reset($firstEle))) {
+            return self::extractTplFromData($data[0]);
+        }
+
+        // 三维数组
+        $cfg = [];
+        foreach ($data as $val) {
+            $cfg[] = self::extractTplFromData($val[0]);
+        }
+
+        return $cfg;
+    }
+
+    private static function extractTplFromData(array $data): array
+    {
         $cfg = [];
 
         foreach ($data as $key => $val) {

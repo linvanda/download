@@ -60,6 +60,7 @@ class ExcelGenerator
 
         try {
             $this->extractColInfo($sourceFile);
+
             foreach ($fileNames as $index => $fileName) {
                 // 生成 excel。最后一个文件的 row 不做限制
                 $maxRow = $index < count($fileNames) - 1 ? $fileRowCount : PHP_INT_MAX;
@@ -96,8 +97,9 @@ class ExcelGenerator
     private function extractColInfo($sourceFile)
     {
         if (!$fieldsAndTypes = fgetcsv($sourceFile)) {
-            throw new \Exception("生成 Excel 失败：未读取到源数据", ErrCode::FETCH_SOURCE_FAILED);
+            return;
         }
+
         list($colTitles, $colTypes) = $this->extractFieldsAndTypes($fieldsAndTypes);
         $rowHeadIndex = array_search(CSVSource::EXT_FIELD, $colTitles);// 行标题索引位置（针对有行表头的）
 
@@ -119,8 +121,7 @@ class ExcelGenerator
         array $footer,
         $rowHeight
     ) {
-        $startRowOffset = $rowOffset;
-
+        $startRowOffset = $rowOffset + 1;
         // 生成模板
         list($rowOffset, $colOffset, $rowMap, $colMap) = $this->createSheetTpl(
             $activeSheet,
@@ -255,7 +256,7 @@ class ExcelGenerator
         
         // 标题
         if ($title) {
-            $this->setTitle($activeSheet, $title, $colNum);
+            $this->setTitle($activeSheet, $title, $colNum, $currRowNum);
             $currRowNum++;
         }
 
@@ -607,7 +608,7 @@ class ExcelGenerator
         }
 
         // 有行标题的情况下只生成一个文件
-        if ($tpls[0] instanceof Tpl && $tpls[0]->rowHead()) {
+        if (isset($tpls[0]) && $tpls[0] instanceof Tpl && $tpls[0]->rowHead()) {
             return [1, PHP_INT_MAX];
         }
 

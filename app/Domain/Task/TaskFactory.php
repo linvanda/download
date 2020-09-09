@@ -107,6 +107,13 @@ class TaskFactory
                 return new CSVTarget($baseDir, $taskDTO->fileName ?: '');
             case Target::TYPE_EXCEL:
                 $excel = new ExcelTarget($baseDir, $taskDTO->fileName ?: '', $taskDTO->multiType);
+
+                // multitype 多表模式需要对传入的 title、summary 做特殊处理
+                if ($taskDTO->multiType !== ExcelTarget::MT_SINGLE) {
+                    $taskDTO->title = is_string($taskDTO->title) ? json_decode($taskDTO->title, true) : $taskDTO->title;
+                    $taskDTO->summary = is_string($taskDTO->summary) ? json_decode($taskDTO->summary, true) : $taskDTO->summary;
+                }
+
                 $excel->setMeta(
                     [
                         'templates' => $taskDTO->template ?: null,

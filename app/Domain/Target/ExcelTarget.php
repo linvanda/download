@@ -107,7 +107,6 @@ class ExcelTarget extends Target
     public function setMeta(array $metaData)
     {
         $metaData = $this->formateMetaData($metaData);
-
         $this->multiType = $this->multiType ?? $metaData['multi_type'] ?? self::MT_SINGLE;
         $this->defaultWidth = $metaData['default_width'] ?? $this->defaultWidth;
         $this->defaultHeight = $metaData['default_height'] ?? $this->defaultHeight;
@@ -132,9 +131,9 @@ class ExcelTarget extends Target
             $this->footers = is_array(reset($metaData['footers'])) ? $metaData['footers'] : [$metaData['footers']];
         }
 
-        if (isset($metaData['template'])) {
-            $this->setTpls($metaData['template']);
-        } elseif (isset($metaData['data']) && !$this->template) {
+        if (isset($metaData['templates']) && $metaData['templates']) {
+            $this->setTpls($metaData['templates']);
+        } elseif (!$this->templates && isset($metaData['data']) && $metaData['data']) {
             // 如果没有静态 template，且有提供源数据，则试图从源数据解析出模板
             $this->setTpls(Tpl::getDefaultTplFromData($metaData['data']));
         }

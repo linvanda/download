@@ -323,7 +323,7 @@ class CSVSource implements ISource
             );
         }
 
-        if (!isset($result['data']['data']) || !isset($result['data']['total'])) {
+        if (!isset($result['data']['data'])) {
             throw new SourceException(
                 "获取源数据失败：数据格式错误：" . print_r($result, true),
                 ErrCode::FETCH_SOURCE_FAILED
