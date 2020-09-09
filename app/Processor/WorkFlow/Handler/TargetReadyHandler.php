@@ -23,7 +23,7 @@ class TargetReadyHandler extends WorkHandler
     protected function exec()
     {
         try {
-            // Container::get(TransferService::class)->upload($this->task());
+            Container::get(TransferService::class)->upload($this->task());
             $this->notify(WorkFlow::WF_UPLOAD_SUC);
         } catch (\Throwable $e) {
             Container::get(LoggerInterface::class)->error($e->getMessage(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);
