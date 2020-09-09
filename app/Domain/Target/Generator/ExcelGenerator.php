@@ -2,14 +2,15 @@
 
 namespace App\Domain\Target\Generator;
 
+use App\Domain\Source\CSVSource;
 use App\Foundation\File\ICompress;
-use App\Domain\Target\Excel;
+use App\Domain\Target\ExcelTarget;
 use App\Domain\Target\Template\Excel\Tpl;
 use App\Domain\Target\Template\Excel\ColHead;
 use App\Domain\Target\Template\Excel\Node;
 use App\Domain\Target\Template\Excel\RowHead;
 use App\Domain\Target\Template\Excel\Style;
-use App\Domain\Source\Source;
+use App\Domain\Source\ISource;
 use App\Exceptions\FileException;
 use App\Exceptions\TargetException;
 use EasySwoole\EasySwoole\Config;
@@ -23,23 +24,34 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use WecarSwoole\Util\File;
 use SplQueue;
 use App\ErrCode;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 /**
  * Excel 文件生成器
  * 根据源文件的行数和大小决定生成几个目标文件
  * 如果生成多个目标文件（或者单个文件达到一定尺寸），则执行归档压缩
+ * 注意：多表格模式（一页显示多个表格，或者多个 tab）不会分文件
  */
 class ExcelGenerator
 {
-    public function generate(Source $source, Excel $target, ICompress $compress = null)
+    /**
+     * 列标题信息：[列key, 列类型, 行索引位置]
+     */
+    private $colInfo = [];
+
+    public function generate(ISource $source, ExcelTarget $target, ICompress $compress = null)
     {
+        if (!$source instanceof CSVSource) {
+            throw new \Exception("generate csv error:need CSVSource type", ErrCode::SOURCE_TYPE_ERR);
+        }
+
         if (!file_exists($source->fileName())) {
             throw new FileException("源文件不存在：{$source->fileName()}", ErrCode::FILE_OP_FAILED);
         }
 
         // 计算需要生成多少个文件，每个文件最大多少行，并算出每个文件名称
         // 注意：只有提供了压缩器的情况下才有可能分文件，没有压缩器则不分割
-        list($fileCount, $fileRowCount) = !$compress ? [1, PHP_INT_MAX] : $this->calcFileCount($source, $target->getTpl()->rowHead() ? true : false);
+        list($fileCount, $fileRowCount) = !$compress ? [1, PHP_INT_MAX] : $this->calcFileCount($source, $target);
         $fileNames = $this->calcFileNames($target->targetFileName(), $fileCount);
 
         if (!$sourceFile = @fopen($source->fileName(), 'rb')) {
@@ -47,15 +59,12 @@ class ExcelGenerator
         }
 
         try {
-            // 先从第一行读取列标题
-            if (!$colTitles = fgetcsv($sourceFile)) {
-                throw new \Exception("生成 Excel 失败：未读取到源数据", ErrCode::FETCH_SOURCE_FAILED);
-            }
+            $this->extractColInfo($sourceFile);
 
             foreach ($fileNames as $index => $fileName) {
                 // 生成 excel。最后一个文件的 row 不做限制
                 $maxRow = $index < count($fileNames) - 1 ? $fileRowCount : PHP_INT_MAX;
-                $this->createExcel($sourceFile, $fileName, $maxRow, $colTitles, $target);
+                $this->createExcel($sourceFile, $fileName, $maxRow, $target);
             }
         } catch (\Throwable $e) {
             throw new TargetException($e->getMessage(), $e->getCode());
@@ -73,31 +82,69 @@ class ExcelGenerator
         }
     }
 
-    /**
-     * 生成 excel 文件
-     * @param resource $sourceFile 源数据文件，资源对象
-     * @param string $targetFileName 目标文件名
-     * @param int $maxRow 最大读取行数
-     * @param array $colTitles 列名数组
-     * @param Excel $target 目标对象
-     */
-    private function createExcel($sourceFile, string $targetFileName, int $maxRow, array $colTitles, Excel $target)
+    private function extractFieldsAndTypes(array $csvFieldsArr): array
     {
-        $spreadSheet = new Spreadsheet();
-        $activeSheet = $spreadSheet->getActiveSheet();
+        $fields = $types = [];
+        foreach ($csvFieldsArr as $ft) {
+            $val = explode('|', $ft);
+            $fields[] = $val[0];
+            $types[] = $val[1] ?? 'string';
+        }
 
-        $this->setDefaultStyle($spreadSheet, $target);
+        return [$fields, $types];
+    }
 
+    private function extractColInfo($sourceFile)
+    {
+        if (!$fieldsAndTypes = fgetcsv($sourceFile)) {
+            return;
+        }
+
+        list($colTitles, $colTypes) = $this->extractFieldsAndTypes($fieldsAndTypes);
+        $rowHeadIndex = array_search(CSVSource::EXT_FIELD, $colTitles);// 行标题索引位置（针对有行表头的）
+
+        $this->colInfo = [$colTitles, $colTypes, $rowHeadIndex];
+    }
+
+    /**
+     * 生成 Excel 中的表格
+     */
+    private function createTable(
+        Worksheet $activeSheet,
+        int $rowOffset,
+        $sourceFile,
+        int $maxRow,
+        Tpl $tpl,
+        string $title,
+        string $summary,
+        array $header,
+        array $footer,
+        $rowHeight
+    ) {
+        $startRowOffset = $rowOffset + 1;
         // 生成模板
-        list($rowOffset, $colOffset, $rowMap, $colMap) = $this->createSheetTpl($activeSheet, $target);
-
-        $rowHeadIndex = array_search(RowHead::NODE_ROW_HEADER_COL, $colTitles);// 行标题索引位置（针对有行表头的）
-        $rowHeadUsed = [];// 行标题内部偏移值
+        list($rowOffset, $colOffset, $rowMap, $colMap) = $this->createSheetTpl(
+            $activeSheet,
+            $tpl,
+            $title,
+            $summary,
+            $header,
+            $rowOffset
+        );
+        // 行标题内部偏移值
+        $rowHeadUsed = [];
+        list($colTitles, $colTypes, $rowHeadIndex) = $this->colInfo;
 
         // 循环读取源数据写入到 excel 中
         while ($maxRow-- && !feof($sourceFile)) {
             if (!$rowValues = fgetcsv($sourceFile)) {
                 continue;
+            }
+
+            if ($rowValues[0] === CSVSource::SPLIT_LINE) {
+                // 遇到多源分割线，获取下一个表格的列信息后跳出
+                $this->extractColInfo($sourceFile);
+                 break;
             }
 
             $rowOffset++;
@@ -126,24 +173,64 @@ class ExcelGenerator
                 if (!$theColNum = ($colMap[$colTitles[$index]] ?? 0)) {
                     continue;
                 }
-
-                $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum)->setValue($val);
+                
+                $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum)
+                ->setValueExplicit($val, $colTypes[$index] == 'number' ? DataType::TYPE_NUMERIC : DataType::TYPE_STRING);
             }
 
             // 设置行高度（使用默认行高度无效）
-            $activeSheet->getRowDimension($theRowNum)->setRowHeight($target->getDefaultHeight());
+            $activeSheet->getRowDimension($theRowNum)->setRowHeight($rowHeight);
         }
 
         // 将 colOffset 偏移到结束位置
         $colOffset += count($colMap);
 
         // 设置整个表格边框
-        $activeSheet->getStyle('A1' . ':' . Coordinate::stringFromColumnIndex($colOffset) . $rowOffset)
+        $activeSheet->getStyle("A{$startRowOffset}" . ':' . Coordinate::stringFromColumnIndex($colOffset) . $rowOffset)
         ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
         // 设置页脚
-        if ($target->getFooter()) {
-            $this->setFooter($activeSheet, $target->getFooter(), $colOffset, $rowOffset);
+        if ($footer) {
+            $this->setFooter($activeSheet, $footer, $colOffset, $rowOffset);
+        }
+
+        return ++$rowOffset;
+    }
+
+    /**
+     * 生成 excel 文件
+     * 一个 excel 中可能会生成多个 table
+     * @param resource $sourceFile 源数据文件，资源对象
+     * @param string $targetFileName 目标文件名
+     * @param int $maxRow 最大读取行数
+     * @param ExcelTarget $target 目标对象
+     */
+    private function createExcel($sourceFile, string $targetFileName, int $maxRow, ExcelTarget $target)
+    {
+        $spreadSheet = new Spreadsheet();
+        $activeSheet = $spreadSheet->getActiveSheet();
+        $this->setDefaultStyle($spreadSheet, $target);
+
+        $rowOffset = 0;
+        $tableIndex = 0;
+        while (!feof($sourceFile) && $target->getTpls($tableIndex) && $rowOffset < $maxRow) {
+            // 每次循环生成一个 table
+            $rowOffset = $this->createTable(
+                $activeSheet,
+                $rowOffset,
+                $sourceFile,
+                $maxRow,
+                $target->getTpls($tableIndex),
+                $target->getTitles($tableIndex),
+                $target->getSummaries($tableIndex),
+                $target->getHeaders($tableIndex),
+                $target->getFooters($tableIndex),
+                $target->getDefaultHeight()
+            );
+
+            // 每生成一个 table，将行号往下推移 3 行
+            $rowOffset += 3;
+            $tableIndex++;
         }
 
         $writer = new Xlsx($spreadSheet);
@@ -157,32 +244,31 @@ class ExcelGenerator
      * 生成 excel 模板
      * @return array [当前行号, 当前列号, 行映射, 列映射]
      */
-    private function createSheetTpl(Worksheet $activeSheet, Excel $target): array
+    private function createSheetTpl(Worksheet $activeSheet, Tpl $tpl, string $title, string $summary, array $header, int $currRowNum): array
     {
         // 必须有 template
-        if (!$tpl = $target->getTpl()) {
+        if (!$tpl) {
             throw new TargetException("缺少 template");
         }
 
         $rowHead = $tpl->rowHead();
         $colNum = $this->calcColNum($tpl);
-        $currRowNum = 0;
         
         // 标题
-        if ($target->getTitle()) {
-            $this->setTitle($activeSheet, $target->getTitle(), $colNum);
+        if ($title) {
+            $this->setTitle($activeSheet, $title, $colNum, $currRowNum);
             $currRowNum++;
         }
 
         // 摘要
-        if ($target->getSummary()) {
-            $this->setSummary($activeSheet, $target->getSummary(), $colNum, $currRowNum);
+        if ($summary) {
+            $this->setSummary($activeSheet, $summary, $colNum, $currRowNum);
             $currRowNum++;
         }
 
         // header
-        if ($target->getHeader()) {
-            $currRowNum += $this->setHeader($activeSheet, $target->getHeader(), $colNum, $currRowNum);
+        if ($header) {
+            $currRowNum += $this->setHeader($activeSheet, $header, $colNum, $currRowNum);
         }
 
         // 列标头
@@ -474,7 +560,7 @@ class ExcelGenerator
     /**
      * 设置 Excel 默认样式
      */
-    private function setDefaultStyle(Spreadsheet $workSheet, Excel $target)
+    private function setDefaultStyle(Spreadsheet $workSheet, ExcelTarget $target)
     {
         $workSheet->getActiveSheet()->getDefaultColumnDimension()->setWidth($target->getDefaultWidth());
         $workSheet->getActiveSheet()->getDefaultRowDimension()->setRowHeight($target->getDefaultHeight());
@@ -512,10 +598,17 @@ class ExcelGenerator
      * 计算目标文件数目以及每个文件最大行数
      * @return array [文件数目, 最大行数]
      */
-    private function calcFileCount(Source $source, bool $hasRowHead = false): array
+    private function calcFileCount(CSVSource $source, ExcelTarget $target): array
     {
+        $tpls = $target->getTpls();
+
+        // 多表格模式下只生成一个文件
+        if (count($tpls) > 1) {
+            return [1, PHP_INT_MAX];
+        }
+
         // 有行标题的情况下只生成一个文件
-        if ($hasRowHead) {
+        if (isset($tpls[0]) && $tpls[0] instanceof Tpl && $tpls[0]->rowHead()) {
             return [1, PHP_INT_MAX];
         }
 

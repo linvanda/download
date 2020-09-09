@@ -39,7 +39,7 @@ class UploadSuccessHandler extends WorkHandler
             }
 
             $this->notify(WorkFlow::WF_NOTIFY_DONE);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Container::get(LoggerInterface::class)->error($e->getMessage(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);
             $this->notify(WorkFlow::WF_NOTIFY_FAIL, $e->getMessage());
         }

@@ -15,6 +15,10 @@ trait TplBuilder
      */
     public static function build($tplCfg): ?Tpl
     {
+        if ($tplCfg instanceof Tpl) {
+            return $tplCfg;
+        }
+
         if ($tplCfg && is_string($tplCfg)) {
             $tplCfg = json_decode($tplCfg, true);
         }

@@ -87,9 +87,11 @@ class LocalFile
 
     private static function formatDataList(array $dataList): array
     {
-        reset($dataList);
+        if (!$dataList) {
+            return [];
+        }
 
-        if (!isset($dataList[0]) || !is_array($dataList[0])) {
+        if (!is_array(reset($dataList))) {
             $dataList = [$dataList];
         }
 

@@ -3,6 +3,7 @@
 namespace App\Foundation\Repository\Task;
 
 use App\Domain\Project\IProjectRepository;
+use App\Domain\Target\ExcelTarget;
 use WecarSwoole\Repository\MySQLRepository;
 use App\Domain\Task\ITaskRepository;
 use App\Domain\Task\Merchant;
@@ -28,6 +29,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'name' => $task->name(),
             'project_id' => $task->project()->id(),
             'source_url' => $task->source()->uri->url(),
+            'source_data' => $task->source()->data ? json_encode($task->source()->data, true) : '',
             'type' => self::FILE_TYPE_MAP[$task->target()->type()],
             'file_name' => $task->target()->downloadFileName(),
             'operator_id' => $task->operator,
@@ -62,7 +64,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             return null;
         }
 
-        return TaskFactory::create($this->buildTaskDTO($info), Container::get(IProjectRepository::class));
+        return TaskFactory::create($this->buildTaskDTO($info));
     }
 
     public function getTaskDTOById(string $id): ?DBTaskDTO
@@ -210,14 +212,15 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             array_merge(
                 $info,
                 [
-                    'template' => $meta['template'] ?? null,
-                    'title' => $meta['title'] ?? '',
-                    'summary' => $meta['summary'] ?? '',
-                    'header' => $meta['header'],
-                    'footer' => $meta['footer'],
+                    'template' => $meta['templates'] ?? null,
+                    'title' => $meta['titles'] ?? '',
+                    'summary' => $meta['summaries'] ?? '',
+                    'header' => $meta['headers'] ?? [],
+                    'footer' => $meta['footers'] ?? [],
                     'type' => array_flip(self::FILE_TYPE_MAP)[$info['type']],
                     'default_width' => $meta['default_width'] ?? 0,
                     'default_height' => $meta['default_height'] ?? 0,
+                    'multi_type' => $meta['multi_type'] ?? ExcelTarget::MT_SINGLE,
                 ]
             )
         );

@@ -9,8 +9,6 @@ class RowHead extends Node
 {
     use NodeParser;
 
-    public const NODE_ROW_HEADER_COL = '_row_head_';
-
     // 节点关联的行数，只有叶子节点有效
     private $rowCount;
 

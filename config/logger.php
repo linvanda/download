@@ -2,6 +2,8 @@
 
 use WecarSwoole\Util\File;
 
+use function WecarSwoole\Config\apollo;
+
 return [
     'debug' => [
         'file' => File::join(STORAGE_ROOT, 'logs/info.log'),
@@ -18,23 +20,18 @@ return [
     'critical' => [
         'mailer' => [
             'driver' => 'default',
-            'subject' => '喂车告警',
-            'to' => [
-            ]
+            'subject' => '下载中心告警',
+            'to' => json_decode(apollo('application', 'logger.emails'), true) ?: []
         ],
-        'file' => File::join(STORAGE_ROOT, 'logs/error.log'),
+        'file' => File::join(EASYSWOOLE_ROOT, 'storage/logs/error.log'),
     ],
     'emergency' => [
         'mailer' => [
             'driver' => 'default',
-            'subject' => '喂车告警',
-            'to' => [
-                // 邮箱列表，格式：'songlin.zhang@weicheche.cn' => '张松林'
-            ]
+            'subject' => '下载中心告警',
+            'to' => json_decode(apollo('application', 'logger.emails'), true) ?: []
         ],
-        'file' => File::join(STORAGE_ROOT, 'logs/error.log'),
-        'sms' => [
-            // 手机号列表，格式：'18987674848' => '张松林'
-        ]
+        'file' => File::join(EASYSWOOLE_ROOT, 'storage/logs/error.log'),
+        'sms' => json_decode(apollo('application', 'logger.mobiles'), true) ?: []
     ],
 ];
