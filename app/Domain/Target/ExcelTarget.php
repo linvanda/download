@@ -214,8 +214,7 @@ class ExcelTarget extends Target
 
     private function formatSimpleTplConf(array $conf): array
     {
-        // 如果是一维数组，格式化为二维数组
-        if (!is_array(reset($conf))) {
+        if (is_string(reset($conf))) {
             $newConf = [];
             foreach ($conf as $key => $val) {
                 $newConf[] = ['name' => $key, 'title' => $val];
