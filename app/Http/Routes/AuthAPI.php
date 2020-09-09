@@ -53,7 +53,7 @@ class AuthAPI extends ApiRoute
         /**
          * 投递任务：多表格模式。
          * 目前仅支持 excel。
-         * 支持一个 tab 页生成多张表格，或者一个 excel 多个 tab，每个 tab 一张表格
+         * 支持一个 tab 页生成多张表格，或者一个 excel 多个 tab，每个 tab 一张表格(暂未实现)
          * 参数和 /v1/task 单表格模式基本一致，不过相关参数是将单表格模式的参数放到数组中（source_data、template、title、summary、header、footer 以及 source_url 的响应体）
          * param:
          *      project_id string 必填。项目 id，由下载中心分配

@@ -102,7 +102,7 @@
    **参数：**
 
    - **source_url** string 选填。数据源 url，下载中心从此 url 循环拉取数据（GET 请求，会带上 page、page_size、_task_id 参数，page 从 0 开始）。
-   - **source_data** json string 选填。source_data 和 source_url 必须提供一个，以 source_data 优先。投递任务时即提供源数据，针对源数据量很少的场景，此时不需要通过额外接口提供数据。
+   - **source_data** json string 选填。source_data 和 source_url 必须提供一个，以 source_data 优先。投递任务时即提供源数据，针对源数据量很少的场景，此时不需要通过额外接口提供数据。注意：**多表格模式**下仅支持 source_data 传数据。
    - **project_id** string 必填。项目 id，由下载中心分配。
    - **name** string 必填。任务名称。
    - **file_name** string 可选。下载文件的名称，默认根据日期加随机数生成。
@@ -113,8 +113,8 @@
    - **merchant_type** int 必填。商户类型：0 平台，1 单站，2 集团，3 油站组
    - **merchant_id** int 必填。商户编号
    - **template** json string 可选。表头格式定义。仅对 excel 生效，json。详见后面说明。template 也可以在 source_url 返回的数据中动态提供。
-   - **title** string 可选。表格标题。仅对 excel 生效。
-   - **summary** string 可选。表格摘要。仅对 excel 生效。
+   - **title** string|json string 可选。表格标题。仅对 excel 生效。
+   - **summary** string|json string 可选。表格摘要。仅对 excel 生效。
    - **header** json string 可选。excel header，如`{"油站": "钓鱼岛", "日期": "2020-07-24"}`。可以在  source_url 返回的数据中动态提供。
    - **footer** json string 可选。excel footer，如`{"负责人": "linvanda", "签名": "        "}` 。可以在  source_url 返回的数据中动态提供。
    - **default_width** int 可选。表格列宽度，单位 pt。仅对 excel 生效。
@@ -124,24 +124,34 @@
 2. 同步下载：GET /v1/download/sync。需要 token 鉴权。
 
    **参数：**同投递任务接口参数。
-
-
+   
+   
 
 csv 文件格式很简单，这里重点说明下 excel 格式。
 
-
-
 **excel 模板格式：**
 
-一个完整的 excel 格式如下：
+excel 模板分为**单表格模式**（默认）和**多表格模式**。
+- **单表格**：一页 excel 只有一个表格；
+- **多表格**：一页 excel 有多个表格。**多表格型**仅支持通过 source_data 传输源数据（参见相关接口）；
 
-![excel 模板](./readme/excel_tpl.png)
+*多表格模式下，投递任务接口中的 source_data、template、title、summary、header、footer 参数等于是将单表格模式下的这些参数放入数组（列表）中，如单表格模式下 title 为"表格标题 1"，多表格模式下为 ["表格标题1", "表格标题 2"]*
+
+一个完整的**单表格** excel 格式如下：
+
+![单表格 excel 模板](./readme/excel_tpl.png)
+
+
+
+一个完整的**多表格型** excel 格式如下（即对单表格模式的重复）：
+
+![多表格 excel 模板](./readme/multi_table.png)
 
 
 
 **template 数据格式：**
 
-teplate 参数用来定义 excel 中列表头（col head）和行表头（row head）部分，是 Map 类型的 json 字符串表示。可以有以下三种格式(下面使用 javascript 的字面量对象表示，其它语言请转成各自的 Map 格式)：
+teplate 参数用来定义 excel 中列表头（col head）和行表头（row head）部分，是 Map 类型的 json 字符串表示。可以有以下三种格式(下面以单表格模式为例，使用 javascript 的字面量对象表示，其它语言请转成各自的 Map 格式)：
 
 - 不提供模板。此时会以源数据中的 key 作为列标题：
 
@@ -294,7 +304,7 @@ teplate 参数用来定义 excel 中列表头（col head）和行表头（row he
 
 **源数据格式：**
 
-源数据用来填充 excel 的数据区域，由 source_url 返回数据的 data 项提供。
+源数据用来填充 excel 的数据区域，由 source_url 返回数据的 data 项提供（或者 source_data 提供，source_data 和 source_url 返回值中的 data 项相同）。
 
 完整响应格式：
 
