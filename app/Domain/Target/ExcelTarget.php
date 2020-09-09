@@ -183,8 +183,6 @@ class ExcelTarget extends Target
             $this->templates = [];
             return;
         }
-
-        $templates = $this->formatSimpleTplConf($templates);
         
         if ($templates instanceof Tpl) {
             $this->templates = [$templates];
@@ -200,6 +198,8 @@ class ExcelTarget extends Target
             $this->templates = $templates;
             return;
         }
+
+        $templates = $this->formatSimpleTplConf($templates);
 
         // 如果是单模板，则转成兼容模式
         if ($this->isSingleTplCfg($templates)) {
