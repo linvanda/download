@@ -85,10 +85,10 @@ class TaskFactory
         $source = null;
         switch (strtolower($targetType)) {
             case 'csv':
-            case 'excel':
+            case 'excel': 
             default:
                $source = new CSVSource(
-                    new URI($taskDTO->sourceUrl),
+                    new URI($taskDTO->sourceUrl ?: ''),
                     $taskDTO->sourceData ?: [],
                     File::join(Config::getInstance()->getConf('local_file_base_dir'), $taskDTO->id),
                     $taskDTO->id,
