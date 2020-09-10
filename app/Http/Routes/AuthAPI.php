@@ -60,12 +60,10 @@ class AuthAPI extends ApiRoute
          *      name string 必填。任务名称
          *      file_name string 可选。下载文件的名称，默认根据日期加随机数生成
          *      type string 可选。默认 excel（目前仅支持 excel）
-         *      multi_type string 可选。多表格模式：page|tab。page 模式（默认）：一个页面显示多个表格；tab 模式：多个 tab，一个 tab 一张表格
+         *      multi_type string 可选。多表格模式：page|tab。page 模式（默认）：一个页面显示多个表格；tab 模式：多个 tab，一个 tab 一张表格（暂未实现）
          *      callback string 可选。处理完成后回调通知 url
-         *      step int 可选。下载数据时每次取多少数据（步长），默认 1000，可设置范围：100 - 5000
          *      operator_id string 可选。操作员编号，存根用
-         *      source_url string 可选。数据源 url。响应格式：将单表格模式下的各个字段放入数组（列表）中，详情见项目文档说明
-         *      source_data json string，可选。source_url 和 source_data 必须有一个。
+         *      source_data json string，源数据。多表格模式必须通过 source_data 传源数据
          *      template string 可选。表头格式定义。仅对 excel 生效
          *      title string 可选。表格标题。仅对 excel 生效
          *      summary string 可选。表格摘要。仅对 excel 生效

@@ -32,6 +32,17 @@ class Task extends Controller
                 'title' => ['lengthMax' => 200],
                 'summary' => ['lengthMax' => 8000],
             ],
+            'deliverMultiple' => [
+                'source_data' => ['required'],
+                'name' => ['required', 'lengthMin' => 2, 'lengthMax' => 60],
+                'project_id' => ['required', 'lengthMax' => 40],
+                'file_name' => ['lengthMax' => 120],
+                'type' => ['inArray' => [null, 'excel']],
+                'callback' => ['lengthMax' => 300],
+                'operator_id' => ['lengthMax' => 120],
+                'merchant_type' => ['required', 'integer'],
+                'merchant_id' => ['required', 'integer'],
+            ],
             'one' => [
                 'task_id' => ['required', 'lengthMax' => 100],
             ],
@@ -63,7 +74,7 @@ class Task extends Controller
      */
     public function deliverMultiple()
     {
-        $task = Container::get(TaskService::class)->create(new TaskDTO(array_merge(['multi_type' => 'page'], $this->params())));
+        $task = Container::get(TaskService::class)->create(new TaskDTO(array_merge(['multi_type' => 'page'], $this->params(), ['type' => 'excel'])));
         TaskManager::getInstance()->deliver($task);
         $this->return(['task_id' => $task->id()]);
     }
