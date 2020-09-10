@@ -170,7 +170,7 @@ class ExcelGenerator
             // 注意：源文件中的数据（rowValues）列数不一定和模板的一致，需要忽略掉多出来的部分
             foreach ($rowValues as $index => $val) {
                 // 确定列号
-                if (!$theColNum = ($colMap[$colTitles[$index]] ?? 0)) {
+                if (!isset($colTitles[$index]) || !$theColNum = ($colMap[$colTitles[$index]] ?? 0)) {
                     continue;
                 }
                 
