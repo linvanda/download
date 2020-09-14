@@ -2,7 +2,6 @@
 
 namespace App\Foundation\Repository\Task;
 
-use App\Domain\Project\IProjectRepository;
 use App\Domain\Target\ExcelTarget;
 use WecarSwoole\Repository\MySQLRepository;
 use App\Domain\Task\ITaskRepository;
@@ -11,7 +10,6 @@ use App\Domain\Task\Task;
 use App\Domain\Task\TaskFactory;
 use App\Foundation\DTO\DBTaskDTO;
 use Exception;
-use WecarSwoole\Container;
 
 class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
 {
