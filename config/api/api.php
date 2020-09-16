@@ -36,6 +36,7 @@ return [
                 'ssl_allow_self_signed' => true
             ]
         ],
+        'default_retry_num' => 2,
     ],
     // 组
     'weicheche' => include_once __DIR__ . '/weicheche.php'

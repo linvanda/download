@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use WecarSwoole\Http\Controller;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Swoole\Coroutine;
 use WecarSwoole\Client\API;
 use WecarSwoole\Util\File;
 use WecarSwoole\Util\Url;
@@ -699,5 +700,15 @@ class Test extends Controller
         // return $written_total;
         $this->response()->write($data);
         return strlen($data);
+    }
+
+    public function testCall()
+    {
+        API::retrySimpleInvoke("http://localhost:9588/v1/test/timeout");
+    }
+
+    public function timeout()
+    {
+        Coroutine::sleep(10);
     }
 }

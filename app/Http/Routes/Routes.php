@@ -16,6 +16,8 @@ class Routes extends Route
         $this->get("/v1/test/upload", "/V1/Test/upload");
         $this->get("/v1/test/notify", "/V1/Test/notify");
         $this->get('/v1/test/sync', '/V1/Test/testSyncDownload');
+        $this->get('/v1/test/retry', '/V1/Test/testCall');
+        $this->get('/v1/test/timeout', '/V1/Test/timeout');
         // -------- 测试用 End --------
 
         /**
