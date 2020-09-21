@@ -60,9 +60,13 @@ class TaskManager
     {
         $job = new Job();
         $job->setJobData(['task_id' => $task->id(), 'enqueue_time' => time()]);
-        Queue::instance(Config::getInstance()->getConf('task_queue'))->producer()->push($job);
-        $this->taskSvr->switchStatus($task, Task::STATUS_ENQUEUED);
-        $this->logger->info("投递任务到消息队列：{$task->id()}");
+        if (Queue::instance(Config::getInstance()->getConf('task_queue'))->producer()->push($job)) {
+            // 注意：如果 switchStatus 失败会抛异常，此时并没有删除入列的数据，该场景下，出列处理任务的时候会被拦截
+            $this->taskSvr->switchStatus($task, Task::STATUS_ENQUEUED);
+            $this->logger->info("投递任务到消息队列：{$task->id()}");
+        } else {
+            $this->logger->error("投递任务到消息队列失败：{$task->id()}");
+        }
     }
 
     /**
