@@ -100,7 +100,7 @@ class CSVSource implements ISource
         try {
             if ($this->data) {
                 // 投递任务时提供了 data
-                list($cnt, $size) = $this->saveToFile($file, $this->data, $recordColType, true);
+                $cnt = $this->saveToFile($file, $this->data, $recordColType, true);
             } else {
                 // 循环拉取数据
                 $page = $n = $total = 0;
@@ -114,10 +114,8 @@ class CSVSource implements ISource
                     }
     
                     // 保存到文件
-                    list($tCnt, $tSize) = $this->saveToFile($file, $data, $recordColType, $n == 1 && count($data));
-                    $cnt += $tCnt;
-                    $size += $tSize;
-    
+                    $cnt += $this->saveToFile($file, $data, $recordColType, $n == 1 && count($data));
+                    
                     if ($n == 1) {
                         $total = $result['total'] ?? PHP_INT_MAX;// 如果没有提供 total，则会不停地循环拉数据直到拉完
                     }
@@ -129,13 +127,13 @@ class CSVSource implements ISource
                     $page++;
                 }
             }
+            $size = $file->size();
         } catch (\Throwable $e) {
             throw new SourceException($e->getMessage(), $e->getCode());
         } finally {
             $file->close();
         }
         
-
         $this->count = $cnt;
         $this->size = $size;
     }
@@ -158,14 +156,14 @@ class CSVSource implements ISource
      * @param LocalFile $file
      * @param array $data 源数据
      * @param bool $saveFields
-     * @return array [保存的行数（不包括标题行）, 文件大小]
+     * @return int 保存的行数（不包括标题行）
      */
-    private function saveToFile(LocalFile $file, array $data, bool $recordColType, bool $saveFields = false): array
+    private function saveToFile(LocalFile $file, array $data, bool $recordColType, bool $saveFields = false): int
     {
         list($sourceType, $data) = $this->formatSourceData($data);
         if (!$data) {
-            return [0, 0];
-        } 
+            return 0;
+        }
 
         $cnt = 0;
         if ($sourceType === self::SOURCE_TYPE_SIMPLE) {
@@ -182,7 +180,7 @@ class CSVSource implements ISource
             }
         }
 
-        return [$cnt, $file->size()];
+        return $cnt;
     }
 
     private function innerSaveToFile(LocalFile $file, array $data, bool $recordColType, bool $saveFields)

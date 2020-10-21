@@ -624,11 +624,7 @@ class ExcelGenerator
         }
 
         $count = max(ceil($sourceSize / $maxSize), ceil($sourceCount / $maxCount));
-
-        // 记录日志测试
-        Container::get(LoggerInterface::class)->info("文件数：" . print_r(['maxsize' => $maxSize, 'maxcount' => $maxCount,
-        'sourcesize' => $sourceSize, 'sourcecount' => $sourceCount, 'count' => $count], true));
-
+        
         return [$count, ceil($sourceCount / $count)];
     }
 }
