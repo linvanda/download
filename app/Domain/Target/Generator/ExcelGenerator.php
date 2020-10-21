@@ -25,8 +25,6 @@ use WecarSwoole\Util\File;
 use SplQueue;
 use App\ErrCode;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use Psr\Log\LoggerInterface;
-use WecarSwoole\Container;
 
 /**
  * Excel 文件生成器
@@ -624,7 +622,7 @@ class ExcelGenerator
         }
 
         $count = max(ceil($sourceSize / $maxSize), ceil($sourceCount / $maxCount));
-        
+
         return [$count, ceil($sourceCount / $count)];
     }
 }
