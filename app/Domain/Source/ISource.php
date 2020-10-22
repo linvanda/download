@@ -3,7 +3,6 @@
 namespace App\Domain\Source;
 
 use App\Foundation\Client\API;
-use App\Foundation\File\LocalFile;
 
 /**
  * 数据源接口

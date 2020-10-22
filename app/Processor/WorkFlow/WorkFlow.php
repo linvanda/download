@@ -39,13 +39,9 @@ class WorkFlow
     public const WF_UPLOAD_SUC = 7;
     // 上传失败
     public const WF_UPLOAD_FAILED = 8;
-    // 重试
-    public const WF_REDO = 9;
     // 通知客户端完成
-    public const WF_NOTIFY_DONE = 10;
-    public const WF_NOTIFY_FAIL = 11;
-    // 通用的执行完成状态，该状态没有处理程序处理，一般用来结束工作流
-    public const WF_DONE = 100;
+    public const WF_NOTIFY_DONE = 9;
+    public const WF_NOTIFY_FAIL = 10;
 
     // 工作流第一个执行节点
     private const FIRST_STATUS = self::WF_TODO;
