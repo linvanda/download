@@ -78,11 +78,11 @@
         },
         {
             "name": "dev/mysql",
-            "version": "v1.0.8",
+            "version": "v1.0.9",
             "source": {
                 "type": "git",
                 "url": "https://gitlab4.weicheche.cn/dev/mysql.git",
-                "reference": "de9632053d5e0fca6d6b03265b40b1b3677dfc8e"
+                "reference": "fba598d6da6b2d7d0d431adb57c3961b593d07fb"
             },
             "require": {
                 "ext-swoole": ">=4.3.0",
@@ -101,7 +101,7 @@
                     "email": "1049180458@qq.com"
                 }
             ],
-            "time": "2019-07-19T09:16:58+00:00"
+            "time": "2020-10-27T07:16:15+00:00"
         },
         {
             "name": "doctrine/annotations",
