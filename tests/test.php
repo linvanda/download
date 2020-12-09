@@ -41,5 +41,3 @@
 // echo crc32("add");
 
 // $cluster = new RedisCluster(NULL, Array("127.0.0.1:7000", "127.0.0.1:7001"), 1.5, 1.5);
-
-echo ini_get('redis.clusters.cache_slots');

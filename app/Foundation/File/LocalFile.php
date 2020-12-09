@@ -4,6 +4,7 @@ namespace App\Foundation\File;
 
 use App\ErrCode;
 use App\Exceptions\FileException;
+use WecarSwoole\Exceptions\Exception;
 use WecarSwoole\Util\File;
 
 /**
@@ -34,9 +35,8 @@ class LocalFile
     public function saveAsCsv(array $dataList)
     {
         $dataList = self::formatDataList($dataList);
-        
         foreach ($dataList as $item) {
-            if (@fputcsv($this->file, $item) === false) {
+            if (fputcsv($this->file, $item) === false) {
                 throw new FileException("写入csv文件失败:{$this->fileName}", ErrCode::FILE_OP_FAILED);
             }
         }
@@ -95,9 +95,31 @@ class LocalFile
             $dataList = [$dataList];
         }
 
+        // 数据格式校验
+        self::validateCSVOrgData($dataList);
+
         return array_map(function ($item) {
             return array_values($item);
         }, $dataList);
+    }
+
+    /**
+     * CSV 源数据格式校验
+     * 格式必须是形如：[['name' => '张三', 'age' => 18]]
+     */
+    private static function validateCSVOrgData(array $data)
+    {
+        if (!is_array(reset($data))) {
+            throw new Exception("数据格式错误：必须是二维数组", ErrCode::DATA_FORMAT_ERR);
+        }
+
+        // 第二维 的 value 必须是标量
+        $first = $data[0];
+        foreach ($first as $val) {
+            if (!is_scalar($val)) {
+                throw new Exception("数据格式错误：第二维数组的值必须是标量类型", ErrCode::DATA_FORMAT_ERR);
+            }
+        }
     }
 
     protected function openFile(string $fileName, string $mode)

@@ -26,4 +26,5 @@ class ErrCode extends BaseErrCode
     public const SOURCE_DATA_EMPTY = 512;
     public const DOWNLOAD_FAILED = 513;
     public const SOURCE_TYPE_ERR = 514;
+    public const DATA_FORMAT_ERR = 515; // 数据格式错误
 }
