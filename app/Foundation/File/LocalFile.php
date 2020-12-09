@@ -36,7 +36,7 @@ class LocalFile
         $dataList = self::formatDataList($dataList);
         
         foreach ($dataList as $item) {
-            if (fputcsv($this->file, $item) === false) {
+            if (@fputcsv($this->file, $item) === false) {
                 throw new FileException("写入csv文件失败:{$this->fileName}", ErrCode::FILE_OP_FAILED);
             }
         }
