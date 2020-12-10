@@ -109,9 +109,18 @@ class CSVSource implements ISource
                 while ($n++ < 100000) {
                     $result = $this->invokeData($invoker, $page, $this->step);
         
-                    if (!isset($result['data']) || !$data = $result['data']) {
+                    if (!isset($result['data'])) {
                         break;
                     }
+
+                    $data = $result['data'];
+                    // 如果传了force_continue，则除非客户端将该参数设置为 0，否则会继续请求
+                    // 应对客户端从数据库取出数据后又做了过滤的情况，这种情况下有可能获取到的数据条数小于 page_size，但实际上后面还有数据
+                    $forceContinue = $result['force_continue'] ?? 0;
+
+                    if (!$forceContinue && !$data) {
+                        break;
+                    } 
     
                     // 保存到文件
                     $cnt += $this->saveToFile($file, $data, $recordColType, $n == 1 && count($data));
@@ -121,7 +130,7 @@ class CSVSource implements ISource
                     }
         
                     // 为了健壮性，此处做了两方面的检测，防止对方接口有 bug 导致一直拉取数据
-                    if (count($data) < $this->step || $cnt >= $total) {
+                    if (!$forceContinue && count($data) < $this->step || $cnt >= $total) {
                         break;
                     }
                     $page++;
