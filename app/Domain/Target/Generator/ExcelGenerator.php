@@ -174,8 +174,14 @@ class ExcelGenerator
                     continue;
                 }
                 
+                // 单元格类型
+                // 注意：在生成源 CSV 时，我们根据第一行数据探测了列类型，但这里仍然需要重新探测，防止同一列数据在不同行类型不一致
+                $colType = $colTypes[$index] == 'number' ? DataType::TYPE_NUMERIC : DataType::TYPE_STRING;
+                if (is_string($val) && !is_numeric($val)) {
+                    $colType = DataType::TYPE_STRING;
+                }
                 $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum)
-                ->setValueExplicit($val, $colTypes[$index] == 'number' ? DataType::TYPE_NUMERIC : DataType::TYPE_STRING);
+                ->setValueExplicit($val, $colType);
             }
 
             // 设置行高度（使用默认行高度无效）
