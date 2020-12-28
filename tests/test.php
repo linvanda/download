@@ -41,3 +41,5 @@
 // echo crc32("add");
 
 // $cluster = new RedisCluster(NULL, Array("127.0.0.1:7000", "127.0.0.1:7001"), 1.5, 1.5);
+$a = 44.4;
+echo is_scalar($a);

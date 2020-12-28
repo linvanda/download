@@ -116,7 +116,7 @@ class LocalFile
         // 第二维 的 value 必须是标量
         $first = $data[0];
         foreach ($first as $val) {
-            if (!is_scalar($val)) {
+            if (!is_null($val) && !is_scalar($val)) {
                 throw new Exception("数据格式错误：第二维数组的值必须是标量类型", ErrCode::DATA_FORMAT_ERR);
             }
         }
