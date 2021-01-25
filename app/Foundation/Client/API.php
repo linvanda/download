@@ -53,6 +53,7 @@ class API
     private function retryCall(array $params): Response
     {
         $result = null;
+        $paramsStr = http_build_query($params);
         while ($this->retryNum++ < self::MAX_RETRY_NUM) {
             try {
                 $result = BaseAPI::simpleInvoke(
@@ -81,10 +82,10 @@ class API
             $this->lastErrMsg = $result->getMessage();
 
             Co::sleep($this->calcIntervalTime());
-            Container::get(LoggerInterface::class)->warning("第{$this->retryNum}次重试{$this->url}，原因：{$this->lastErrMsg},http code:{$this->lastErrNo}");
+            Container::get(LoggerInterface::class)->warning("第{$this->retryNum}次重试{$this->url}，params:{$paramsStr}，原因：{$this->lastErrMsg},http code:{$this->lastErrNo}");
         }
 
-        return $result === null ? new Response([], 500, self::MAX_RETRY_NUM . "次重试失败:{$this->url}") : $result;
+        return $result === null ? new Response([], 500, self::MAX_RETRY_NUM . "次重试失败:{$this->url}，params:{$paramsStr}") : $result;
     }
 
     private function calcIntervalTime(): int

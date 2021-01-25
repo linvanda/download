@@ -104,6 +104,7 @@ class CSVSource implements ISource
             } else {
                 // 循环拉取数据
                 $page = $n = $total = 0;
+                $gotNoEmptyData = false;// 是否已经获取到了非空数据（有可能前几次拿到的数据都是空，此时我们无法拿到 field 信息）
                 $invoker->setUrl($this->uri->url());
     
                 while ($n++ < 100000) {
@@ -120,10 +121,10 @@ class CSVSource implements ISource
 
                     if (!$forceContinue && !$data) {
                         break;
-                    } 
+                    }
     
                     // 保存到文件
-                    $cnt += $this->saveToFile($file, $data, $recordColType, $n == 1 && count($data));
+                    $cnt += $this->saveToFile($file, $data, $recordColType, !$gotNoEmptyData && count($data));
                     
                     if ($n == 1) {
                         $total = $result['total'] ?? PHP_INT_MAX;// 如果没有提供 total，则会不停地循环拉数据直到拉完
@@ -133,6 +134,11 @@ class CSVSource implements ISource
                     if (!$forceContinue && count($data) < $this->step || $cnt >= $total) {
                         break;
                     }
+
+                    if (count($data)) {
+                        $gotNoEmptyData = true;
+                    }
+
                     $page++;
                 }
             }
