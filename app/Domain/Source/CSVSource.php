@@ -117,7 +117,7 @@ class CSVSource implements ISource
                     $data = $result['data'];
                     // 如果传了force_continue，则除非客户端将该参数设置为 0，否则会继续请求
                     // 应对客户端从数据库取出数据后又做了过滤的情况，这种情况下有可能获取到的数据条数小于 page_size，但实际上后面还有数据
-                    $forceContinue = $result['force_continue'] ?? 0;
+                    $forceContinue = $result['force_continue'] ?? null;
 
                     if (!$forceContinue && !$data) {
                         break;
@@ -128,6 +128,11 @@ class CSVSource implements ISource
                     
                     if ($n == 1) {
                         $total = $result['total'] ?? PHP_INT_MAX;// 如果没有提供 total，则会不停地循环拉数据直到拉完
+                    }
+
+                    // 如果接口方明确提供了 force_continue，则先判断该值
+                    if ($forceContinue === 0) {
+                        break;
                     }
         
                     // 为了健壮性，此处做了两方面的检测，防止对方接口有 bug 导致一直拉取数据
