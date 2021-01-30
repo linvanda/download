@@ -105,8 +105,8 @@ class TaskRetry
                 // 待处理，用任务创建时间比较
                 return $taskDTO->ctime <= $now - 60 * 15;
             case Task::STATUS_ENQUEUED:
-                // 已入列，10 分钟内的不处理
-                if ($taskDTO->qtime > $now - 60 * 10) {
+                // 已入列，30s 内的不处理
+                if ($taskDTO->qtime > $now - 30) {
                     return false;
                 }
 
