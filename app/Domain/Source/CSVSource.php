@@ -107,7 +107,7 @@ class CSVSource implements ISource
                 $gotNoEmptyData = false;// 是否已经获取到了非空数据（有可能前几次拿到的数据都是空，此时我们无法拿到 field 信息）
                 $invoker->setUrl($this->uri->url());
     
-                while ($n++ < 100000) {
+                while ($n++ < 20000) {
                     $result = $this->invokeData($invoker, $page, $this->step);
         
                     if (!isset($result['data'])) {
