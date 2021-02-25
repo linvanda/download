@@ -510,9 +510,8 @@ class ExcelGenerator
         $worksheet->getRowDimension($currRowNum)->setRowHeight(36);
         $cell = $worksheet->getCell("A{$currRowNum}");
         // 自动换行
-        $style = $cell->getStyle();
-        $style->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_CENTER);
-        $cell->setValueExplicit($summary, DataType::TYPE_INLINE);// 支持富文本
+        $cell->getStyle()->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_CENTER);
+        $cell->setValue($summary);
     }
 
     /**
@@ -531,10 +530,10 @@ class ExcelGenerator
         $worksheet->mergeCells($coordinate);
         $worksheet->getRowDimension($currRowNum)->setRowHeight(36);
         $cell = $worksheet->getCell("A{$currRowNum}");
-        $cell->setValueExplicit($title, DataType::TYPE_INLINE);// 支持富文本
+        $cell->setValue($title);
         $style = $cell->getStyle();
         $style->getFont()->setSize(22)->setBold(true);
-        $style->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+        $style->getAlignment()->setWrapText(true)->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
     }
 
     /**
@@ -558,8 +557,8 @@ class ExcelGenerator
         $coordinate = "A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colCount) . $currRowNum;
         $worksheet->mergeCells($coordinate);
         $cell = $worksheet->getCell("A{$currRowNum}");
-        $cell->setValueExplicit($txt, DataType::TYPE_INLINE);// 支持富文本
-        $cell->getStyle()->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
+        $cell->setValue($txt);
+        $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
         $worksheet->getRowDimension($currRowNum)->setRowHeight(30);
     }
 
