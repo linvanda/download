@@ -511,7 +511,7 @@ class ExcelGenerator
         $cell = $worksheet->getCell("A{$currRowNum}");
         // 自动换行
         $style = $cell->getStyle();
-        $style->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+        $style->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_CENTER);
         $cell->setValueExplicit($summary, DataType::TYPE_INLINE);// 支持富文本
     }
 
