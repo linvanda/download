@@ -25,6 +25,7 @@ use WecarSwoole\Util\File;
 use SplQueue;
 use App\ErrCode;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\RichText\RichText;
 
 /**
  * Excel 文件生成器
@@ -546,9 +547,13 @@ class ExcelGenerator
 
     private function setSimpleHeaderFooter(Worksheet $worksheet, array $contents, int $colCount, int $lastRowNum, int $hasBorder = 0)
     {
-        $txt = "";
+        $richText = new RichText();
         foreach ($contents as $key => $val) {
-            $txt .= $key . '：' . $val . "        ";
+            $richText->createText("{$key}:{$val}");
+            if (strpos($val, "\n") === false) {
+                // 没有换行符，则后面加上空格分隔
+                $richText->createText("      ");
+            }
         }
 
         // 从下一行开始
@@ -557,7 +562,7 @@ class ExcelGenerator
         $coordinate = "A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colCount) . $currRowNum;
         $worksheet->mergeCells($coordinate);
         $cell = $worksheet->getCell("A{$currRowNum}");
-        $cell->setValue($txt);
+        $cell->setValue($richText);
         $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
         $worksheet->getRowDimension($currRowNum)->setRowHeight(30);
     }
