@@ -198,8 +198,8 @@ class ExcelGenerator
         // 将 colOffset 偏移到结束位置
         $colOffset += count($colMap);
 
-        // 设置整个表格边框
-        $activeSheet->getStyle("A{$startRowOffset}" . ':' . Coordinate::stringFromColumnIndex($colOffset) . $rowOffset)
+        // 设置整个表格边框（标题行不设置边框）
+        $activeSheet->getStyle("A" . ($startRowOffset + 1) . ':' . Coordinate::stringFromColumnIndex($colOffset) . $rowOffset)
         ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
         // 设置页脚
@@ -479,7 +479,7 @@ class ExcelGenerator
 
     /**
      * 设置列样式
-     * 目前仅支持设置行宽度
+     * 目前仅支持设置宽度
      */
     private function setColStyle(Worksheet $worksheet, array $colStyleMap)
     {
@@ -488,8 +488,14 @@ class ExcelGenerator
                 continue;
             }
 
-            if ($style->getWidth()) {
-                $worksheet->getColumnDimension(Coordinate::stringFromColumnIndex($colNo))->setWidth($style->getWidth());
+            $dm = $worksheet->getColumnDimension(Coordinate::stringFromColumnIndex($colNo));
+            if ($width = $style->getWidth()) {
+                if ($width > 0) {
+                    $dm->setWidth($width);
+                } else {
+                    // 负数表示自动列宽
+                    $dm->setAutoSize(true);
+                }
             }
         }
     }
@@ -613,7 +619,15 @@ class ExcelGenerator
      */
     private function setDefaultStyle(Spreadsheet $workSheet, ExcelTarget $target)
     {
-        $workSheet->getActiveSheet()->getDefaultColumnDimension()->setWidth($target->getDefaultWidth());
+        $width = $target->getDefaultWidth();
+        $cdm = $workSheet->getActiveSheet()->getDefaultColumnDimension();
+        if ($width >= 0) {
+            $cdm->setWidth($width);
+        } else {
+            // 负数表示自动列宽
+            $cdm->setAutoSize(true);
+        }
+        
         $workSheet->getActiveSheet()->getDefaultRowDimension()->setRowHeight($target->getDefaultHeight());
     }
 
