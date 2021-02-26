@@ -26,6 +26,7 @@ use SplQueue;
 use App\ErrCode;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Helper\Html;
+use PhpOffice\PhpSpreadsheet\RichText\RichText;
 
 /**
  * Excel 文件生成器
@@ -554,18 +555,17 @@ class ExcelGenerator
 
     private function setSimpleHeaderFooter(Worksheet $worksheet, array $contents, int $colCount, int $lastRowNum, string $align = 'right')
     {
-        $str = '';
+        $richText = new RichText();
         foreach ($contents as $key => $val) {
-            $val = str_ireplace(["<br>", "<br/>", "</br>"], "<br>", $val);
-            $str .= "{$key}：{$val}";
-            if (strpos($val, "<br>") === false) {
+            $val = str_ireplace(["<br>", "<br/>", "</br>"], "\n", $val);
+            $richText->createText("{$key}：{$val}");
+            if (strpos($val, "\n") === false) {
                 // 没有换行符，则后面加上空格分隔
-                $str .= "      ";
+                $richText->createText("        ");
             }
         }
         //测试
-        $str = str_repeat("我的测试    ", 50);
-        $richText = (new Html())->toRichTextObject($str);
+        // $str = str_repeat("我的测试    ", 50);
 
         if (!in_array($align, [Alignment::HORIZONTAL_CENTER, Alignment::HORIZONTAL_LEFT, Alignment::HORIZONTAL_RIGHT])) {
             $align = Alignment::HORIZONTAL_RIGHT;
@@ -579,7 +579,7 @@ class ExcelGenerator
         $cell = $worksheet->getCell("A{$currRowNum}");
         $cell->setValue($richText);
         $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal($align)->setVertical(Alignment::VERTICAL_CENTER);
-        $worksheet->getRowDimension($currRowNum)->setRowHeight(-1);
+        // $worksheet->getRowDimension($currRowNum)->setRowHeight(-1);
     }
 
     /**
