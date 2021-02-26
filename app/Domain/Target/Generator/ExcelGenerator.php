@@ -25,7 +25,7 @@ use WecarSwoole\Util\File;
 use SplQueue;
 use App\ErrCode;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use PhpOffice\PhpSpreadsheet\RichText\RichText;
+use PhpOffice\PhpSpreadsheet\Helper\Html;
 
 /**
  * Excel 文件生成器
@@ -508,15 +508,14 @@ class ExcelGenerator
             return;
         }
 
-        $richText = new RichText();
-        $richText->createText(str_ireplace(["<br>", "<br/>", "</br>"], "\n", $summary));
+        $richText = (new Html())->toRichTextObject($summary);
 
         // 从下一行开始
         $currRowNum = $lastRowNum + 1;
 
         $coordinate = "A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colCount) . $currRowNum;
         $worksheet->mergeCells($coordinate);
-        $worksheet->getRowDimension($currRowNum)->setRowHeight(36);
+        $worksheet->getRowDimension($currRowNum)->setRowHeight(-1);
         $cell = $worksheet->getCell("A{$currRowNum}");
         // 自动换行
         $cell->getStyle()->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_CENTER);
@@ -555,16 +554,16 @@ class ExcelGenerator
 
     private function setSimpleHeaderFooter(Worksheet $worksheet, array $contents, int $colCount, int $lastRowNum, string $align = 'right')
     {
-        $richText = new RichText();
+        $str = '';
         foreach ($contents as $key => $val) {
-            // 将<br>替换成换行符
-            $val = str_ireplace(["<br>", "<br/>", "</br>"], "\n", $val);
-            $richText->createText("{$key}:{$val}");
-            if (strpos($val, "\n") === false) {
+            $val = str_ireplace(["<br>", "<br/>", "</br>"], "<br>", $val);
+            $str .= "{$key}：{$val}";
+            if (strpos($val, "<br>") === false) {
                 // 没有换行符，则后面加上空格分隔
-                $richText->createText("      ");
+                $str .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
             }
         }
+        $richText = (new Html())->toRichTextObject($str);
 
         if (!in_array($align, [Alignment::HORIZONTAL_CENTER, Alignment::HORIZONTAL_LEFT, Alignment::HORIZONTAL_RIGHT])) {
             $align = Alignment::HORIZONTAL_RIGHT;
@@ -578,7 +577,7 @@ class ExcelGenerator
         $cell = $worksheet->getCell("A{$currRowNum}");
         $cell->setValue($richText);
         $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal($align)->setVertical(Alignment::VERTICAL_CENTER);
-        // $worksheet->getRowDimension($currRowNum)->setRowHeight(30);
+        $worksheet->getRowDimension($currRowNum)->setRowHeight(-1);
     }
 
     /**
