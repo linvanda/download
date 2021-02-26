@@ -566,6 +566,8 @@ class ExcelGenerator
         }
         //测试
         // $str = str_repeat("我的测试    ", 50);
+        $richText = new RichText();
+        $richText->createText(str_repeat("我的测试    ", 50));
 
         if (!in_array($align, [Alignment::HORIZONTAL_CENTER, Alignment::HORIZONTAL_LEFT, Alignment::HORIZONTAL_RIGHT])) {
             $align = Alignment::HORIZONTAL_RIGHT;
