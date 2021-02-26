@@ -563,6 +563,8 @@ class ExcelGenerator
                 $str .= "      ";
             }
         }
+        // 测试
+        $str = '<p height="50"><span color="rgb(80,80,20)">测试</span>是这样得到的<br/>第二行<br>第三行                               签名：</p>';
         $richText = (new Html())->toRichTextObject($str);
 
         if (!in_array($align, [Alignment::HORIZONTAL_CENTER, Alignment::HORIZONTAL_LEFT, Alignment::HORIZONTAL_RIGHT])) {
