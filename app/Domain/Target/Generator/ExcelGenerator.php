@@ -560,7 +560,7 @@ class ExcelGenerator
             $str .= "{$key}：{$val}";
             if (strpos($val, "<br>") === false) {
                 // 没有换行符，则后面加上空格分隔
-                $str .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+                $str .= "      ";
             }
         }
         $richText = (new Html())->toRichTextObject($str);
