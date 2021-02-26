@@ -548,6 +548,13 @@ class ExcelGenerator
     private function setSimpleHeaderFooter(Worksheet $worksheet, array $contents, int $colCount, int $lastRowNum, int $hasBorder = 0)
     {
         $richText = new RichText();
+
+        // 测试
+        $contents = [
+            '测试' => "测试换行符1\n",
+            '测试2' => "测试换行符2\n",
+            '测试3' => "测试换行符3\n",
+        ];
         foreach ($contents as $key => $val) {
             $richText->createText("{$key}:{$val}");
             if (strpos($val, "\n") === false) {
@@ -555,6 +562,7 @@ class ExcelGenerator
                 $richText->createText("      ");
             }
         }
+        $richText->createText("收尾：测试换行\n哈哈哈");
 
         // 从下一行开始
         $currRowNum = $lastRowNum + 1;
