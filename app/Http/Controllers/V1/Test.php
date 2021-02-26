@@ -521,6 +521,7 @@ class Test extends Controller
                                 'title' => '姓名',
                                 'type' => 'string',
                                 'color' => 'red',
+                                "width" => -1
                             ],
                             [
                                 'title' => '其它',

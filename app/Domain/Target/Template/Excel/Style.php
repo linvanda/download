@@ -38,7 +38,7 @@ class Style implements IExtractable
 
     public function setWidth(int $width)
     {
-        if ($width < 0 || $width > 4000) {
+        if ($width > 4000) {
             throw new Exception("单元格宽度不合法:{$width}", ErrCode::PARAM_VALIDATE_FAIL);
         }
 

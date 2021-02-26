@@ -125,7 +125,8 @@ class ExcelGenerator
         array $footer,
         string $headerAlign,
         string $footerAlign,
-        $rowHeight
+        int $rowHeight,
+        int $colWidth
     ) {
         $startRowOffset = $rowOffset + 1;
         // 生成模板
@@ -136,7 +137,8 @@ class ExcelGenerator
             $summary,
             $header,
             $headerAlign,
-            $rowOffset
+            $rowOffset,
+            $colWidth
         );
         // 行标题内部偏移值
         $rowHeadUsed = [];
@@ -241,7 +243,8 @@ class ExcelGenerator
                 $target->getFooters($tableIndex),
                 $target->getHeadersAlign($tableIndex),
                 $target->getFootersAlign($tableIndex),
-                $target->getDefaultHeight()
+                $target->getDefaultHeight(),
+                $target->getDefaultWidth()
             );
 
             // 每生成一个 table，将行号往下推移 3 行
@@ -279,7 +282,7 @@ class ExcelGenerator
      * 生成 excel 模板
      * @return array [当前行号, 当前列号, 行映射, 列映射]
      */
-    private function createSheetTpl(Worksheet $activeSheet, Tpl $tpl, string $title, string $summary, array $header, string $headerAlign, int $currRowNum): array
+    private function createSheetTpl(Worksheet $activeSheet, Tpl $tpl, string $title, string $summary, array $header, string $headerAlign, int $currRowNum, int $colDefaultWidth = -1): array
     {
         // 必须有 template
         if (!$tpl) {
@@ -307,7 +310,7 @@ class ExcelGenerator
         }
 
         // 列标头
-        $colMap = $this->setColHead($activeSheet, $tpl->colHead(), $rowHead ? $rowHead->deep() - 1 : 0, $currRowNum);
+        $colMap = $this->setColHead($activeSheet, $tpl->colHead(), $rowHead ? $rowHead->deep() - 1 : 0, $currRowNum, $colDefaultWidth);
         $currRowNum += $tpl->colHead()->deep() - 1;
 
         // 行标头
@@ -350,7 +353,7 @@ class ExcelGenerator
      * @param int $lastRowNum 最新行号，需要从下一行开始
      * @return array 列映射表，格式：[列名 => 列号]
      */
-    private function setColHead(Worksheet $worksheet, ColHead $colHead, int $rowHeadColNum, int $lastRowNum): array
+    private function setColHead(Worksheet $worksheet, ColHead $colHead, int $rowHeadColNum, int $lastRowNum, int $defaultColWidth = -1): array
     {
         // 如果有行标题，则需要预留相应的列给行标题
         if ($rowHeadColNum) {
@@ -358,7 +361,7 @@ class ExcelGenerator
             . Coordinate::stringFromColumnIndex($rowHeadColNum) . ($lastRowNum + $colHead->deep() - 1));
         }
 
-        $colMap = $this->setExcelSubHead($worksheet, $colHead, $rowHeadColNum, $lastRowNum, 1);
+        $colMap = $this->setExcelSubHead($worksheet, $colHead, $rowHeadColNum, $lastRowNum, 1, $defaultColWidth);
 
         return array_map(function ($item) {
             return $item[0];
@@ -374,7 +377,7 @@ class ExcelGenerator
      * @param int $type 1：生成列标题，2 生成行标题
      * @return array 行列映射表。格式：[行/列名称 => [行/列号]]
      */
-    private function setExcelSubHead(Worksheet $worksheet, Node $headTree, int $colOffset, int $rowOffset, int $type = 1): array
+    private function setExcelSubHead(Worksheet $worksheet, Node $headTree, int $colOffset, int $rowOffset, int $type = 1, int $colDefaultWidth = -1): array
     {
         $depth = $headTree->deep() - 1;// 根节点不计入列表头深度
         $map = [];// 行列映射表。格式：[行/列名称 => [行/列号]]
@@ -469,7 +472,7 @@ class ExcelGenerator
 
         // 设置行列样式
         if ($type == 1) {
-            $this->setColStyle($worksheet, $styleMap);
+            $this->setColStyle($worksheet, $styleMap, $colDefaultWidth);
         } else {
             $this->setRowStyle($worksheet, $styleMap);
         }
@@ -481,7 +484,7 @@ class ExcelGenerator
      * 设置列样式
      * 目前仅支持设置宽度
      */
-    private function setColStyle(Worksheet $worksheet, array $colStyleMap)
+    private function setColStyle(Worksheet $worksheet, array $colStyleMap, int $defaultWidth = -1)
     {
         foreach ($colStyleMap as $colNo => $style) {
             if (!$style || !$style instanceof Style) {
@@ -489,13 +492,12 @@ class ExcelGenerator
             }
 
             $dm = $worksheet->getColumnDimension(Coordinate::stringFromColumnIndex($colNo));
-            if ($width = $style->getWidth()) {
-                if ($width > 0) {
-                    $dm->setWidth($width);
-                } else {
-                    // 负数表示自动列宽
-                    $dm->setAutoSize(true);
-                }
+            $width = $style->getWidth() ?: $defaultWidth;
+            if ($width > 0) {
+                $dm->setWidth($width);
+            } else {
+                // 负数表示自动列宽
+                $dm->setAutoSize(true);
             }
         }
     }
@@ -537,15 +539,17 @@ class ExcelGenerator
             return;
         }
 
+        $summary = str_ireplace(["<br>", "<br/>", "</br>"], "\n", $summary);
+
         $richText = new RichText();
-        $richText->createText(str_ireplace(["<br>", "<br/>", "</br>"], "\n", $summary));
+        $richText->createText($summary);
 
         // 从下一行开始
         $currRowNum = $lastRowNum + 1;
 
         $coordinate = "A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colCount) . $currRowNum;
         $worksheet->mergeCells($coordinate);
-        $worksheet->getRowDimension($currRowNum)->setRowHeight(38);
+        $worksheet->getRowDimension($currRowNum)->setRowHeight($this->calcHeightWithLineCount(mb_substr_count($summary, "\n") + 1));
         $cell = $worksheet->getCell("A{$currRowNum}");
         // 自动换行
         $cell->getStyle()->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_CENTER);
@@ -611,23 +615,19 @@ class ExcelGenerator
         $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal($align)->setVertical(Alignment::VERTICAL_CENTER);
 
         // 无法设置成自适应高度，需计算高度
-        $worksheet->getRowDimension($currRowNum)->setRowHeight(28 * (mb_substr_count($str, "\n") + 1));
+        $worksheet->getRowDimension($currRowNum)->setRowHeight($this->calcHeightWithLineCount(mb_substr_count($str, "\n") + 1));
+    }
+
+    private function calcHeightWithLineCount(int $lineCount): int
+    {
+        return $lineCount == 1 ? 28 : 14 * $lineCount + 14;
     }
 
     /**
      * 设置 Excel 默认样式
      */
     private function setDefaultStyle(Spreadsheet $workSheet, ExcelTarget $target)
-    {
-        $width = $target->getDefaultWidth();
-        $cdm = $workSheet->getActiveSheet()->getDefaultColumnDimension();
-        if ($width >= 0) {
-            $cdm->setWidth($width);
-        } else {
-            // 负数表示自动列宽
-            $cdm->setAutoSize(true);
-        }
-        
+    {        
         $workSheet->getActiveSheet()->getDefaultRowDimension()->setRowHeight($target->getDefaultHeight());
     }
 
