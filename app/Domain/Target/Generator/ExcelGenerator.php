@@ -582,12 +582,7 @@ class ExcelGenerator
         $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal($align)->setVertical(Alignment::VERTICAL_CENTER);
 
         // 无法设置成自适应高度，需计算高度
-        $rowHeight = 28;
-        if ($lineCount = mb_substr_count($str, "\n")) {
-            // 调用方做了换行，则根据换行符数量计算高度
-            $rowHeight *= $lineCount;
-        }
-        $worksheet->getRowDimension($currRowNum)->setRowHeight($rowHeight);
+        $worksheet->getRowDimension($currRowNum)->setRowHeight(28 * (mb_substr_count($str, "\n") + 1));
     }
 
     /**
