@@ -27,6 +27,7 @@ use App\ErrCode;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Helper\Html;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 
 /**
  * Excel 文件生成器
@@ -110,6 +111,7 @@ class ExcelGenerator
 
     /**
      * 生成 Excel 中的表格
+     * @return array [row_offset, col_count]：行偏移值、本表格的列数
      */
     private function createTable(
         Worksheet $activeSheet,
@@ -205,7 +207,7 @@ class ExcelGenerator
             $this->setFooter($activeSheet, $footer, $colOffset, $rowOffset, $footerAlign);
         }
 
-        return ++$rowOffset;
+        return [++$rowOffset, $colOffset];
     }
 
     /**
@@ -224,9 +226,10 @@ class ExcelGenerator
 
         $rowOffset = 0;
         $tableIndex = 0;
+        $maxColCount = 0;// 最大列数
         while (!feof($sourceFile) && $target->getTpls($tableIndex) && $rowOffset < $maxRow) {
             // 每次循环生成一个 table
-            $rowOffset = $this->createTable(
+            list($rowOffset, $colCount) = $this->createTable(
                 $activeSheet,
                 $rowOffset,
                 $sourceFile,
@@ -244,13 +247,32 @@ class ExcelGenerator
             // 每生成一个 table，将行号往下推移 3 行
             $rowOffset += 3;
             $tableIndex++;
+
+            $maxColCount = max($maxColCount, $colCount);
         }
+
+        // 设置打印区域
+        $this->setPrint($activeSheet, $rowOffset - 3, $maxColCount, $tableIndex);
 
         $writer = new Xlsx($spreadSheet);
         $writer->save($targetFileName);
 
         $spreadSheet->disconnectWorksheets();
         unset($spreadSheet);
+    }
+
+    /**
+     * 设置打印区域
+     * 如果有多个表格，则纵向打印，否则横向打印
+     */
+    private function setPrint(Worksheet $worksheet, int $rowCount, int $colCount, int $tableCount)
+    {
+        $page = $worksheet->getPageSetup();
+
+        // 纸张大小和方向
+        $page->setOrientation($tableCount > 1 ? PageSetup::ORIENTATION_PORTRAIT : PageSetup::ORIENTATION_LANDSCAPE);
+        $page->setPaperSize(PageSetup::PAPERSIZE_A4);
+        $page->setPrintArea('A1:' . Coordinate::stringFromColumnIndex($colCount) . $rowCount);
     }
 
     /**
@@ -509,14 +531,15 @@ class ExcelGenerator
             return;
         }
 
-        $richText = (new Html())->toRichTextObject($summary);
+        $richText = new RichText();
+        $richText->createText(str_ireplace(["<br>", "<br/>", "</br>"], "\n", $summary));
 
         // 从下一行开始
         $currRowNum = $lastRowNum + 1;
 
         $coordinate = "A{$currRowNum}:" . Coordinate::stringFromColumnIndex($colCount) . $currRowNum;
         $worksheet->mergeCells($coordinate);
-        $worksheet->getRowDimension($currRowNum)->setRowHeight(-1);
+        $worksheet->getRowDimension($currRowNum)->setRowHeight(38);
         $cell = $worksheet->getCell("A{$currRowNum}");
         // 自动换行
         $cell->getStyle()->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_CENTER);
