@@ -555,19 +555,18 @@ class ExcelGenerator
 
     private function setSimpleHeaderFooter(Worksheet $worksheet, array $contents, int $colCount, int $lastRowNum, string $align = 'right')
     {
-        $richText = new RichText();
+        $str = '';
         foreach ($contents as $key => $val) {
             $val = str_ireplace(["<br>", "<br/>", "</br>"], "\n", $val);
-            $richText->createText("{$key}：{$val}");
+            $str .= "{$key}：{$val}";
             if (strpos($val, "\n") === false) {
                 // 没有换行符，则后面加上空格分隔
-                $richText->createText("        ");
+                $str .= "          ";
             }
         }
-        //测试
-        // $str = str_repeat("我的测试    ", 50);
+
         $richText = new RichText();
-        $richText->createText(str_repeat("我的测试    ", 50));
+        $richText->createText($str);
 
         if (!in_array($align, [Alignment::HORIZONTAL_CENTER, Alignment::HORIZONTAL_LEFT, Alignment::HORIZONTAL_RIGHT])) {
             $align = Alignment::HORIZONTAL_RIGHT;
@@ -581,7 +580,14 @@ class ExcelGenerator
         $cell = $worksheet->getCell("A{$currRowNum}");
         $cell->setValue($richText);
         $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal($align)->setVertical(Alignment::VERTICAL_CENTER);
-        // $worksheet->getRowDimension($currRowNum)->setRowHeight(-1);
+
+        // 无法设置成自适应高度，需计算高度
+        $rowHeight = 28;
+        if ($lineCount = mb_substr_count($str, "\n")) {
+            // 调用方做了换行，则根据换行符数量计算高度
+            $rowHeight *= $lineCount;
+        }
+        $worksheet->getRowDimension($currRowNum)->setRowHeight($rowHeight);
     }
 
     /**
