@@ -578,7 +578,7 @@ class ExcelGenerator
         $cell = $worksheet->getCell("A{$currRowNum}");
         $cell->setValue($richText);
         $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal($align)->setVertical(Alignment::VERTICAL_CENTER);
-        $worksheet->getRowDimension($currRowNum)->setRowHeight(30);
+        // $worksheet->getRowDimension($currRowNum)->setRowHeight(30);
     }
 
     /**
