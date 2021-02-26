@@ -548,21 +548,15 @@ class ExcelGenerator
     private function setSimpleHeaderFooter(Worksheet $worksheet, array $contents, int $colCount, int $lastRowNum, int $hasBorder = 0)
     {
         $richText = new RichText();
-
-        // 测试
-        $contents = [
-            '测试' => "测试换行符1\n",
-            '测试2' => "测试换行符2\n",
-            '测试3' => "测试换行符3\n",
-        ];
         foreach ($contents as $key => $val) {
+            // 将<br>替换成换行符
+            $val = str_ireplace(["<br>", "<br/>"], "\n", $val);
             $richText->createText("{$key}:{$val}");
             if (strpos($val, "\n") === false) {
                 // 没有换行符，则后面加上空格分隔
                 $richText->createText("      ");
             }
         }
-        $richText->createText("收尾：测试换行\n哈哈哈");
 
         // 从下一行开始
         $currRowNum = $lastRowNum + 1;
