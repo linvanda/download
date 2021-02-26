@@ -563,20 +563,8 @@ class ExcelGenerator
                 $str .= "      ";
             }
         }
-        // 测试
-        $str = '<p height="50"><span color="rgb(80,80,20)">测试</span>是这样得到的<br/>第二行<br>第三行                               签名：</p>';
-        $str = '<font color="#0000ff">
-<h1 align="center">My very first example of rich text<br />generated from html markup</h1>
-<p>
-<font size="14" COLOR="rgb(0,255,128)">
-<b>This block</b> contains an <i>italicized</i> word;
-while this block uses an <u>underline</u>.
-</font>
-</p>
-<p align="right"><font size="9" color="red">
-I want to eat <ins><del>healthy food</del> <strong>pizza</strong></ins>.
-</font>
-';
+        //测试
+        $str = str_repeat("我的测试    ", 50);
         $richText = (new Html())->toRichTextObject($str);
 
         if (!in_array($align, [Alignment::HORIZONTAL_CENTER, Alignment::HORIZONTAL_LEFT, Alignment::HORIZONTAL_RIGHT])) {
