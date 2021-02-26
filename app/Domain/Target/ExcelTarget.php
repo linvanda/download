@@ -25,6 +25,9 @@ class ExcelTarget extends Target
     protected $headers;
     // 表尾，二维数组
     protected $footers;
+    protected $headersAlign;
+    // 表尾，二维数组
+    protected $footersAlign;
     // 表格模板，一维数组（元素是 Tpl）
     protected $templates;
     // 默认列宽度
@@ -73,6 +76,24 @@ class ExcelTarget extends Target
             return $this->footers ?? [];
         } else {
             return $this->footers  && isset($this->footers[$index]) ? $this->footers[$index] : [];
+        }
+    }
+
+    public function getHeadersAlign($index = null)
+    {
+        if ($index === null) {
+            return $this->headersAlign ?? ['right'];
+        } else {
+            return $this->headersAlign  && isset($this->headersAlign[$index]) ? $this->headersAlign[$index] : 'right';
+        }
+    }
+
+    public function getFootersAlign($index = null)
+    {
+        if ($index === null) {
+            return $this->footersAlign ?? ['right'];
+        } else {
+            return $this->footersAlign  && isset($this->footersAlign[$index]) ? $this->footersAlign[$index] : 'right';
         }
     }
 
@@ -131,6 +152,16 @@ class ExcelTarget extends Target
             $this->footers = is_array(reset($metaData['footers'])) ? $metaData['footers'] : [$metaData['footers']];
         }
 
+        if (isset($metaData['headers_align']) && $metaData['headers_align']) {
+            $metaData['headers_align'] = is_string($metaData['headers_align']) ? [$metaData['headers_align']] : $metaData['headers_align'];
+            $this->headersAlign = $metaData['headers_align'];
+        }
+
+        if (isset($metaData['footers_align']) && $metaData['footers_align']) {
+            $metaData['footers_align'] = is_string($metaData['footers_align']) ? [$metaData['footers_align']] : $metaData['footers_align'];
+            $this->footersAlign = $metaData['footers_align'];
+        }
+
         if (isset($metaData['templates']) && $metaData['templates']) {
             $this->setTpls($metaData['templates']);
         } elseif (!$this->templates && isset($metaData['data']) && $metaData['data']) {
@@ -151,6 +182,8 @@ class ExcelTarget extends Target
             'summaries' => $this->summaries,
             'headers' => $this->headers,
             'footers' => $this->footers,
+            'headers_align' => $this->headersAlign,
+            'footers_align' => $this->footersAlign,
             'templates' => $this->templates,
             'multi_type' => $this->multiType,
             'default_width' => $this->getDefaultWidth(),
@@ -169,6 +202,8 @@ class ExcelTarget extends Target
         $meta['summaries'] = $meta['summaries'] ?? $meta['summary'] ?? [];
         $meta['headers'] = $meta['headers'] ?? $meta['header'] ?? [];
         $meta['footers'] = $meta['footers'] ?? $meta['footer'] ?? [];
+        $meta['headers_align'] = $meta['headers_align'] ?? $meta['header_align'] ?? [];
+        $meta['footers_align'] = $meta['footers_align'] ?? $meta['footers_align'] ?? [];
         $meta['templates'] = $meta['templates'] ?? $meta['template'] ?? [];
 
         return $meta;

@@ -27,6 +27,8 @@ class TaskDTO extends DTO
     public $summary;
     public $header;
     public $footer;
+    public $headerAlign;
+    public $footerAlign;
     public $isSync;
     public $defaultWidth;// Excel 默认列宽度，单位 pt
     public $defaultHeight;// Excel 默认行高，单位 pt

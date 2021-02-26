@@ -121,6 +121,8 @@ class TaskFactory
                         'summaries' => $taskDTO->summary ?: '',
                         'headers' => $taskDTO->header ?: '',
                         'footers' => $taskDTO->footer ?: '',
+                        'headers_align' => $taskDTO->headerAlign ?: 'right',
+                        'footers_align' => $taskDTO->footerAlign ?: 'right',
                         'default_width' => $taskDTO->defaultWidth,
                         'default_height' => $taskDTO->defaultHeight,
                     ]

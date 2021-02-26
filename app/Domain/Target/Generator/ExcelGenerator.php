@@ -120,6 +120,8 @@ class ExcelGenerator
         string $summary,
         array $header,
         array $footer,
+        string $headerAlign,
+        string $footerAlign,
         $rowHeight
     ) {
         $startRowOffset = $rowOffset + 1;
@@ -130,6 +132,7 @@ class ExcelGenerator
             $title,
             $summary,
             $header,
+            $headerAlign,
             $rowOffset
         );
         // 行标题内部偏移值
@@ -198,7 +201,7 @@ class ExcelGenerator
 
         // 设置页脚
         if ($footer) {
-            $this->setFooter($activeSheet, $footer, $colOffset, $rowOffset);
+            $this->setFooter($activeSheet, $footer, $colOffset, $rowOffset, $footerAlign);
         }
 
         return ++$rowOffset;
@@ -232,6 +235,8 @@ class ExcelGenerator
                 $target->getSummaries($tableIndex),
                 $target->getHeaders($tableIndex),
                 $target->getFooters($tableIndex),
+                $target->getHeadersAlign($tableIndex),
+                $target->getFootersAlign($tableIndex),
                 $target->getDefaultHeight()
             );
 
@@ -251,7 +256,7 @@ class ExcelGenerator
      * 生成 excel 模板
      * @return array [当前行号, 当前列号, 行映射, 列映射]
      */
-    private function createSheetTpl(Worksheet $activeSheet, Tpl $tpl, string $title, string $summary, array $header, int $currRowNum): array
+    private function createSheetTpl(Worksheet $activeSheet, Tpl $tpl, string $title, string $summary, array $header, string $headerAlign, int $currRowNum): array
     {
         // 必须有 template
         if (!$tpl) {
@@ -275,7 +280,7 @@ class ExcelGenerator
 
         // header
         if ($header) {
-            $currRowNum += $this->setHeader($activeSheet, $header, $colNum, $currRowNum);
+            $currRowNum += $this->setHeader($activeSheet, $header, $colNum, $currRowNum, $headerAlign);
         }
 
         // 列标头
@@ -488,9 +493,9 @@ class ExcelGenerator
      * 第一版对 header 简化处理：全部排布在一行
      * @return int header 占用了几行
      */
-    private function setHeader(Worksheet $worksheet, array $headers, int $colCount, int $lastRowNum): int
+    private function setHeader(Worksheet $worksheet, array $headers, int $colCount, int $lastRowNum, string $align = 'right'): int
     {
-        $this->setSimpleHeaderFooter($worksheet, $headers, $colCount, $lastRowNum, 1);
+        $this->setSimpleHeaderFooter($worksheet, $headers, $colCount, $lastRowNum, $align);
         return 1;
     }
 
@@ -503,6 +508,9 @@ class ExcelGenerator
             return;
         }
 
+        $richText = new RichText();
+        $richText->createText(str_ireplace(["<br>", "<br/>", "</br>"], "\n", $summary));
+
         // 从下一行开始
         $currRowNum = $lastRowNum + 1;
 
@@ -512,7 +520,7 @@ class ExcelGenerator
         $cell = $worksheet->getCell("A{$currRowNum}");
         // 自动换行
         $cell->getStyle()->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_CENTER);
-        $cell->setValue($summary);
+        $cell->setValue($richText);
     }
 
     /**
@@ -540,22 +548,26 @@ class ExcelGenerator
     /**
      * 设置 Excel 页脚
      */
-    private function setFooter(Worksheet $worksheet, array $footers, int $colCount, int $lastRowNum)
+    private function setFooter(Worksheet $worksheet, array $footers, int $colCount, int $lastRowNum, string $align = 'right')
     {
-        $this->setSimpleHeaderFooter($worksheet, $footers, $colCount, $lastRowNum);
+        $this->setSimpleHeaderFooter($worksheet, $footers, $colCount, $lastRowNum, $align);
     }
 
-    private function setSimpleHeaderFooter(Worksheet $worksheet, array $contents, int $colCount, int $lastRowNum, int $hasBorder = 0)
+    private function setSimpleHeaderFooter(Worksheet $worksheet, array $contents, int $colCount, int $lastRowNum, string $align = 'right')
     {
         $richText = new RichText();
         foreach ($contents as $key => $val) {
             // 将<br>替换成换行符
-            $val = str_ireplace(["<br>", "<br/>"], "\n", $val);
+            $val = str_ireplace(["<br>", "<br/>", "</br>"], "\n", $val);
             $richText->createText("{$key}:{$val}");
             if (strpos($val, "\n") === false) {
                 // 没有换行符，则后面加上空格分隔
                 $richText->createText("      ");
             }
+        }
+
+        if (!in_array($align, [Alignment::HORIZONTAL_CENTER, Alignment::HORIZONTAL_LEFT, Alignment::HORIZONTAL_RIGHT])) {
+            $align = Alignment::HORIZONTAL_RIGHT;
         }
 
         // 从下一行开始
@@ -565,7 +577,7 @@ class ExcelGenerator
         $worksheet->mergeCells($coordinate);
         $cell = $worksheet->getCell("A{$currRowNum}");
         $cell->setValue($richText);
-        $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
+        $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal($align)->setVertical(Alignment::VERTICAL_CENTER);
         $worksheet->getRowDimension($currRowNum)->setRowHeight(30);
     }
 

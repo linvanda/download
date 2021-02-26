@@ -215,6 +215,8 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
                     'summary' => $meta['summaries'] ?? '',
                     'header' => $meta['headers'] ?? [],
                     'footer' => $meta['footers'] ?? [],
+                    'header_align' => $meta['headers_align'] ?? [],
+                    'footer_align' => $meta['footers_align'] ?? [],
                     'type' => array_flip(self::FILE_TYPE_MAP)[$info['type']],
                     'default_width' => $meta['default_width'] ?? 0,
                     'default_height' => $meta['default_height'] ?? 0,
