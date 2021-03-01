@@ -25,7 +25,6 @@ use WecarSwoole\Util\File;
 use SplQueue;
 use App\ErrCode;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use PhpOffice\PhpSpreadsheet\Helper\Html;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 
@@ -70,7 +69,7 @@ class ExcelGenerator
                 $this->createExcel($sourceFile, $fileName, $maxRow, $target);
             }
         } catch (\Throwable $e) {
-            throw new TargetException($e->getMessage(), $e->getCode());
+            throw new \Exception($e->getMessage(), $e->getCode(), $e);
         } finally {
             fclose($sourceFile);
             // 删除源文件
