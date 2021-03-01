@@ -27,7 +27,7 @@ class ToDoHandler extends WorkHandler
             Container::get(SourceService::class)->fetch($this->task()->source(), $this->task()->target());
             $this->notify(WorkFlow::WF_SOURCE_READY);
         } catch (\Throwable $e) {
-            Container::get(LoggerInterface::class)->error($e->getMessage(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);
+            Container::get(LoggerInterface::class)->error($e->getMessage() . "taskid:" . $this->workFlow->task()->id(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);
             $this->notify(WorkFlow::WF_SOURCE_FAILED, $e->getMessage());
         }
     }

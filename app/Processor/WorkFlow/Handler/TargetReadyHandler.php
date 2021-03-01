@@ -26,7 +26,7 @@ class TargetReadyHandler extends WorkHandler
             Container::get(TransferService::class)->upload($this->task());
             $this->notify(WorkFlow::WF_UPLOAD_SUC);
         } catch (\Throwable $e) {
-            Container::get(LoggerInterface::class)->error($e->getMessage(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);
+            Container::get(LoggerInterface::class)->error($e->getMessage() . "taskid:" . $this->workFlow->task()->id(), ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);
             $this->notify(WorkFlow::WF_UPLOAD_FAILED, $e->getMessage());
         }
     }
