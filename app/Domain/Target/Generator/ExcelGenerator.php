@@ -201,7 +201,7 @@ class ExcelGenerator
         $colOffset += count($colMap);
 
         // 设置整个表格边框（标题行不设置边框）
-        $activeSheet->getStyle("A" . ($startRowOffset + 1) . ':' . Coordinate::stringFromColumnIndex($colOffset) . $rowOffset)
+        $activeSheet->getStyle("A" . ($title ? $startRowOffset + 1 : $startRowOffset) . ':' . Coordinate::stringFromColumnIndex($colOffset) . $rowOffset)
         ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
         // 设置页脚
@@ -276,6 +276,8 @@ class ExcelGenerator
         $page->setOrientation($tableCount > 1 ? PageSetup::ORIENTATION_PORTRAIT : PageSetup::ORIENTATION_LANDSCAPE);
         $page->setPaperSize(PageSetup::PAPERSIZE_A4);
         $page->setPrintArea('A1:' . Coordinate::stringFromColumnIndex($colCount) . $rowCount);
+        $page->setHorizontalCentered(true);
+        $page->setVerticalCentered(false);
     }
 
     /**
@@ -594,7 +596,7 @@ class ExcelGenerator
             $str .= "{$key}：{$val}";
             if (strpos($val, "\n") === false) {
                 // 没有换行符，则后面加上空格分隔
-                $str .= "          ";
+                $str .= "        ";
             }
         }
 
