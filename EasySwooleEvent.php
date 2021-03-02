@@ -58,7 +58,7 @@ class EasySwooleEvent implements Event
 
         // worker 进程启动脚本
         $register->add(EventRegister::onWorkerStart, function ($server) {
-            ini_set("memory_limit", "1024M");
+            ini_set("memory_limit", "4096M");
             Bootstrap::boot();
 
             // 启动队列监听（仅在 worker 进程启动）

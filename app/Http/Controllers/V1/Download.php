@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Domain\Task\TaskService;
 use App\Domain\Transfer\TransferService;
+use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
 use App\Http\Service\DownloadService;
 use EasySwoole\EasySwoole\Config;
@@ -66,14 +68,18 @@ class Download extends Controller
      */
     public function getDownloadUrl()
     {
-        $conf = Config::getInstance();
-        $url = Url::assemble($conf->getConf('tmp_download_url'), $conf->getConf('base_url'));
-        $this->return(['url' => Container::get(TransferService::class)->buildDownloadUrl($this->params('task_id'), $url)]);
+        $task = Container::get(TaskService::class)->getTask($this->params('task_id'));
+        if (!$task) {
+            return $this->return([], ErrCode::TASK_NOT_EXISTS, "任务{$this->params('task_id')}不存在");
+        }
+
+        $this->return(['url' => Container::get(TransferService::class)->buildDownloadUrlNew($task)]);
     }
 
     /**
      * 前端通过临时下载 url 下载数据
      * 无需鉴权，该 url 通过 getDownloadUrl 生成
+     * @deprecated 该方法已经废弃，现在异步下载是直接通过访问 OSS 的临时 url 下载，不再经过下载中心
      */
     public function getData()
     {

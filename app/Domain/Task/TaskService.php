@@ -34,6 +34,11 @@ class TaskService
         return $task;
     }
 
+    public function getTask(string $taskId): ?Task
+    {
+        return $this->taskRepository->getTaskById($taskId);
+    }
+
     /**
      * 切换任务状态
      */

@@ -70,6 +70,7 @@ class TransferService
 
     /**
      * 生成临时下载 url
+     * @deprecated 不再使用该方法，使用 buildDownloadUrlNew
      */
     public function buildDownloadUrl(string $taskId, string $url): string
     {
@@ -77,6 +78,14 @@ class TransferService
         $this->transferRepository->saveDownloadTicket($ticket);
 
         return $url . (strpos($url, '?') === false ? '?' : '&') . "ticket={$ticket->ticket()}";
+    }
+
+    /**
+     * 生成临时下载 url
+     */
+    public function buildDownloadUrlNew(Task $task): string
+    {
+        return (new Download())->getTmpDownloadUrl($task->id(), $task->target()->targetFileName());
     }
 
     /**
