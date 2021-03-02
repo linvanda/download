@@ -269,6 +269,10 @@ class ExcelGenerator
      */
     private function setPrint(Worksheet $worksheet, int $rowCount, int $colCount, int $tableCount)
     {
+        if ($rowCount < 1 || $colCount < 1) {
+            return;
+        }
+
         $page = $worksheet->getPageSetup();
 
         // 纸张大小和方向
