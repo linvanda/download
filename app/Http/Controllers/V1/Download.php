@@ -7,10 +7,8 @@ use App\Domain\Transfer\TransferService;
 use App\ErrCode;
 use App\Foundation\DTO\TaskDTO;
 use App\Http\Service\DownloadService;
-use EasySwoole\EasySwoole\Config;
 use WecarSwoole\Container;
 use WecarSwoole\Http\Controller;
-use WecarSwoole\Util\Url;
 
 class Download extends Controller
 {
