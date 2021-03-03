@@ -43,6 +43,7 @@ class Download
         $bucket = $config->getConf('oss_bucket');
 
         $remoteName = $this->getRemoteName($client, $bucket, $taskId, explode('.', $targetFile)[1] ?? 'xlsx');
+        $client->setUseSSL(true);
         return $client->signUrl($bucket, $remoteName);
     }
 
