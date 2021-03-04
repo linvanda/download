@@ -32,7 +32,7 @@ class TransferService
      */
     public function upload(Task $task)
     {
-        (new Upload())->upload($task->target()->targetFileName(), $task->id());
+        (new Upload())->upload($task->target()->targetFileName(), $task->id(), $task->target()->downloadFileName());
 
         // 删除本地目标文件
         LocalFile::deleteDir($task->target()->getBaseDir());
