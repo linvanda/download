@@ -39,7 +39,7 @@ class Task extends Entity
      * （自己到自己如状态 a -> a 被认为是允许的，实际是没有任何转换）
      */
     private const STATUS_TRANS_MAP = [
-        [true, true, false, false, false, false],
+        [true, true, true, false, false, false],
         [true, true, true, false, false, false],
         [true, false, true, true, true, true],
         [false, false, false, true, false, false],

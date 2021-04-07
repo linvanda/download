@@ -61,8 +61,7 @@ class TaskManager
         $job = new Job();
         $job->setJobData(['task_id' => $task->id(), 'enqueue_time' => time()]);
         if (Queue::instance(Config::getInstance()->getConf('task_queue'))->producer()->push($job)) {
-            // 注意：如果 switchStatus 失败会抛异常，此时并没有删除入列的数据，该场景下，出列处理任务的时候会被拦截
-            $this->taskSvr->switchStatus($task, Task::STATUS_ENQUEUED);
+            // 注意：以前的版本中此处会修改任务状态为已入列，但由于存在多进程并发问题，会导致并发改状态的问题（此处入列后另一个进程立马出列并处理），因而去掉此处的状态更新
             $this->logger->info("投递任务到消息队列：{$task->id()}");
         } else {
             $this->logger->error("投递任务到消息队列失败：{$task->id()}");
