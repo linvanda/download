@@ -2,7 +2,6 @@
 
 namespace App\Processor\Monitor;
 
-use App\Domain\Project\IProjectRepository;
 use App\Domain\Task\ITaskRepository;
 use App\Domain\Task\Task;
 use App\Domain\Task\TaskFactory;
