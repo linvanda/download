@@ -98,18 +98,21 @@ class TaskManager
      */
     public function finish(Task $task, int $result = 1, string $msg = '')
     {
-        // 修改任务状态
-        $this->taskSvr->switchStatus($task, $result == 1 ? Task::STATUS_SUC : Task::STATUS_FAILED, $msg);
-        // 清理
-        $this->clear($task);
-        // 归还 ticket
-        Ticket::done("task_source");
-        $this->procCount++;
-
-        $this->logger->info("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}");
-
-        // 看是否需要重启任务管理器
-        $this->tryToReboot();
+        try {
+            // 修改任务状态
+            $this->taskSvr->switchStatus($task, $result == 1 ? Task::STATUS_SUC : Task::STATUS_FAILED, $msg);
+            $this->logger->info("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}");
+        } catch (\Throwable $e) {
+            $this->logger->error("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}。但切换状态失败，异常：" . $e->getMessage() . "。trace：" . $e->getTraceAsString());
+        } finally {
+            // 清理
+            $this->clear($task);
+            // 归还 ticket
+            Ticket::done("task_source");
+            $this->procCount++;
+            // 看是否需要重启任务管理器
+            $this->tryToReboot();
+        }
     }
 
     private function tryToReboot()
@@ -171,9 +174,10 @@ class TaskManager
     {
         // 清理工作流
         if (isset($this->workFlows[$task->id()])) {
-            $this->logger->info("清理工作流，任务{$task->id()}，工作流状态：" . $this->workFlows[$task->id()]->status());
             $this->workFlows[$task->id()]->destroy();
             unset($this->workFlows[$task->id()]);
+
+            $this->logger->info("清理工作流，任务{$task->id()}，工作流状态：" . $this->workFlows[$task->id()]->status());
         }
     }
 }
