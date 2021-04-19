@@ -10,6 +10,8 @@ use App\Domain\Task\Task;
 use App\Domain\Task\TaskFactory;
 use App\Foundation\DTO\DBTaskDTO;
 use Exception;
+use Psr\Log\LoggerInterface;
+use WecarSwoole\Container;
 
 class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
 {
@@ -166,7 +168,13 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         ->where(['id' => $task->id(), 'status' => $oldStatus])
         ->execute();
 
-        return $this->query->affectedRows() > 0;
+        // 增加日志跟踪问题
+        $affectedRows = $this->query->affectedRows();
+        if (!$affectedRows) {
+            Container::get(LoggerInterface::class)->error("任务{$task->id()}更新状态失败，SQL:" . print_r($this->query->rawSql(), true));
+        }
+
+        return $affectedRows > 0;
     }
 
     public function fileTask(int $beforeTime, bool $optimize)

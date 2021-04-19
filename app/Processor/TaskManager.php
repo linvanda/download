@@ -102,14 +102,8 @@ class TaskManager
             // 修改任务状态
             $this->taskSvr->switchStatus($task, $result == 1 ? Task::STATUS_SUC : Task::STATUS_FAILED, $msg);
             $this->logger->info("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}");
-        } catch (\Throwable $_) {
-            // 修改状态失败，在尝试一次
-            try {
-                $this->taskSvr->switchStatus($task, $result == 1 ? Task::STATUS_SUC : Task::STATUS_FAILED, $msg);
-                $this->logger->info("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}");
-            } catch (\Throwable $e) {
-                $this->logger->error("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}。但切换状态失败，异常：" . $e->getMessage() . "。trace：" . $e->getTraceAsString());
-            }
+        } catch (\Throwable $e) {
+            $this->logger->error("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}。但切换状态失败，异常：" . $e->getMessage() . "。trace：" . $e->getTraceAsString());
         } finally {
             // 清理
             $this->clear($task);
