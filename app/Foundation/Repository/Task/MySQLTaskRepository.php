@@ -169,12 +169,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         ->execute();
 
         // 增加日志跟踪问题
-        $affectedRows = $this->query->affectedRows();
-        if (!$affectedRows) {
-            Container::get(LoggerInterface::class)->error("任务{$task->id()}更新状态失败，SQL:" . print_r($this->query->rawSql(), true));
-        }
-
-        return $affectedRows > 0;
+        return $this->query->affectedRows();
     }
 
     public function fileTask(int $beforeTime, bool $optimize)
