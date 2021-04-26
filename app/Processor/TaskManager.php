@@ -158,10 +158,11 @@ class TaskManager
     {
         // 清理工作流
         if (isset($this->workFlows[$task->id()])) {
+            $wStatus = $this->workFlows[$task->id()]->status();
             $this->workFlows[$task->id()]->destroy();
             unset($this->workFlows[$task->id()]);
 
-            $this->logger->info("清理工作流，任务{$task->id()}，工作流状态：" . $this->workFlows[$task->id()]->status());
+            $this->logger->info("清理工作流，任务{$task->id()}，工作流状态：{$wStatus}");
         }
     }
 }
