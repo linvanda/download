@@ -3,6 +3,7 @@
 namespace App\Processor\WorkFlow;
 
 use App\Domain\Task\Task;
+use App\Domain\Task\TaskService;
 use App\Processor\TaskManager;
 use App\Processor\WorkFlow\Handler\TargetReadyHandler;
 use App\Processor\WorkFlow\Handler\SourceReadyHandler;
@@ -10,6 +11,8 @@ use App\Processor\WorkFlow\Handler\ToDoHandler;
 use App\Processor\WorkFlow\Handler\UploadSuccessHandler;
 use App\Processor\WorkFlow\Handler\WorkHandler;
 use EasySwoole\Component\Singleton;
+use Psr\Log\LoggerInterface;
+use WecarSwoole\Container;
 
 /**
  * 工作流
@@ -144,7 +147,14 @@ class WorkFlow
 
     protected function finishWorkFlow(int $status, string $msg)
     {
-        TaskManager::getInstance()->finish($this->task, in_array($status, self::FAILED_ENDS) ? 2 : 1, $msg);
+        $task = $this->task;
+        try {
+            // 修改任务状态
+            Container::get(TaskService::class)->switchStatus($task, !in_array($status, self::FAILED_ENDS) ? Task::STATUS_SUC : Task::STATUS_FAILED, $msg);
+            Container::get(LoggerInterface::class)->info("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}");
+        } catch (\Throwable $e) {
+            Container::get(LoggerInterface::class)->error("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}。但切换状态失败，异常：" . $e->getMessage() . "。trace：" . $e->getTraceAsString());
+        }
     }
 
     /**

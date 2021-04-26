@@ -83,36 +83,20 @@ class TaskManager
                 $this->taskSvr->switchStatus($task, Task::STATUS_DOING);
                 $this->logger->info("开始处理任务：{$task->id()}");
                 $this->getWorkFlow($task)->start();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
+                // 将任务状态改成处理失败
+                $this->taskSvr->switchStatus($task, Task::STATUS_FAILED, "任务{$task->id()}处理异常：{$e->getMessage()}");
                 $this->logger->error("任务{$task->id()}处理异常：{$e->getMessage()}");
+            } finally {
+                // 清理
                 $this->clear($task);
+                // 归还 ticket
+                Ticket::done("task_source");
+                $this->procCount++;
+                // 看是否需要重启任务管理器
+                $this->tryToReboot();
             }
         });
-    }
-
-    /**
-     * 结束任务
-     * @param Task $task
-     * @param int $result 处理结果：1 成功，2 失败
-     * @param string $msg 失败的情况下，失败原因
-     */
-    public function finish(Task $task, int $result = 1, string $msg = '')
-    {
-        try {
-            // 修改任务状态
-            $this->taskSvr->switchStatus($task, $result == 1 ? Task::STATUS_SUC : Task::STATUS_FAILED, $msg);
-            $this->logger->info("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}");
-        } catch (\Throwable $e) {
-            $this->logger->error("任务处理结束：{$task->id()}，任务状态：{$task->status()}，msg：{$msg}。但切换状态失败，异常：" . $e->getMessage() . "。trace：" . $e->getTraceAsString());
-        } finally {
-            // 清理
-            $this->clear($task);
-            // 归还 ticket
-            Ticket::done("task_source");
-            $this->procCount++;
-            // 看是否需要重启任务管理器
-            $this->tryToReboot();
-        }
     }
 
     private function tryToReboot()
