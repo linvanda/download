@@ -103,6 +103,10 @@ class WorkFlow
      */
     public function start()
     {
+        if ($this->currentStatus != self::WF_INIT) {
+            return;
+        }
+        
         $this->notify(self::FIRST_STATUS);
     }
 
