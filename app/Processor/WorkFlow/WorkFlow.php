@@ -4,7 +4,6 @@ namespace App\Processor\WorkFlow;
 
 use App\Domain\Task\Task;
 use App\Domain\Task\TaskService;
-use App\Processor\TaskManager;
 use App\Processor\WorkFlow\Handler\TargetReadyHandler;
 use App\Processor\WorkFlow\Handler\SourceReadyHandler;
 use App\Processor\WorkFlow\Handler\ToDoHandler;
