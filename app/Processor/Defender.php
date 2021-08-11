@@ -14,6 +14,8 @@ use WecarSwoole\Util\File;
 use Swoole\Timer;
 use Closure;
 use Psr\Log\LoggerInterface;
+use Swoole\Coroutine;
+use Swoole\Process;
 
 /**
  * 后台守卫程序，执行失败重试、数据归档的任务
@@ -28,6 +30,16 @@ class Defender extends AbstractProcess
 
     public function run($arg)
     {
+        // easyswoole 的AbstractProcess存在bug：对SIGTERM捕获后没有终止当前进程，导致进程无法终止，从而导致整个服务无法被SIGTERM终止
+        // 此处做终止处理
+        Process::signal(SIGTERM, function () {
+            go(function () {
+                Process::signal(SIGTERM, null);// 先取消掉该信号处理器
+                Coroutine::sleep(0.1);// 等待0.1秒，为的是让其他的处理程序先执行
+                Process::kill($this->getPid(), SIGTERM);// 再发一次SIGTERM终止当前进程
+            });
+        });
+
         Bootstrap::boot();
 
         $this->logger = Container::get(LoggerInterface::class);
@@ -39,7 +51,7 @@ class Defender extends AbstractProcess
             self::addMasterFlag();
             $this->masterDefender();
         }
-        
+
         // 30 分钟一次，清理目录中的无用文件
         Timer::tick(1800000, Closure::fromCallable([$this, 'clearDir']));
     }
