@@ -31,9 +31,10 @@ class Task extends Controller
                 'template' => ['lengthMax' => 8000],
                 'title' => ['lengthMax' => 200],
                 'summary' => ['lengthMax' => 8000],
+                'interval' => ['optional', 'integer', 'min' => 100, 'max' => 3000],
             ],
             'deliverMultiple' => [
-                'source_data' => ['required'],
+                'source_data' => ['optional'],
                 'name' => ['required', 'lengthMin' => 2, 'lengthMax' => 60],
                 'project_id' => ['required', 'lengthMax' => 40],
                 'file_name' => ['lengthMax' => 120],
@@ -42,6 +43,7 @@ class Task extends Controller
                 'operator_id' => ['lengthMax' => 120],
                 'merchant_type' => ['required', 'integer'],
                 'merchant_id' => ['required', 'integer'],
+                'interval' => ['optional', 'integer', 'min' => 100, 'max' => 3000],
             ],
             'one' => [
                 'task_id' => ['required', 'lengthMax' => 100],

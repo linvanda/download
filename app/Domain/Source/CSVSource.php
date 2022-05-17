@@ -7,6 +7,7 @@ use App\Domain\URI;
 use App\ErrCode;
 use App\Exceptions\SourceException;
 use App\Foundation\Client\API;
+use Swoole\Coroutine;
 use WecarSwoole\Util\File;
 use WecarSwoole\Util\GetterSetter;
 
@@ -26,10 +27,12 @@ class CSVSource implements ISource
     public const SPLIT_LINE = '-#-=@=-#-';
     public const SOURCE_TYPE_SIMPLE = 1;
     public const SOURCE_TYPE_MULTI = 2;
+    public const DEFAULT_INTERVAL = 100;// 两次拉取之间默认时间间隔，单位毫秒
 
     protected $uri;
     protected $data;
     protected $step;
+    protected $interval;
 
     // 生成的本地文件名
     private $fileName;
@@ -46,8 +49,10 @@ class CSVSource implements ISource
      * @param string $dir 本地文件存储基路径
      * @param string $taskId 关联的任务编号。此处存储 taskId 而不是 Task 主要避免循环依赖
      * @param int $step 取数步长（每页取多少）
+     * @param int $interval 两次拉取之间时间间隔，单位毫秒
+     * @throws \Exception
      */
-    public function __construct(URI $uri, array $data, string $dir, string $taskId, int $step = self::STEP_DEFAULT)
+    public function __construct(URI $uri, array $data, string $dir, string $taskId, int $step = self::STEP_DEFAULT, int $interval = self::DEFAULT_INTERVAL)
     {
         if (!$uri->url() && !$data) {
             throw new \Exception("source error:source_url and data are both empty", ErrCode::PARAM_VALIDATE_FAIL);
@@ -58,6 +63,7 @@ class CSVSource implements ISource
         $this->setStep($step);
         $this->setFileName($dir);
         $this->taskId = $taskId;
+        $this->interval = $interval;
     }
 
     /**
@@ -89,6 +95,7 @@ class CSVSource implements ISource
      * 多表格模式（多源）的情况下仅支持通过 source_data 提供数据
      * @param API $invoker 源数据调用程序
      * @param bool $recordColType 是否记录列类型
+     * @throws SourceException
      */
     public function fetch(API $invoker, bool $recordColType = true)
     {
@@ -145,6 +152,10 @@ class CSVSource implements ISource
                     }
 
                     $page++;
+
+                    if ($this->interval > 0) {
+                        Coroutine::sleep($this->interval / 1000);
+                    }
                 }
             }
             $size = $file->size();
@@ -175,8 +186,10 @@ class CSVSource implements ISource
      * 将数据存储到本地文件系统
      * @param LocalFile $file
      * @param array $data 源数据
+     * @param bool $recordColType
      * @param bool $saveFields
      * @return int 保存的行数（不包括标题行）
+     * @throws \App\Exceptions\FileException
      */
     private function saveToFile(LocalFile $file, array $data, bool $recordColType, bool $saveFields = false): int
     {

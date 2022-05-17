@@ -92,7 +92,8 @@ class TaskFactory
                     $taskDTO->sourceData ?: [],
                     File::join(Config::getInstance()->getConf('local_file_base_dir'), $taskDTO->id),
                     $taskDTO->id,
-                    intval($taskDTO->step) ?: CSVSource::STEP_DEFAULT
+                    intval($taskDTO->step) ?: CSVSource::STEP_DEFAULT,
+                   $taskDTO->interval ?: CSVSource::DEFAULT_INTERVAL
                 );
         }
         
