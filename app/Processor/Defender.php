@@ -123,7 +123,7 @@ class Defender extends AbstractProcess
     }
 
     /**
-     * 归档 6 个月前的数据
+     * 归档 3 个月前的数据
      */
     private function fileData()
     {
@@ -137,7 +137,7 @@ class Defender extends AbstractProcess
         $optimize = mt_rand(0, 100) > 95 ? true : false;
 
         try {
-            Container::get(ITaskRepository::class)->fileTask(time() - 86400 * 30 * 6, $optimize);
+            Container::get(ITaskRepository::class)->fileTask(time() - 86400 * 30 * 3, $optimize);
         } catch (\Exception $e) {
             $this->logger->error("守卫进程执行异常。msg:{$e->getMessage()},trace:" . $e->getTraceAsString());
         }
