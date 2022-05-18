@@ -23,6 +23,12 @@ use App\Foundation\DTO\DBTaskDTO;
  */
 class TaskFactory
 {
+    /**
+     * @param TaskDTO $taskDTO
+     * @return Task
+     * @throws Exception
+     * @throws \Throwable
+     */
     public static function create(TaskDTO $taskDTO): Task
     {
         if (!$project = Container::get(IProjectRepository::class)->getProjectById($taskDTO->projectId)) {
@@ -34,7 +40,12 @@ class TaskFactory
         $taskDTO->id = $id;
 
         // multiType
-        $taskDTO->multiType = $taskDTO->multiType ?? 'single';
+        $taskDTO->multiType = $taskDTO->multiType ?? ExcelTarget::MT_SINGLE;
+
+        if ($taskDTO->multiType != ExcelTarget::MT_SINGLE) {
+            // 验证多表格数据格式
+            self::formatAndValidateMultiTableData($taskDTO);
+        }
         
         // 源
         $source = self::buildSource($taskDTO, $taskDTO->type ?? 'csv');
@@ -71,8 +82,58 @@ class TaskFactory
         return $task;
     }
 
+    /**
+     * template、title、summary、header、footer、source 数组的第一维元素个数必须相同而且顺序对应一致
+     * @param TaskDTO $taskDTO
+     * @throws \Exception
+     */
+    private static function formatAndValidateMultiTableData(TaskDTO $taskDTO)
+    {
+        self::formatMT($taskDTO);
+
+        if (!$taskDTO->source) {
+            throw new \Exception("缺少数据源", ErrCode::TPL_FMT_ERR);
+        }
+
+        if (!self::innerValidateMT($taskDTO, ['template', 'title', 'summary', 'header', 'footer'], count($taskDTO->source))) {
+            throw new \Exception("多表格模式下 template、title、summary、header、footer、source 字段的元素个数必须一致（除非没有设置该字段）", ErrCode::PARAM_VALIDATE_FAIL);
+        }
+    }
+
+    private static function formatMT(TaskDTO $taskDTO)
+    {
+        self::innerFormatMT($taskDTO, ['template', 'title', 'summary', 'header', 'footer']);
+    }
+
+    private static function innerFormatMT(TaskDTO $taskDTO, array $fields)
+    {
+        foreach ($fields as $field) {
+            if (!property_exists($taskDTO, $field) || !$taskDTO->{$field} || !is_string($taskDTO->{$field})) {
+                continue;
+            }
+
+            $taskDTO->{$field} = json_decode($taskDTO->{$field}, true);
+        }
+    }
+
+    private static function innerValidateMT(TaskDTO $dto, array $fields, int $base): bool
+    {
+        $bit = $base;
+        foreach ($fields as $field) {
+            if ($c = count($dto->{$field})) {
+                $bit &= $c;
+            }
+        }
+
+        return $bit === $base;
+    }
+
     private static function buildSource(TaskDTO $taskDTO, string $targetType): ISource
     {
+        if (!$taskDTO->source) {
+            throw new \Exception("数据源错误", ErrCode::SOURCE_FORMAT_ERR);
+        }
+
         $source = null;
         switch (strtolower($targetType)) {
             case 'csv':
@@ -93,6 +154,10 @@ class TaskFactory
 
     private static function buildTarget(TaskDTO $taskDTO): Target
     {
+        if (!$taskDTO->template) {
+            throw new \Exception("模板异常", ErrCode::TPL_FMT_ERR);
+        }
+
         $baseDir = File::join(Config::getInstance()->getConf('local_file_base_dir'), $taskDTO->id);
         switch ($taskDTO->type ?: Target::TYPE_CSV) {
             case Target::TYPE_CSV:

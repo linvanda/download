@@ -49,9 +49,6 @@ class TaskDTO extends DTO
         if (is_string($this->template)) {
             $this->template = json_decode($this->template, true);
         }
-        if (!$this->template) {
-            throw new \Exception("非法的 template", ErrCode::PARAM_VALIDATE_FAIL);
-        }
 
         // 将历史参数 source_url、source_data 都合并到 source 里面去
         if (!$this->source) {
@@ -67,10 +64,6 @@ class TaskDTO extends DTO
         // 多表格模式下 source 必须是数组
         if ($this->multiType != ExcelTarget::MT_SINGLE && is_string($this->source)) {
             $this->source = json_decode($this->source, true);
-        }
-
-        if (!$this->source) {
-            throw new \Exception("数据源设置错误", ErrCode::SOURCE_DATA_EMPTY);
         }
     }
 }

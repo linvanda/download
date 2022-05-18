@@ -463,11 +463,11 @@ class Test extends Controller
         //         'building' => '小区名'
         //     ];
         // }
-        $force = mt_rand(0, 10);
+//        $force = mt_rand(0, 10);
 
         $this->return([
              'data' => $data,
-                'force_continue' => $force,
+//                'force_continue' => $force,
 //            "data" => [
 //                [
 //                    "name" => '按',
