@@ -2,6 +2,8 @@
 
 namespace App\Foundation\DTO;
 
+use App\Domain\Target\ExcelTarget;
+use App\ErrCode;
 use WecarSwoole\DTO;
 
 /**
@@ -13,6 +15,7 @@ class TaskDTO extends DTO
     public $name;
     public $sourceUrl;
     public $sourceData;
+    public $source;
     public $projectId;
     public $fileName;
     public $type;
@@ -41,6 +44,26 @@ class TaskDTO extends DTO
 
         if (is_string($this->template)) {
             $this->template = $this->template ? json_decode($this->template, true) : [];
+        }
+
+        // 将历史参数 source_url、source_data 都合并到 source 里面去
+        if (!$this->source) {
+            if ($this->sourceData) {
+                // 优先看 sourceData
+                $data = is_string($this->sourceData) ? json_decode($this->sourceData, true) : $this->sourceData;
+                $this->source = $data;
+            } else {
+                $this->source = $this->sourceUrl;
+            }
+        }
+
+        // 多表格模式下 source 必须是数组
+        if ($this->multiType != ExcelTarget::MT_SINGLE && is_string($this->source)) {
+            $this->source = json_decode($this->source, true);
+        }
+
+        if (!$this->source) {
+            throw new \Exception("数据源设置错误", ErrCode::SOURCE_DATA_EMPTY);
         }
     }
 }

@@ -39,6 +39,7 @@ class Download extends Controller
             ],
             'syncGetDataMultiple' => [
                 'source_data' => ['optional'],
+                'source' => ['optional'],
                 'name' => ['required', 'lengthMin' => 2, 'lengthMax' => 60],
                 'project_id' => ['required', 'lengthMax' => 40],
                 'file_name' => ['lengthMax' => 120],

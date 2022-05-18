@@ -88,12 +88,12 @@ class TaskFactory
             case 'excel': 
             default:
                $source = new CSVSource(
-                    new URI($taskDTO->sourceUrl ?: ''),
-                    $taskDTO->sourceData ?: [],
+                    $taskDTO->source,
                     File::join(Config::getInstance()->getConf('local_file_base_dir'), $taskDTO->id),
                     $taskDTO->id,
                     intval($taskDTO->step) ?: CSVSource::STEP_DEFAULT,
-                   $taskDTO->interval ?: CSVSource::DEFAULT_INTERVAL
+                   $taskDTO->interval ?: CSVSource::DEFAULT_INTERVAL,
+                   $taskDTO->multiType == ExcelTarget::MT_SINGLE ? CSVSource::SOURCE_TYPE_SIMPLE : CSVSource::SOURCE_TYPE_MULTI
                 );
         }
         

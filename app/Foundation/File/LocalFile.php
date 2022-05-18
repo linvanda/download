@@ -47,6 +47,7 @@ class LocalFile
      */
     public function size(): int
     {
+        clearstatcache();
         return filesize($this->fileName);
     }
 

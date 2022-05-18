@@ -9,6 +9,13 @@ use App\Foundation\Client\API;
  */
 interface ISource
 {
+    // 单源模式（针对单表格）
+    public const SOURCE_TYPE_SIMPLE = 1;
+    // 多源模式（针对多表格或者多 tab）
+    public const SOURCE_TYPE_MULTI = 2;
+    // 两次拉取之间默认时间间隔，单位毫秒
+    public const DEFAULT_INTERVAL = 100;
+
     /**
      * 源文件名称（包含目录）
      */
@@ -30,9 +37,4 @@ interface ISource
      * @param bool $recordColType 是否记录列类型
      */
     public function fetch(API $invoker, bool $recordColType = true);
-
-    /**
-     * 从源拉取元数据
-     */
-    public function fetchMeta(API $invoker): array;
 }
