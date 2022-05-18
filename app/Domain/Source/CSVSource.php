@@ -384,7 +384,8 @@ class CSVSource implements ISource
             }
 
             // 已经格式化好了的 data 数组: [[[k=>v],],]
-            if (is_array(reset(reset($src)))) {
+            $firstEle = reset($src);
+            if (is_array(reset($firstEle))) {
                 return $src;
             }
 
