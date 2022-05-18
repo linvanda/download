@@ -46,7 +46,7 @@ interface ISource
     /**
      * 从源拉取数据并保存到本地
      * @param API $invoker 源数据调用程序
-     * @param bool $recordColType 是否记录列类型
+     * @param string $targetType 目标文件类型
      */
-    public function fetch(API $invoker, bool $recordColType = true);
+    public function fetch(API $invoker, string $targetType);
 }

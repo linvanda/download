@@ -25,10 +25,6 @@ class TaskFactory
 {
     public static function create(TaskDTO $taskDTO): Task
     {
-        if (!$taskDTO->sourceUrl && !$taskDTO->sourceData) {
-            throw new Exception("创建任务失败：source_url 和 source_data 需要提供一个", ErrCode::PARAM_VALIDATE_FAIL);
-        }
-
         if (!$project = Container::get(IProjectRepository::class)->getProjectById($taskDTO->projectId)) {
             throw new Exception("创建任务失败：项目不存在", ErrCode::PROJ_NOT_EXISTS);
         }

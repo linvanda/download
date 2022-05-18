@@ -28,7 +28,7 @@ class Task extends Controller
                 'operator_id' => ['lengthMax' => 120],
                 'merchant_type' => ['required', 'integer'],
                 'merchant_id' => ['required', 'integer'],
-                'template' => ['lengthMax' => 8000],
+                'template' => ['required', 'lengthMax' => 100000],
                 'title' => ['lengthMax' => 200],
                 'summary' => ['lengthMax' => 8000],
                 'interval' => ['optional', 'integer', 'min' => 100, 'max' => 3000],
@@ -45,6 +45,7 @@ class Task extends Controller
                 'merchant_type' => ['required', 'integer'],
                 'merchant_id' => ['required', 'integer'],
                 'interval' => ['optional', 'integer', 'min' => 100, 'max' => 3000],
+                'template' => ['required', 'lengthMax' => 100000],
             ],
             'one' => [
                 'task_id' => ['required', 'lengthMax' => 100],

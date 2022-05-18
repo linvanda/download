@@ -463,9 +463,17 @@ class Test extends Controller
         //         'building' => '小区名'
         //     ];
         // }
+        $force = mt_rand(0, 10);
 
         $this->return([
              'data' => $data,
+                'force_continue' => $force,
+//            "data" => [
+//                [
+//                    "name" => '按',
+//                    "age" => 43
+//                ]
+//            ],
 //            'data' => [],
 //            'total' => 0,
             // 'header' => ["油站" => '钓鱼岛', '日期' => date('Y-m-d')],

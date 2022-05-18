@@ -16,6 +16,6 @@ class SourceService
     public function fetch(ISource $source, Target $target)
     {
         // 获取数据
-        $source->fetch(new API(), $target->type() === Target::TYPE_EXCEL ? true : false);
+        $source->fetch(new API(), $target->type());
     }
 }

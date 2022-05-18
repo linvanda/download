@@ -47,7 +47,10 @@ class TaskDTO extends DTO
         }
 
         if (is_string($this->template)) {
-            $this->template = $this->template ? json_decode($this->template, true) : [];
+            $this->template = json_decode($this->template, true);
+        }
+        if (!$this->template) {
+            throw new \Exception("非法的 template", ErrCode::PARAM_VALIDATE_FAIL);
         }
 
         // 将历史参数 source_url、source_data 都合并到 source 里面去

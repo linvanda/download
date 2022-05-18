@@ -2,6 +2,7 @@
 
 namespace App\Domain\Source;
 
+use App\Domain\Target\Target;
 use App\Foundation\File\LocalFile;
 use App\ErrCode;
 use App\Exceptions\SourceException;
@@ -111,7 +112,7 @@ class CSVSource implements ISource
         return $this->size;
     }
 
-    public function fetch(API $invoker, bool $recordColType = true)
+    public function fetch(API $invoker, string $targetType)
     {
         $cnt = 0;
         $file = new LocalFile($this->fileName());
@@ -120,10 +121,10 @@ class CSVSource implements ISource
             foreach ($this->srcs as $src) {
                 if (is_string($src)) {
                     // url 拉取
-                    $cnt += $this->fetchFromUrl($invoker, $src, $file, $recordColType);
+                    $cnt += $this->fetchFromUrl($invoker, $src, $file, $targetType);
                 } else {
                     // data 数据
-                    $cnt += $this->fetchFromData($src, $file, $recordColType);
+                    $cnt += $this->fetchFromData($src, $file, $targetType);
                 }
             }
 
@@ -141,12 +142,12 @@ class CSVSource implements ISource
      * @param API $invoker
      * @param string $src
      * @param LocalFile $file
-     * @param bool $recordColType
+     * @param string $targetType
      * @return int 记录数
      * @throws SourceException
      * @throws \App\Exceptions\FileException
      */
-    private function fetchFromUrl(API $invoker, string $src, LocalFile $file, bool $recordColType): int
+    private function fetchFromUrl(API $invoker, string $src, LocalFile $file, string $targetType): int
     {
         $page = $n = $total = $cnt = 0;
         $fieldNum = 0;
@@ -171,7 +172,7 @@ class CSVSource implements ISource
             }
 
             // 保存到文件
-            list($c, $fieldNum) = $this->innerSaveToFile($file, $data, $recordColType, !$gotNoEmptyData && count($data));
+            list($c, $fieldNum) = $this->innerSaveToFile($file, $data, $targetType, !$gotNoEmptyData && count($data));
             $cnt += $c;
 
             if ($n == 1) {
@@ -200,7 +201,7 @@ class CSVSource implements ISource
         }
 
         // 文件末尾增加分隔符
-        if ($fieldNum > 0) {
+        if ($targetType == Target::TYPE_EXCEL && $fieldNum > 0) {
             // 源数据之间增加分隔符
             $file->saveAsCsv(array_pad([], $fieldNum, self::SPLIT_LINE));
         }
@@ -215,16 +216,16 @@ class CSVSource implements ISource
      * @return int
      * @throws \App\Exceptions\FileException
      */
-    private function fetchFromData(array $data, LocalFile $file, bool $recordColType): int
+    private function fetchFromData(array $data, LocalFile $file, string $targetType): int
     {
         if (!$data) {
             return 0;
         }
 
-        list($cnt, $fieldNum) = $this->innerSaveToFile($file, $data, $recordColType, true);
+        list($cnt, $fieldNum) = $this->innerSaveToFile($file, $data, $targetType, true);
 
         // 文件末尾增加分隔符
-        if ($fieldNum > 0) {
+        if ($targetType == Target::TYPE_EXCEL && $fieldNum > 0) {
             // 源数据之间增加分隔符
             $file->saveAsCsv(array_pad([], $fieldNum, self::SPLIT_LINE));
         }
@@ -235,12 +236,12 @@ class CSVSource implements ISource
     /**
      * @param LocalFile $file
      * @param array $data
-     * @param bool $recordColType
+     * @param string $targetType
      * @param bool $saveFields
      * @return array 格式 [记录数, 列数]
      * @throws \App\Exceptions\FileException
      */
-    private function innerSaveToFile(LocalFile $file, array $data, bool $recordColType, bool $saveFields): array
+    private function innerSaveToFile(LocalFile $file, array $data, string $targetType, bool $saveFields): array
     {
         // 格式化成统一的二维数组形式
         $data = $this->formatSourceData($data);
@@ -254,7 +255,7 @@ class CSVSource implements ISource
         if ($saveFields) {
             $fields = [];
             foreach ($data[0] as $field => $value) {
-                if ($recordColType) {
+                if ($targetType == Target::TYPE_EXCEL) {
                     $fields[] = $field . '|' . (is_int($value) || is_float($value) ? 'number' : 'string');
                 } else {
                     $fields[] = $field;
