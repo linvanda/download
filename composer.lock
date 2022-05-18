@@ -100,80 +100,6 @@
             "time": "2021-04-21T02:18:06+00:00"
         },
         {
-            "name": "doctrine/annotations",
-            "version": "v1.6.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/doctrine/annotations.git",
-                "reference": "53120e0eb10355388d6ccbe462f1fea34ddadb24"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/annotations/zipball/53120e0eb10355388d6ccbe462f1fea34ddadb24",
-                "reference": "53120e0eb10355388d6ccbe462f1fea34ddadb24",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
-            },
-            "require": {
-                "doctrine/lexer": "1.*",
-                "php": "^7.1"
-            },
-            "require-dev": {
-                "doctrine/cache": "1.*",
-                "phpunit/phpunit": "^6.4"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.6.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Doctrine\\Common\\Annotations\\": "lib/Doctrine/Common/Annotations"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Roman Borschel",
-                    "email": "roman@code-factory.org"
-                },
-                {
-                    "name": "Benjamin Eberlei",
-                    "email": "kontakt@beberlei.de"
-                },
-                {
-                    "name": "Guilherme Blanco",
-                    "email": "guilhermeblanco@gmail.com"
-                },
-                {
-                    "name": "Jonathan Wage",
-                    "email": "jonwage@gmail.com"
-                },
-                {
-                    "name": "Johannes Schmitt",
-                    "email": "schmittjoh@gmail.com"
-                }
-            ],
-            "description": "Docblock Annotations Parser",
-            "homepage": "http://www.doctrine-project.org",
-            "keywords": [
-                "annotations",
-                "docblock",
-                "parser"
-            ],
-            "time": "2019-03-25T19:12:02+00:00"
-        },
-        {
             "name": "doctrine/lexer",
             "version": "1.2.0",
             "source": {
@@ -1061,17 +987,17 @@
         },
         {
             "name": "framework/wecarswoole",
-            "version": "v1.0.74",
+            "version": "v1.1.7",
             "source": {
                 "type": "git",
                 "url": "https://gitlab4.weicheche.cn/framework/wecarswoole.git",
-                "reference": "702eabf0381bc59286db8bc6c46c541038978ee2"
+                "reference": "75f071b47ff0382931a854dfff6cdeee63781d67"
             },
             "require": {
                 "dev/locker": "^1.0",
                 "dev/mysql": "^1.0",
-                "doctrine/annotations": "~1.6.0",
                 "easyswoole/easyswoole": "3.2.*",
+                "easyswoole/queue": "2.*",
                 "monolog/monolog": "~1.24.0",
                 "php-di/php-di": "~6.0.0",
                 "psr/event-dispatcher": "^1.0",
@@ -1096,7 +1022,7 @@
                 }
             },
             "description": "wecheche foundational web framework",
-            "time": "2021-04-21T01:54:25+00:00"
+            "time": "2022-05-17T01:44:48+00:00"
         },
         {
             "name": "jeremeamia/superclosure",
