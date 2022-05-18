@@ -90,7 +90,7 @@ class TaskRetry
 
                 // 投递任务
                 TaskManager::getInstance()->deliver($task);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->logger->error("retry task error.enqueue error:{$e->getMessage()}");
             }
         }
