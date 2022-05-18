@@ -72,9 +72,9 @@ class CSVSource implements ISource
         $this->taskId = $taskId;
         $this->interval = $interval;
         $this->sourceType = $sourceType;
+        $this->srcs = $this->formatSrc($src);
         $this->setStep($step);
         $this->setFileName($dir);
-        $this->setSrc($src);
     }
 
     /**
@@ -357,17 +357,38 @@ class CSVSource implements ISource
         $this->step = $step;
     }
 
-    private function setSrc($src)
+    /**
+     * 该 format 需要支持未格式化的和已经格式化的 src
+     * @param $src
+     * @return array
+     * @throws \Exception
+     */
+    private function formatSrc($src): array
     {
         if ($this->sourceType == self::SOURCE_TYPE_SIMPLE) {
-            // 单源模式直接设置
-            if (is_string($src) && !self::isUrlSource($src)) {
-                $src = json_decode($src, true);
+            // 单源模式
+            // 单个 url 字符串: "https://..."
+            if (self::isUrlSource($src)) {
+                return [$src];
             }
 
-            // 和多源模式统一格式
-            $this->srcs = [$src];
-            return;
+            // data 的 json string: "[{"k":"v"}]"
+            if (is_string($src)) {
+                return [json_decode($src, true)];
+            }
+
+            // 已经格式化好了的 url 数组: ["https://...",]
+            if (self::isUrlSource(reset($src))) {
+                return $src;
+            }
+
+            // 已经格式化好了的 data 数组: [[[k=>v],],]
+            if (is_array(reset(reset($src)))) {
+                return $src;
+            }
+
+            // 未格式化的 data 数组: [[k=>v],]
+            return [$src];
         }
 
         // 多源模式
@@ -382,7 +403,7 @@ class CSVSource implements ISource
             }
         }
 
-        $this->srcs = $src;
+        return $src;
     }
 
     private static function isUrlSource($src): bool
