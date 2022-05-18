@@ -2,6 +2,8 @@
 
 namespace App\Foundation\Repository\Task;
 
+use App\Domain\Source\CSVSource;
+use App\Domain\Source\ISource;
 use App\Domain\Target\ExcelTarget;
 use WecarSwoole\Repository\MySQLRepository;
 use App\Domain\Task\ITaskRepository;
@@ -10,8 +12,6 @@ use App\Domain\Task\Task;
 use App\Domain\Task\TaskFactory;
 use App\Foundation\DTO\DBTaskDTO;
 use Exception;
-use Psr\Log\LoggerInterface;
-use WecarSwoole\Container;
 
 class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
 {
@@ -28,8 +28,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             'id' => $task->id(),
             'name' => $task->name(),
             'project_id' => $task->project()->id(),
-            'source_url' => $task->source()->uri->url(),
-            'source_data' => $task->source()->data ? json_encode($task->source()->data, true) : '',
+            'source_data' => serialize($task->source()),// 复用 source_data 字段，废弃 source_url 字段
             'type' => self::FILE_TYPE_MAP[$task->target()->type()],
             'file_name' => $task->target()->downloadFileName(),
             'operator_id' => $task->operator,
@@ -209,6 +208,9 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
     {
         $meta = isset($info['obj_meta']) ? unserialize($info['obj_meta']) : [];
 
+        // 新旧数据兼容
+        $source = $this->buildTmpSource($info);
+
         $taskDTO = new DBTaskDTO(
             array_merge(
                 $info,
@@ -224,10 +226,37 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
                     'default_width' => $meta['default_width'] ?? 0,
                     'default_height' => $meta['default_height'] ?? 0,
                     'multi_type' => $meta['multi_type'] ?? ExcelTarget::MT_SINGLE,
+                    'source' => $source->srcs(),
+                    'interval' => $source->interval(),
                 ]
             )
         );
 
         return $taskDTO;
+    }
+
+    /**
+     * 新旧数据兼容
+     * 旧数据有 source_url、source_data，分别表示数据源 url、数据源 data
+     * 新数据废弃 source_url，source_data 改变其含义：存整个 CSVSource 的序列化值
+     * @param array $info
+     * @return CSVSource
+     * @throws Exception
+     */
+    protected function buildTmpSource(array $info): CSVSource
+    {
+        if ($info['source_url']) {
+            // 存在 source_url 说明是老数据
+            return new CSVSource($info['source_url'], '', $info['id']);
+        }
+
+        // 存在 source_data 的情况下可能是新数据也可能是老数据，先认为是新数据
+        $source = unserialize($info['source_data']);
+        if ($source) {
+            return $source;
+        }
+
+        $data = json_decode($source, true);
+        return new CSVSource($data, '', $info['id']);
     }
 }

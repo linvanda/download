@@ -42,6 +42,10 @@ class TaskDTO extends DTO
     {
         parent::__construct($data);
 
+        if (!$this->multiType) {
+            $this->multiType = ExcelTarget::MT_SINGLE;
+        }
+
         if (is_string($this->template)) {
             $this->template = $this->template ? json_decode($this->template, true) : [];
         }

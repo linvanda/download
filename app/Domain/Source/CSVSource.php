@@ -41,7 +41,6 @@ class CSVSource implements ISource
     // 源文件大小
     private $size;
     private $taskId;
-    private $localFiles = [];
 
     /**
      * @param string|array $src 数据源。格式：
@@ -92,6 +91,16 @@ class CSVSource implements ISource
     public function count(): int
     {
         return $this->count;
+    }
+
+    public function srcs(): array
+    {
+        return $this->srcs;
+    }
+
+    public function interval(): int
+    {
+        return $this->interval;
     }
 
     /**

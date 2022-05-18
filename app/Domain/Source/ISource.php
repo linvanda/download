@@ -22,6 +22,12 @@ interface ISource
     public function fileName(): string;
 
     /**
+     * 数据源列表
+     * @return array
+     */
+    public function srcs(): array;
+
+    /**
      * 数据记录数（行数）
      */
     public function count(): int;
@@ -30,6 +36,12 @@ interface ISource
      * 源文件大小，单位字节
      */
     public function size(): int;
+
+    /**
+     * 拉取源数据的时间间隔
+     * @return int
+     */
+    public function interval(): int;
 
     /**
      * 从源拉取数据并保存到本地

@@ -37,11 +37,6 @@ class TaskFactory
         $id = $taskDTO->id ?? Container::get(IIDGenerator::class)->id();
         $taskDTO->id = $id;
 
-        // 处理 source_data
-        if ($taskDTO->sourceData) {
-            $taskDTO->sourceData = is_string($taskDTO->sourceData) ? json_decode($taskDTO->sourceData, true) : $taskDTO->sourceData;
-        }
-
         // multiType
         $taskDTO->multiType = $taskDTO->multiType ?? 'single';
         

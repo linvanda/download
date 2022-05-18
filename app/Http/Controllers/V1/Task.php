@@ -91,7 +91,7 @@ class Task extends Controller
             return $this->return([], ErrCode::TASK_NOT_EXISTS, '任务不存在');
         }
 
-        $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
+        $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'sourceData', 'source', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
         return $this->return($this->formateTask($taskArr));
     }
 
@@ -115,7 +115,7 @@ class Task extends Controller
         }
 
         $data['data'] = array_map(function (TaskDTO $taskDTO) {
-            $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
+            $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'sourceData', 'source', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
             return $this->formateTask($taskArr);
         }, $data['data']);
 
