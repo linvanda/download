@@ -114,8 +114,10 @@ class Node
 
         $arr = [];
         foreach ($node->children() as $cNode) {
-            $arr = array_merge(self::fetchAllLeaves($cNode));
+            $arr = array_merge($arr, self::fetchAllLeaves($cNode));
         }
+
+        return $arr;
     }
 
     protected function searchNode(string $name, Node $node): ?Node

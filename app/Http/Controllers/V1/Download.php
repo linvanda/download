@@ -12,6 +12,8 @@ use WecarSwoole\Http\Controller;
 
 class Download extends Controller
 {
+    use ParamUtil;
+
     protected function validateRules(): array
     {
         return [
@@ -97,7 +99,7 @@ class Download extends Controller
     public function syncGetData()
     {
         Container::get(DownloadService::class)
-        ->syncDownload(new TaskDTO($this->params()), $this->response());
+        ->syncDownload(new TaskDTO(self::dealParams($this->params())), $this->response());
     }
 
     /**
@@ -105,7 +107,8 @@ class Download extends Controller
      */
     public function syncGetDataMultiple()
     {
+        $params = self::dealParams(array_merge(['multi_type' => 'page'], $this->params(), ['type' => 'excel']));
         Container::get(DownloadService::class)
-        ->syncDownload(new TaskDTO(array_merge(['multi_type' => 'page'], $this->params(), ['type' => 'excel'])), $this->response());
+        ->syncDownload(new TaskDTO($params), $this->response());
     }
 }

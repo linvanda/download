@@ -143,6 +143,13 @@ class ExcelGenerator
         $rowHeadUsed = [];
         list($colTitles, $colTypes, $rowHeadIndex) = $this->colInfo;
 
+        // 拿到所有列的 Style
+        $allCols = Node::fetchAllLeaves($tpl->colHead());
+        $colStyles = [];
+        foreach ($allCols as $colNode) {
+            $colStyles[$colNode->name()] = $colNode->style();
+        }
+
         // 循环读取源数据写入到 excel 中
         while ($maxRow-- && !feof($sourceFile)) {
             if (!$rowValues = fgetcsv($sourceFile)) {
@@ -181,6 +188,8 @@ class ExcelGenerator
                 if (!isset($colTitles[$index]) || !$theColNum = ($colMap[$colTitles[$index]] ?? 0)) {
                     continue;
                 }
+
+                $cell = $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum);
                 
                 // 单元格类型
                 // 注意：在生成源 CSV 时，我们根据第一行数据探测了列类型，但这里仍然需要重新探测，防止同一列数据在不同行类型不一致
@@ -188,8 +197,14 @@ class ExcelGenerator
                 if (is_string($val) && !is_numeric($val)) {
                     $cellType = DataType::TYPE_STRING;
                 }
-                $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum)
-                ->setValueExplicit($val, $cellType);
+                $cell->setValueExplicit($val, $cellType);
+
+                // 单元格样式
+                // 目前仅支持设置 align，后面有其他样式需求再加
+                $style = $colStyles[$colTitles[$index]];
+                if ($colAlign = $style->getAlign()) {
+                    $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal($colAlign);
+                }
             }
 
             // 设置行高度（使用默认行高度无效）

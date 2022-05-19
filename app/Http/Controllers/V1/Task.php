@@ -15,6 +15,8 @@ use WecarSwoole\Http\Controller;
 
 class Task extends Controller
 {
+    use ParamUtil;
+
     protected function validateRules(): array
     {
         return [
@@ -70,7 +72,7 @@ class Task extends Controller
      */
     public function deliver()
     {
-        $task = Container::get(TaskService::class)->create(new TaskDTO($this->params()));
+        $task = Container::get(TaskService::class)->create(new TaskDTO(self::dealParams($this->params())));
         TaskManager::getInstance()->deliver($task);
         $this->return(['task_id' => $task->id()]);
     }
@@ -80,7 +82,8 @@ class Task extends Controller
      */
     public function deliverMultiple()
     {
-        $task = Container::get(TaskService::class)->create(new TaskDTO(array_merge(['multi_type' => 'page'], $this->params(), ['type' => 'excel'])));
+        $params = self::dealParams(array_merge(['multi_type' => 'page'], $this->params(), ['type' => 'excel']));
+        $task = Container::get(TaskService::class)->create(new TaskDTO($params));
         TaskManager::getInstance()->deliver($task);
         $this->return(['task_id' => $task->id()]);
     }

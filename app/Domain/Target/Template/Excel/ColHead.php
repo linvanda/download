@@ -31,7 +31,7 @@ class ColHead extends Node
             'bg_color' => $colCfg['bg_color'] ?? '',
             'width' => $colCfg['width'] ?? 0,
             'height' => $colCfg['height'] ?? 0,
-            'align' => $colCfg['align'] ?? Style::ALIGN_CENTER,
+            'align' => $colCfg['align'] ?? Style::ALIGN_LEFT,
             'color' => $colCfg['color'] ?? '',
             'bold' => $colCfg['bold'] ?? false,
         ];
