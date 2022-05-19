@@ -175,7 +175,7 @@ class ExcelTarget extends Target
             $this->setTpls(Tpl::getDefaultTplFromData($metaData['data']));
         }
 
-        $this->rowoffset = $metaData['rowoffset'] ?? 0;
+        $this->rowoffset = intval($metaData['rowoffset'] ?? 0);
 
         $this->metaData = $this->getMeta();
     }

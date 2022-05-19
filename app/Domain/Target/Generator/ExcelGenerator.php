@@ -356,7 +356,9 @@ class ExcelGenerator
      * @param ColHead $colHead 列表头树
      * @param int $rowHeadColNum 行表头占用的列数
      * @param int $lastRowNum 最新行号，需要从下一行开始
+     * @param int $defaultColWidth
      * @return array 列映射表，格式：[列名 => 列号]
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     private function setColHead(Worksheet $worksheet, ColHead $colHead, int $rowHeadColNum, int $lastRowNum, int $defaultColWidth = -1): array
     {
@@ -377,10 +379,12 @@ class ExcelGenerator
      * 参见 setColHead(...) 的说明
      * @param Worksheet $worksheet
      * @param Node $headTree 行/列表头节点树
-     * @param int $rowOffset 行偏移量
      * @param int $colOffset 列偏移量
+     * @param int $rowOffset 行偏移量
      * @param int $type 1：生成列标题，2 生成行标题
+     * @param int $colDefaultWidth
      * @return array 行列映射表。格式：[行/列名称 => [行/列号]]
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     private function setExcelSubHead(Worksheet $worksheet, Node $headTree, int $colOffset, int $rowOffset, int $type = 1, int $colDefaultWidth = -1): array
     {
@@ -455,7 +459,7 @@ class ExcelGenerator
                     }
                 }
 
-                // 行列样式
+                // 行列样式：列/行号=> Style
                 $styleMap[$type == 1 ? $fromCol : $fromRow] = $node->style();
             }
 

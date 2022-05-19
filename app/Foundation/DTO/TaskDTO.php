@@ -3,7 +3,6 @@
 namespace App\Foundation\DTO;
 
 use App\Domain\Target\ExcelTarget;
-use App\ErrCode;
 use WecarSwoole\DTO;
 
 /**
@@ -32,6 +31,7 @@ class TaskDTO extends DTO
     public $footer;
     public $headerAlign;
     public $footerAlign;
+    public $colAlign;
     public $isSync;
     public $defaultWidth;// Excel 默认列宽度，单位 pt
     public $defaultHeight;// Excel 默认行高，单位 pt

@@ -3,7 +3,6 @@
 namespace App\Foundation\Repository\Task;
 
 use App\Domain\Source\CSVSource;
-use App\Domain\Source\ISource;
 use App\Domain\Target\ExcelTarget;
 use WecarSwoole\Repository\MySQLRepository;
 use App\Domain\Task\ITaskRepository;

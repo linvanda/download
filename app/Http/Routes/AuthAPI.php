@@ -44,6 +44,9 @@ class AuthAPI extends ApiRoute
          *      summary string 可选。表格摘要。仅对 excel 生效
          *      header  array 可选。表格 header。仅对 excel 生效
          *      footer array 可选。表格 footer。仅对 excel 生效
+         *      header_align string 可选。header 对齐方式
+         *      footer_align string 可选。footer 对齐方式
+         *      col_align string 可选。table 列对齐方式。可以被 template 中设置的 col align 覆盖
          *      default_width int 可选。表格列宽度，单位 pt。仅对 excel 生效
          *      default_height int 可选。表格行高度，单位 pt。仅对 excel 生效
          *      max_exec_time int 可选。任务处理时限（超过该时限还在“处理中”的任务将重新入列），单位秒
