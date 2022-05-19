@@ -114,12 +114,12 @@ class ExcelTarget extends Target
 
     public function getDefaultWidth(): int
     {
-        return $this->defaultWidth ?: 16;
+        return $this->defaultWidth ?: 18;
     }
 
     public function getDefaultHeight(): int
     {
-        return $this->defaultHeight ?: 16;
+        return $this->defaultHeight ?: 18;
     }
 
     public function getMultiType(): string

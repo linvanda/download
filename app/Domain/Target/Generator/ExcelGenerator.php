@@ -203,7 +203,7 @@ class ExcelGenerator
                 // 目前仅支持设置 align，后面有其他样式需求再加
                 $style = $colStyles[$colTitles[$index]];
                 if ($colAlign = $style->getAlign()) {
-                    $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal($colAlign);
+                    $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal($colAlign)->setVertical(Alignment::VERTICAL_CENTER);
                 }
             }
 
