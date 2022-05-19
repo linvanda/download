@@ -114,7 +114,7 @@ class Node
 
         $arr = [];
         foreach ($node->children() as $cNode) {
-
+            $arr = array_merge(self::fetchAllLeaves($cNode));
         }
     }
 
