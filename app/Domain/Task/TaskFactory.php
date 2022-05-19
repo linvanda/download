@@ -108,7 +108,7 @@ class TaskFactory
     private static function innerFormatMT(TaskDTO $taskDTO, array $fields)
     {
         foreach ($fields as $field) {
-            if (!property_exists($taskDTO, $field) || !$taskDTO->{$field} || !is_string($taskDTO->{$field})) {
+            if (!property_exists($taskDTO, $field)) {
                 continue;
             }
 
