@@ -48,6 +48,7 @@ class AuthAPI extends ApiRoute
          *      default_height int 可选。表格行高度，单位 pt。仅对 excel 生效
          *      max_exec_time int 可选。任务处理时限（超过该时限还在“处理中”的任务将重新入列），单位秒
          *      interval int 可选。两次数据拉取之间的时间间隔，单位毫秒。取值 100 ~ 3000，默认 100
+         *      rowoffset int 可选。行偏移量，第一个 table 从第几行开始渲染，默认 0，没有偏移
          */
         $this->post("/v1/task", "/V1/Task/deliver");
 
@@ -74,6 +75,7 @@ class AuthAPI extends ApiRoute
          *      default_height int 可选。表格行高度，单位 pt。仅对 excel 生效
          *      max_exec_time int 可选。任务处理时限（超过该时限还在“处理中”的任务将重新入列），单位秒
          *      interval int 可选。两次数据拉取之间的时间间隔，单位毫秒。取值 100 ~ 3000，默认 100
+         *      rowoffset int 可选。行偏移量，第一个 table 从第几行开始渲染，默认 0，没有偏移
          */
         $this->post("/v1/task/multiple", "/v1/Task/deliverMultiple");
 

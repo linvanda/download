@@ -180,6 +180,7 @@ class TaskFactory
                         'footers_align' => $taskDTO->footerAlign ?: 'right',
                         'default_width' => $taskDTO->defaultWidth,
                         'default_height' => $taskDTO->defaultHeight,
+                        'rowoffset' => $taskDTO->rowoffset,
                     ]
                 );
                 return $excel;

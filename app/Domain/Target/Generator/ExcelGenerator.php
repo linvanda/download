@@ -225,7 +225,7 @@ class ExcelGenerator
         $activeSheet = $spreadSheet->getActiveSheet();
         $this->setDefaultStyle($spreadSheet, $target);
 
-        $rowOffset = 0;
+        $rowOffset = $target->rowOffset() ?? 0;
         $tableIndex = 0;
         $maxColCount = 0;// 最大列数
         while (!feof($sourceFile) && $target->getTpls($tableIndex) && $rowOffset < $maxRow) {

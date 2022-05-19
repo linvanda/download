@@ -228,6 +228,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
                     'multi_type' => $meta['multi_type'] ?? ExcelTarget::MT_SINGLE,
                     'source' => $source->srcs(),
                     'interval' => $source->interval(),
+                    'rowoffset' => $meta['rowoffset'],
                 ]
             )
         );

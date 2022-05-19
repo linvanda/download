@@ -36,6 +36,7 @@ class Download extends Controller
                 'title' => ['lengthMax' => 200],
                 'summary' => ['lengthMax' => 8000],
                 'interval' => ['optional', 'integer', 'min' => 100, 'max' => 3000],
+                'rowoffset' => ['optional', 'integer', 'min' => 0,],
             ],
             'syncGetDataMultiple' => [
                 'source_data' => ['optional'],
@@ -50,6 +51,7 @@ class Download extends Controller
                 'merchant_id' => ['required', 'integer'],
                 'interval' => ['optional', 'integer', 'min' => 100, 'max' => 3000],
                 'template' => ['required', 'lengthMax' => 100000],
+                'rowoffset' => ['optional', 'integer', 'min' => 0,],
             ],
         ];
     }
