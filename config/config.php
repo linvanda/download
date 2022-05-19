@@ -119,7 +119,7 @@ $baseConfig = [
     // 是否记录 api 调用日志
     'api_invoke_log' => apollo('application', 'api_invoke_log') ?: 'on',
     // 任务队列名称
-    'task_queue' => 'tasks',
+    'task_queue' => 'tasks2',
     // 每个进程并发执行的任务数最大值
     'task_concurrent_limit' => apollo('application', 'task_concurrent_limit') ?: 20,
     // 本地临时文件存储基路径
