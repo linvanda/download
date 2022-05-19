@@ -112,20 +112,25 @@ class TaskFactory
                 continue;
             }
 
-            $taskDTO->{$field} = json_decode($taskDTO->{$field}, true);
+            // 如果为空或者没有设置，统一设置成空数组
+            $val = $taskDTO->{$field};
+            if (!$val) {
+                $taskDTO->{$field} = [];
+            } else {
+                $taskDTO->{$field} = is_string($val) ? json_decode($taskDTO->{$field}, true) : $val;
+            }
         }
     }
 
     private static function innerValidateMT(TaskDTO $dto, array $fields, int $base): bool
     {
-        $bit = $base;
         foreach ($fields as $field) {
-            if ($c = count($dto->{$field})) {
-                $bit &= $c;
+            if (count($dto->{$field}) && count($dto->{$field}) != $base) {
+                return false;
             }
         }
 
-        return $bit === $base;
+        return true;
     }
 
     private static function buildSource(TaskDTO $taskDTO, string $targetType): ISource
@@ -164,13 +169,6 @@ class TaskFactory
                 return new CSVTarget($baseDir, $taskDTO->fileName ?: '');
             case Target::TYPE_EXCEL:
                 $excel = new ExcelTarget($baseDir, $taskDTO->fileName ?: '', $taskDTO->multiType);
-
-                // multitype 多表模式需要对传入的 title、summary 做特殊处理
-                if ($taskDTO->multiType !== ExcelTarget::MT_SINGLE) {
-                    $taskDTO->title = is_string($taskDTO->title) ? json_decode($taskDTO->title, true) : $taskDTO->title;
-                    $taskDTO->summary = is_string($taskDTO->summary) ? json_decode($taskDTO->summary, true) : $taskDTO->summary;
-                }
-
                 $excel->setMeta(
                     [
                         'templates' => $taskDTO->template ?: null,
