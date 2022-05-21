@@ -251,12 +251,12 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         }
 
         // 存在 source_data 的情况下可能是新数据也可能是老数据，先认为是新数据
-        $source = unserialize($info['source_data']);
+        $source = @unserialize($info['source_data']);
         if ($source) {
             return $source;
         }
 
-        $data = @json_decode($info['source_data'], true);
+        $data = json_decode($info['source_data'], true);
         return new CSVSource($data, '', $info['id']);
     }
 }
