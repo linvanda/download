@@ -6,6 +6,7 @@ use App\ErrCode;
 use Psr\Log\LoggerInterface;
 use WecarSwoole\Client\API as BaseAPI;
 use WecarSwoole\Client\Response;
+use WecarSwoole\Client\Response\JsonArrayResponse;
 use WecarSwoole\Exceptions\Exception;
 use Swoole\Coroutine as Co;
 use WecarSwoole\Client\Http\Component\JsonResponseParser;
@@ -75,7 +76,7 @@ class API
                     return $result;
                 }
             } catch (\Exception $e) {
-                $result = new Response([], $e->getCode(), $e->getMessage());
+                $result = new JsonArrayResponse([], $e->getCode(), $e->getMessage());
             }
 
             $this->lastErrNo = $result->getStatus();
@@ -85,7 +86,7 @@ class API
             Container::get(LoggerInterface::class)->warning("第{$this->retryNum}次重试{$this->url}，params:{$paramsStr}，原因：{$this->lastErrMsg},http code:{$this->lastErrNo}");
         }
 
-        return $result === null ? new Response([], 500, self::MAX_RETRY_NUM . "次重试失败:{$this->url}，params:{$paramsStr}") : $result;
+        return $result === null ? new JsonArrayResponse([], 500, self::MAX_RETRY_NUM . "次重试失败:{$this->url}，params:{$paramsStr}") : $result;
     }
 
     private function calcIntervalTime(): int

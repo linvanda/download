@@ -15,6 +15,8 @@ use WecarSwoole\Http\Controller;
 
 class Task extends Controller
 {
+    use ParamUtil;
+
     protected function validateRules(): array
     {
         return [
@@ -28,12 +30,15 @@ class Task extends Controller
                 'operator_id' => ['lengthMax' => 120],
                 'merchant_type' => ['required', 'integer'],
                 'merchant_id' => ['required', 'integer'],
-                'template' => ['lengthMax' => 8000],
+                'template' => ['required', 'lengthMax' => 100000],
                 'title' => ['lengthMax' => 200],
                 'summary' => ['lengthMax' => 8000],
+                'interval' => ['optional', 'integer', 'min' => 100, 'max' => 3000],
+                'rowoffset' => ['optional', 'integer', 'min' => 0,],
             ],
             'deliverMultiple' => [
-                'source_data' => ['required'],
+                'source_data' => ['optional'],
+                'source' => ['optional'],
                 'name' => ['required', 'lengthMin' => 2, 'lengthMax' => 60],
                 'project_id' => ['required', 'lengthMax' => 40],
                 'file_name' => ['lengthMax' => 120],
@@ -42,6 +47,9 @@ class Task extends Controller
                 'operator_id' => ['lengthMax' => 120],
                 'merchant_type' => ['required', 'integer'],
                 'merchant_id' => ['required', 'integer'],
+                'interval' => ['optional', 'integer', 'min' => 100, 'max' => 3000],
+                'template' => ['required', 'lengthMax' => 100000],
+                'rowoffset' => ['optional', 'integer', 'min' => 0,],
             ],
             'one' => [
                 'task_id' => ['required', 'lengthMax' => 100],
@@ -64,7 +72,7 @@ class Task extends Controller
      */
     public function deliver()
     {
-        $task = Container::get(TaskService::class)->create(new TaskDTO($this->params()));
+        $task = Container::get(TaskService::class)->create(new TaskDTO(self::dealParams($this->params())));
         TaskManager::getInstance()->deliver($task);
         $this->return(['task_id' => $task->id()]);
     }
@@ -74,7 +82,8 @@ class Task extends Controller
      */
     public function deliverMultiple()
     {
-        $task = Container::get(TaskService::class)->create(new TaskDTO(array_merge(['multi_type' => 'page'], $this->params(), ['type' => 'excel'])));
+        $params = self::dealParams(array_merge(['multi_type' => 'page'], $this->params(), ['type' => 'excel']));
+        $task = Container::get(TaskService::class)->create(new TaskDTO($params));
         TaskManager::getInstance()->deliver($task);
         $this->return(['task_id' => $task->id()]);
     }
@@ -88,7 +97,7 @@ class Task extends Controller
             return $this->return([], ErrCode::TASK_NOT_EXISTS, '任务不存在');
         }
 
-        $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
+        $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'sourceData', 'source', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
         return $this->return($this->formateTask($taskArr));
     }
 
@@ -112,7 +121,7 @@ class Task extends Controller
         }
 
         $data['data'] = array_map(function (TaskDTO $taskDTO) {
-            $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
+            $taskArr = $taskDTO->toArray(true, true, false, ['sourceUrl', 'sourceData', 'source', 'fileName', 'callback', 'template', 'title', 'summary', 'header', 'footer']);
             return $this->formateTask($taskArr);
         }, $data['data']);
 

@@ -101,6 +101,25 @@ class Node
         return $this->searchNode($name, $this);
     }
 
+    /**
+     * 获取某结点的所有叶子节点，返回数组
+     * @param Node $node
+     * @return Node[] 叶子节点数组
+     */
+    public static function fetchAllLeaves(Node $node): array
+    {
+        if ($node->isLeaf()) {
+            return [$node];
+        }
+
+        $arr = [];
+        foreach ($node->children() as $cNode) {
+            $arr = array_merge($arr, self::fetchAllLeaves($cNode));
+        }
+
+        return $arr;
+    }
+
     protected function searchNode(string $name, Node $node): ?Node
     {
         if ($node->name() === $name) {

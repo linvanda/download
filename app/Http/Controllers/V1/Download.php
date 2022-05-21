@@ -12,6 +12,8 @@ use WecarSwoole\Http\Controller;
 
 class Download extends Controller
 {
+    use ParamUtil;
+
     protected function validateRules(): array
     {
         return [
@@ -32,12 +34,15 @@ class Download extends Controller
                 'type' => ['inArray' => [null, 'csv', 'excel']],
                 'callback' => ['lengthMax' => 300],
                 'operator_id' => ['lengthMax' => 120],
-                'template' => ['lengthMax' => 8000],
+                'template' => ['required', 'lengthMax' => 100000],
                 'title' => ['lengthMax' => 200],
                 'summary' => ['lengthMax' => 8000],
+                'interval' => ['optional', 'integer', 'min' => 100, 'max' => 3000],
+                'rowoffset' => ['optional', 'integer', 'min' => 0,],
             ],
             'syncGetDataMultiple' => [
-                'source_data' => ['required'],
+                'source_data' => ['optional'],
+                'source' => ['optional'],
                 'name' => ['required', 'lengthMin' => 2, 'lengthMax' => 60],
                 'project_id' => ['required', 'lengthMax' => 40],
                 'file_name' => ['lengthMax' => 120],
@@ -46,6 +51,9 @@ class Download extends Controller
                 'operator_id' => ['lengthMax' => 120],
                 'merchant_type' => ['required', 'integer'],
                 'merchant_id' => ['required', 'integer'],
+                'interval' => ['optional', 'integer', 'min' => 100, 'max' => 3000],
+                'template' => ['required', 'lengthMax' => 100000],
+                'rowoffset' => ['optional', 'integer', 'min' => 0,],
             ],
         ];
     }
@@ -91,7 +99,7 @@ class Download extends Controller
     public function syncGetData()
     {
         Container::get(DownloadService::class)
-        ->syncDownload(new TaskDTO($this->params()), $this->response());
+        ->syncDownload(new TaskDTO(self::dealParams($this->params())), $this->response());
     }
 
     /**
@@ -99,7 +107,8 @@ class Download extends Controller
      */
     public function syncGetDataMultiple()
     {
+        $params = self::dealParams(array_merge(['multi_type' => 'page'], $this->params(), ['type' => 'excel']));
         Container::get(DownloadService::class)
-        ->syncDownload(new TaskDTO(array_merge(['multi_type' => 'page'], $this->params(), ['type' => 'excel'])), $this->response());
+        ->syncDownload(new TaskDTO($params), $this->response());
     }
 }

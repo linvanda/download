@@ -114,7 +114,7 @@ class Style implements IExtractable
         $this->setHeight(intval($styleCfg['height'] ?? 0));
         $this->setColor($styleCfg['color'] ?? '');
         $this->setBgColor($styleCfg['bg_color'] ?? '');
-        $this->setAlign($styleCfg['align'] ?? 'center');
+        $this->setAlign($styleCfg['align'] ?? self::ALIGN_LEFT);
         $this->setBold($styleCfg['bold'] ?? false);
     }
 

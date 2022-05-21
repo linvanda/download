@@ -36,11 +36,17 @@ class ExcelTarget extends Target
     protected $defaultHeight;
     // 多表格类型：page、tab、single
     protected $multiType;
+    protected $rowoffset;
 
     public function __construct(string $baseDir, string $downloadFileName = '', string $multiType = self::MT_SINGLE)
     {
         $this->setMultiType($multiType);
         parent::__construct($baseDir, $downloadFileName, self::TYPE_EXCEL);
+    }
+
+    public function rowOffset(): int
+    {
+        return $this->rowoffset;
     }
 
     public function getTitles($index = null)
@@ -108,12 +114,12 @@ class ExcelTarget extends Target
 
     public function getDefaultWidth(): int
     {
-        return $this->defaultWidth ?: 16;
+        return $this->defaultWidth ?: 18;
     }
 
     public function getDefaultHeight(): int
     {
-        return $this->defaultHeight ?: 16;
+        return $this->defaultHeight ?: 18;
     }
 
     public function getMultiType(): string
@@ -169,6 +175,8 @@ class ExcelTarget extends Target
             $this->setTpls(Tpl::getDefaultTplFromData($metaData['data']));
         }
 
+        $this->rowoffset = intval($metaData['rowoffset'] ?? 0);
+
         $this->metaData = $this->getMeta();
     }
 
@@ -188,6 +196,7 @@ class ExcelTarget extends Target
             'multi_type' => $this->multiType,
             'default_width' => $this->getDefaultWidth(),
             'default_height' => $this->getDefaultHeight(),
+            'rowoffset' => $this->rowoffset,
         ];
 
         return $key ? ($data[$key] ?? null) : $data;

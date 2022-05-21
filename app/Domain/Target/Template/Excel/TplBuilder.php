@@ -43,7 +43,7 @@ trait TplBuilder
     /**
      * 格式化配置数组
      */
-    private static function formatConf(array $conf): array
+    public static function formatConf(array $conf): array
     {
         // 如果是一维数组，格式化为二维数组
         if (!is_array(reset($conf))) {

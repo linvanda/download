@@ -143,6 +143,13 @@ class ExcelGenerator
         $rowHeadUsed = [];
         list($colTitles, $colTypes, $rowHeadIndex) = $this->colInfo;
 
+        // 拿到所有列的 Style
+        $allCols = Node::fetchAllLeaves($tpl->colHead());
+        $colStyles = [];
+        foreach ($allCols as $colNode) {
+            $colStyles[$colNode->name()] = $colNode->style();
+        }
+
         // 循环读取源数据写入到 excel 中
         while ($maxRow-- && !feof($sourceFile)) {
             if (!$rowValues = fgetcsv($sourceFile)) {
@@ -181,6 +188,8 @@ class ExcelGenerator
                 if (!isset($colTitles[$index]) || !$theColNum = ($colMap[$colTitles[$index]] ?? 0)) {
                     continue;
                 }
+
+                $cell = $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum);
                 
                 // 单元格类型
                 // 注意：在生成源 CSV 时，我们根据第一行数据探测了列类型，但这里仍然需要重新探测，防止同一列数据在不同行类型不一致
@@ -188,8 +197,14 @@ class ExcelGenerator
                 if (is_string($val) && !is_numeric($val)) {
                     $cellType = DataType::TYPE_STRING;
                 }
-                $activeSheet->getCell(Coordinate::stringFromColumnIndex($theColNum) . $theRowNum)
-                ->setValueExplicit($val, $cellType);
+                $cell->setValueExplicit($val, $cellType);
+
+                // 单元格样式
+                // 目前仅支持设置 align，后面有其他样式需求再加
+                $style = $colStyles[$colTitles[$index]];
+                if ($colAlign = $style->getAlign()) {
+                    $cell->getStyle()->getAlignment()->setWrapText(true)->setHorizontal($colAlign)->setVertical(Alignment::VERTICAL_CENTER);
+                }
             }
 
             // 设置行高度（使用默认行高度无效）
@@ -225,7 +240,7 @@ class ExcelGenerator
         $activeSheet = $spreadSheet->getActiveSheet();
         $this->setDefaultStyle($spreadSheet, $target);
 
-        $rowOffset = 0;
+        $rowOffset = $target->rowOffset() ?? 0;
         $tableIndex = 0;
         $maxColCount = 0;// 最大列数
         while (!feof($sourceFile) && $target->getTpls($tableIndex) && $rowOffset < $maxRow) {
@@ -356,7 +371,9 @@ class ExcelGenerator
      * @param ColHead $colHead 列表头树
      * @param int $rowHeadColNum 行表头占用的列数
      * @param int $lastRowNum 最新行号，需要从下一行开始
+     * @param int $defaultColWidth
      * @return array 列映射表，格式：[列名 => 列号]
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     private function setColHead(Worksheet $worksheet, ColHead $colHead, int $rowHeadColNum, int $lastRowNum, int $defaultColWidth = -1): array
     {
@@ -377,10 +394,12 @@ class ExcelGenerator
      * 参见 setColHead(...) 的说明
      * @param Worksheet $worksheet
      * @param Node $headTree 行/列表头节点树
-     * @param int $rowOffset 行偏移量
      * @param int $colOffset 列偏移量
+     * @param int $rowOffset 行偏移量
      * @param int $type 1：生成列标题，2 生成行标题
+     * @param int $colDefaultWidth
      * @return array 行列映射表。格式：[行/列名称 => [行/列号]]
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     private function setExcelSubHead(Worksheet $worksheet, Node $headTree, int $colOffset, int $rowOffset, int $type = 1, int $colDefaultWidth = -1): array
     {
@@ -455,7 +474,7 @@ class ExcelGenerator
                     }
                 }
 
-                // 行列样式
+                // 行列样式：列/行号=> Style
                 $styleMap[$type == 1 ? $fromCol : $fromRow] = $node->style();
             }
 
