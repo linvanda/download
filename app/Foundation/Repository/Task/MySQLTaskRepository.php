@@ -227,7 +227,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
                     'multi_type' => $meta['multi_type'] ?? ExcelTarget::MT_SINGLE,
                     'source' => $source->srcs(),
                     'interval' => $source->interval(),
-                    'rowoffset' => $meta['rowoffset'],
+                    'rowoffset' => $meta['rowoffset'] ?? 0,
                 ]
             )
         );
@@ -251,12 +251,12 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
         }
 
         // 存在 source_data 的情况下可能是新数据也可能是老数据，先认为是新数据
-        $source = unserialize($info['source_data']);
+        $source = @unserialize($info['source_data']);
         if ($source) {
             return $source;
         }
 
-        $data = json_decode($source, true);
+        $data = json_decode($info['source_data'], true);
         return new CSVSource($data, '', $info['id']);
     }
 }

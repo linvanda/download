@@ -132,6 +132,6 @@ $a = [
     ]
 ];
 
-$align = 'center';
-$align = array_pad([], 3, $align);
-var_export($align);
+
+$d = '{"name":"abc"}';
+$s = @unserialize($d);
