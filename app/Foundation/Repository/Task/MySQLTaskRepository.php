@@ -227,7 +227,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
                     'multi_type' => $meta['multi_type'] ?? ExcelTarget::MT_SINGLE,
                     'source' => $source->srcs(),
                     'interval' => $source->interval(),
-                    'rowoffset' => $meta['rowoffset'],
+                    'rowoffset' => $meta['rowoffset'] ?? 0,
                 ]
             )
         );
@@ -256,7 +256,7 @@ class MySQLTaskRepository extends MySQLRepository implements ITaskRepository
             return $source;
         }
 
-        $data = json_decode($source, true);
+        $data = @json_decode($info['source_data'], true);
         return new CSVSource($data, '', $info['id']);
     }
 }
