@@ -28,8 +28,8 @@ final class Ticket
         self::tick($group, 1);
 
         // 票据安全性检测：如果票据快用完了，则要发告警通知（一般可能是某些异常任务长时间占用票据）
-        if (Ticket::remain($group) <= 2) {
-            Container::get(LoggerInterface::class)->critical("下载中心{$group}票据快用完，请检查是否存在异常任务处理");
+        if (Ticket::remain($group) <= 1) {
+            Container::get(LoggerInterface::class)->warning("下载中心{$group}票据快用完，请检查是否存在异常任务处理");
         }
     }
 
