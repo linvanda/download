@@ -12,6 +12,7 @@ use EasySwoole\Component\Context\ContextManager;
 use EasySwoole\Http\Request;
 use EasySwoole\Http\Response;
 use EasySwoole\Component\Di;
+use WecarSwoole\CronTabUtil;
 use WecarSwoole\Process\ApolloWatcher;
 use WecarSwoole\Process\HotReload;
 use WecarSwoole\RequestId;
@@ -76,6 +77,8 @@ class EasySwooleEvent implements Event
         $server->addProcess((new ApolloWatcher())->getProcess());
         // 任务守卫程序
         $server->addProcess((new Defender())->getProcess());
+
+        CronTabUtil::register();
     }
 
     /**
