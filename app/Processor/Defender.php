@@ -55,7 +55,7 @@ class Defender extends AbstractProcess
         $this->logger->info('启动守卫程序');
 
         // 只有主服才执行的逻辑
-        if (in_array(Config::getInstance()->getConf('master_server'), swoole_get_local_ip())) {
+        if (self::isMaster()) {
             $this->logger->info("启动主服守卫程序");
             self::addMasterFlag();
             $this->masterDefender();
@@ -63,6 +63,28 @@ class Defender extends AbstractProcess
 
         // 30 分钟一次，清理目录中的无用文件
         Timer::tick(1800000, Closure::fromCallable([$this, 'clearDir']));
+    }
+
+    private static function isMaster(): bool
+    {
+        // 先看环境变量
+        $master = getenv('WECARSWOOLE_MASTER');
+        if ($master && trim($master) == 1) {
+            return true;
+        }
+
+        // 看常量
+        if (defined('WECARSWOOLE_MASTER') && WECARSWOOLE_MASTER) {
+            return true;
+        }
+
+        // 看ip配置（历史兼容）
+        $masterIp = Config::getInstance()->getConf('master_server');
+        if ($masterIp && in_array($masterIp, swoole_get_local_ip())) {
+            return true;
+        }
+
+        return false;
     }
 
     public function onShutDown()
