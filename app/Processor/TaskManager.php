@@ -85,7 +85,11 @@ class TaskManager
                 $this->getWorkFlow($task)->start();
             } catch (\Throwable $e) {
                 // 将任务状态改成处理失败
-                $this->taskSvr->switchStatus($task, Task::STATUS_FAILED, "任务{$task->id()}处理异常：{$e->getMessage()}");
+                try {
+                    $this->taskSvr->switchStatus($task, Task::STATUS_FAILED, "任务{$task->id()}处理异常：{$e->getMessage()}");
+                } catch (\Throwable $e) {
+                    // 再抛异常则忽略
+                }
                 $this->logger->error("任务{$task->id()}处理异常：{$e->getMessage()}");
             } finally {
                 // 清理
