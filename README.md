@@ -22,7 +22,7 @@
 
 **用户在浏览器异步下载：**
 
-![用户在浏览器异步下载资源](https://github.com/linvanda/download/blob/main/readme/async_browser.png)
+![用户在浏览器异步下载资源](https://github.com/linvanda/download/blob/705248dd961acc5acd8c79ebede4fcfd847a666b/readme/async_browser.png)
 
 **说明：**
 
