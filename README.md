@@ -62,7 +62,7 @@
 
 **后台系统（程序）异步下载：**
 
-![后台程序异步下载](./readme/async_sys.png)
+![后台程序异步下载](https://github.com/linvanda/download/blob/705248dd961acc5acd8c79ebede4fcfd847a666b/readme/async_sys.png)
 
 **说明：**
 
@@ -84,7 +84,7 @@
 
 当能预判数据量不会太大时，可以使用同步下载模式。
 
-![同步下载](./readme/sync_download.png)
+![同步下载](https://github.com/linvanda/download/blob/705248dd961acc5acd8c79ebede4fcfd847a666b/readme/sync_download.png)
 
 **说明：**
 
@@ -138,12 +138,12 @@ excel 模板分为**单表格模式**（默认）和**多表格模式**。
 
 一个完整的**单表格** excel 格式如下：
 
-![单表格 excel 模板](./readme/excel_tpl.png)
+![单表格 excel 模板](https://github.com/linvanda/download/blob/705248dd961acc5acd8c79ebede4fcfd847a666b/readme/excel_tpl.png)
 
 
 一个完整的**多表格型** excel 格式如下（即对单表格模式的重复）：
 
-![多表格 excel 模板](./readme/multi_table.png)
+![多表格 excel 模板](https://github.com/linvanda/download/blob/705248dd961acc5acd8c79ebede4fcfd847a666b/readme/multi_table.png)
 
 
 **template 数据格式：**
@@ -152,7 +152,7 @@ teplate 参数用来定义 excel 中列表头（col head）和行表头（row he
 
 - 不提供模板。此时会以源数据中的 key 作为列标题：
 
-  ![no tpl](./readme/no_tpl.png)
+  ![no tpl](https://github.com/linvanda/download/blob/705248dd961acc5acd8c79ebede4fcfd847a666b/readme/no_tpl.png)
 
 - 最简单的模板：
 
@@ -201,7 +201,7 @@ teplate 参数用来定义 excel 中列表头（col head）和行表头（row he
 
   如图：
 
-  ![simple tpl](./readme/simple_tpl.png)
+  ![simple tpl](https://github.com/linvanda/download/blob/705248dd961acc5acd8c79ebede4fcfd847a666b/readme/simple_tpl.png)
 
 - 复杂格式的列表头。多层嵌套 Map（具体格式后面详解）：
 
@@ -242,7 +242,7 @@ teplate 参数用来定义 excel 中列表头（col head）和行表头（row he
 
   如图：
 
-  ![复杂列表头](./readme/complex_col.png)
+  ![复杂列表头](https://github.com/linvanda/download/blob/705248dd961acc5acd8c79ebede4fcfd847a666b/readme/complex_col.png)
 
 - 同时有列表头和行表头：
 
@@ -297,7 +297,7 @@ teplate 参数用来定义 excel 中列表头（col head）和行表头（row he
 
   如图：
 
-  ![同时有列表头和行表头](./readme/rc.png)
+  ![同时有列表头和行表头](https://github.com/linvanda/download/blob/705248dd961acc5acd8c79ebede4fcfd847a666b/readme/rc.png)
 
 **源数据格式：**
 
@@ -393,7 +393,7 @@ teplate 参数用来定义 excel 中列表头（col head）和行表头（row he
 
 ### 技术架构
 
-![技术架构图](./readme/arch.png)
+![技术架构图](https://github.com/linvanda/download/blob/705248dd961acc5acd8c79ebede4fcfd847a666b/readme/arch.png)
 
 **说明：**
 
@@ -414,7 +414,7 @@ teplate 参数用来定义 excel 中列表头（col head）和行表头（row he
 
 excel 行表头是一颗树形结构：
 
-![tree](./readme/col_tree.png)
+![tree](https://github.com/linvanda/download/blob/705248dd961acc5acd8c79ebede4fcfd847a666b/readme/col_tree.png)
 
 每个节点对应到 excel 上的行列位置：
 
