@@ -22,7 +22,8 @@
 
 **用户在浏览器异步下载：**
 
-![用户在浏览器异步下载资源](readme/async_browser.png)
+![用户在浏览器异步下载资源](https://github.com/linvanda/download/blob/main/readme/async_browser.png)
+
 **说明：**
 
 1. 用户点击“下载”按钮触发下载；
